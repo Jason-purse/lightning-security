@@ -1,0 +1,107 @@
+spring:
+#  cloud:
+#    config:
+#      import-check:
+#        enabled: false
+#  application:
+#    name: lightning-authorization-server
+#  # feign 允许bean重名
+#  main:
+#    allow-bean-definition-overriding: true
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://company.generatech.ltd:3006/authorization_server_ga?useUnicode=true&characterEncoding=utf-8&useSSL=false
+#    username: root
+#    password: 6tfc^YHN
+#    type: com.zaxxer.hikari.HikariDataSource
+#    hikari:
+#      connection-timeout: 600000
+#      maximum-pool-size: 30
+#      max-lifetime: 1800000
+#      idle-timeout: 600000
+#      data-source-properties:
+#        prepStmtCacheSize: 250
+#        prepStmtCacheSqlLimit: 2048
+#        cachePrepStmts: true
+#        useServerPrepStmts: true
+#      connection-test-query: select 'z'
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    password: 6tfc^YHN
+    url: jdbc:mysql://company.generatech.ltd:3006/authorization_server_ga?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC
+    username: root
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        format-sql: true
+        jdbc:
+          batch_size: 20
+          batch_versioned_data: true
+          fetch_size: 200
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+    show-sql: true
+#security:
+#  oauth2:
+#    client:
+#      registration:
+#        messaging-client-oidc:
+#          provider: spring
+#          client-id: messaging-client-1
+#          client-secret: secret
+#          authorization-grant-type: authorization_code
+#          redirect-uri: "http://127.0.0.1:8080/login/oauth2/code/{registrationId}"
+#          scope: openid
+#          client-name: messaging-client-oidc
+#        messaging-client-authorization-code:
+#          provider: spring
+#          client-id: messaging-client
+#          client-secret: secret
+#          authorization-grant-type: authorization_code
+#          redirect-uri: "http://127.0.0.1:8080/authorized"
+#          scope: message.read,message.write
+#          client-name: messaging-client-authorization-code
+#        messaging-client-client-credentials:
+#          provider: spring
+#          client-id: messaging-client
+#          client-secret: secret
+#          authorization-grant-type: client_credentials
+#          scope: message.read,message.write
+#          client-name: messaging-client-client-credentials
+#      provider:
+#        spring:
+#          issuer-uri: http://localhost:30001
+server:
+  port: 9000
+  servlet:
+    context-path: /springauthserver
+oauth2:
+  token:
+    issuer: http://127.0.0.1:9000/springauthserver
+  registered:
+    client:
+      authorization:
+        code:
+          id: authorization-code-client-id
+          name: authorization-code-client-name
+          redirect:
+            uri: http://127.0.0.1:8080/springauthserverclient/authorized,http://www.loveweir.com
+          scope: message.read,message.write
+          secret: '{noop}secret2'
+      client:
+        credentials:
+          id: client-credentials-client-id
+          name: client-credentials-client-name
+          scope: message.read,message.write
+          secret: '{noop}secret1'
+      password:
+        id: password-client-id
+        name: password-client-name
+        secret: '{noop}secret3'
