@@ -1,10 +1,11 @@
 package com.generatera.authorization.jpa.audit;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.MappedSuperclass;
+
 import org.springframework.data.annotation.*;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.MappedSuperclass;
 import java.time.Instant;
 
 /**

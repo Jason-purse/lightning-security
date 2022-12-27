@@ -1,9 +1,10 @@
 package com.generatera.authorization.jpa.audit;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
+
 import org.springframework.data.annotation.AccessType;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import java.time.Instant;
 
 @Embeddable

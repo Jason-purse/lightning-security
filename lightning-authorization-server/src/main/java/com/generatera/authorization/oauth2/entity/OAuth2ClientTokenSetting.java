@@ -1,8 +1,8 @@
 package com.generatera.authorization.oauth2.entity;
 
 import com.generatera.authorization.jpa.audit.AuditDeletedDate;
-import jakarta.persistence.*;
 
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity

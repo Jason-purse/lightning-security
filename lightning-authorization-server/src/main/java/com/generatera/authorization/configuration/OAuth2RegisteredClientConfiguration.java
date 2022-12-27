@@ -1,7 +1,5 @@
 package com.generatera.authorization.configuration;
 
-import com.generatera.authorization.oauth2.repository.JpaRegisteredClientRepository;
-import com.generatera.authorization.oauth2.repository.OAuth2RegisteredClientRepository;
 import com.generatera.authorization.oauth2.service.OAuth2RegisteredClientService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -59,9 +57,7 @@ public class OAuth2RegisteredClientConfiguration {
 		List<RegisteredClient> registeredClients = oauth2RegisteredClientService.getOAuth2RegisteredClient();
 
 		JdbcRegisteredClientRepository registeredClientRepository = new JdbcRegisteredClientRepository(jdbcTemplate);
-		registeredClients.forEach(registeredClient -> {
-			registeredClientRepository.save(registeredClient);
-		});
+		registeredClients.forEach(registeredClientRepository::save);
 
 		return registeredClientRepository;
 	}

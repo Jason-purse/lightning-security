@@ -15,15 +15,11 @@ import com.generatera.authorization.oauth2.entity.OAuth2AuthorizationEntity;
 import com.generatera.authorization.oauth2.repository.OAuth2AuthorizationRepository;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.security.jackson2.SecurityJackson2Modules;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2RefreshToken;
-import org.springframework.security.oauth2.core.OAuth2Token;
+import org.springframework.security.oauth2.core.*;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationCode;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.jackson2.OAuth2AuthorizationServerJackson2Module;
@@ -114,7 +110,7 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
 				.id(entity.getId())
 				.principalName(entity.getPrincipalName())
 				.authorizationGrantType(OAuth2Util.resolveAuthorizationGrantType(entity.getAuthorizationGrantType()))
-				.authorizedScopes(StringUtils.commaDelimitedListToSet(entity.getAuthorizedScopes()))
+				//.authorizedScopes(StringUtils.commaDelimitedListToSet(entity.getAuthorizedScopes()))
 				.attributes(attributes -> attributes.putAll(parseMap(entity.getAttributes())));
 		if (entity.getState() != null) {
 			builder.attribute(OAuth2ParameterNames.STATE, entity.getState());
@@ -164,7 +160,7 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
 		entity.setRegisteredClientId(authorization.getRegisteredClientId());
 		entity.setPrincipalName(authorization.getPrincipalName());
 		entity.setAuthorizationGrantType(authorization.getAuthorizationGrantType().getValue());
-		entity.setAuthorizedScopes(StringUtils.collectionToDelimitedString(authorization.getAuthorizedScopes(), ","));
+		//entity.setAuthorizedScopes(StringUtils.collectionToDelimitedString(authorization.getAuthorizedScopes(), ","));
 		entity.setAttributes(writeMap(authorization.getAttributes()));
 		entity.setState(authorization.getAttribute(OAuth2ParameterNames.STATE));
 

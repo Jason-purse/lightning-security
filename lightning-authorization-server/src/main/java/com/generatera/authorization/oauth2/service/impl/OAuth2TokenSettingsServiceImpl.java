@@ -2,7 +2,7 @@ package com.generatera.authorization.oauth2.service.impl;
 
 import com.generatera.authorization.oauth2.entity.OAuth2ClientTokenSetting;
 import com.generatera.authorization.oauth2.service.OAuth2TokenSettingsService;
-import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
+import org.springframework.security.oauth2.server.authorization.config.TokenSettings;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 

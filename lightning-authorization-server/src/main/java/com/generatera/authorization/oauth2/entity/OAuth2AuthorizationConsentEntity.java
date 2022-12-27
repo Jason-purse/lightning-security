@@ -1,7 +1,7 @@
 package com.generatera.authorization.oauth2.entity;
 
-import jakarta.persistence.*;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 

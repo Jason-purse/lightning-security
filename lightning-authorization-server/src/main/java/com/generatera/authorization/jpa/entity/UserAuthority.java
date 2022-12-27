@@ -1,9 +1,10 @@
 package com.generatera.authorization.jpa.entity;
 
-import jakarta.persistence.Embeddable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.util.Assert;
+
+import javax.persistence.Embeddable;
 
 /**
  * The UserAuthority class is simple: It's just an embeddable POJO that implements GrantedAuthority. 

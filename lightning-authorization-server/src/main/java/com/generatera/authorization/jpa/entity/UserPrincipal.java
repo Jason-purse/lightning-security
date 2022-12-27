@@ -1,10 +1,10 @@
 package com.generatera.authorization.jpa.entity;
 
 import com.generatera.authorization.jpa.audit.AuditDeletedDate;
-import jakarta.persistence.*;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.persistence.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
