@@ -28,6 +28,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.SecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
@@ -45,6 +46,7 @@ import org.springframework.security.oauth2.server.authorization.web.authenticati
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2ClientCredentialsAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2RefreshTokenAuthenticationConverter;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Arrays;
@@ -163,8 +165,6 @@ public class AuthorizationServerConfiguration {
                                     new OAuth2ClientCredentialsAuthenticationConverter(),  // 客户端模式
                                     new OAuth2ResourceOwnerPasswordAuthenticationConverter())) // 自定义密码模式
                     );
-
-
                 })
                 // 自定义授权同意页面
                 .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI));
@@ -176,9 +176,23 @@ public class AuthorizationServerConfiguration {
                 .and()
                 .csrf()
                 .ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher());
-        // oauth2.0 resourceOwnerPassword authentication support
-        AuthenticationProvider authenticationProvider = addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(http);
-        http.authenticationProvider(authenticationProvider);
+
+
+        http.apply(new SecurityConfigurer<DefaultSecurityFilterChain, HttpSecurity>() {
+            @Override
+            public void init(HttpSecurity builder) throws Exception {
+
+            }
+
+            @Override
+            public void configure(HttpSecurity builder) throws Exception {
+                // oauth2.0 resourceOwnerPassword authentication support
+                AuthenticationProvider authenticationProvider = addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(http);
+                http.authenticationProvider(authenticationProvider);
+            }
+        });
+
+
         return http.build();
     }
 
