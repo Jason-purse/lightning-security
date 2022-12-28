@@ -5,17 +5,20 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
-import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-@EnableMethodSecurity(prePostEnabled = true, mode = AdviceMode.PROXY, proxyTargetClass = false)
+/**
+ * 此配置启动默认的 基本配置,
+ * 1. 例如授权服务器资源保护 .
+ * 2. 仅作用户信息获取(授权码 授予)
+ * 3. 资源拥有者授予
+ */
 @EnableWebSecurity
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
@@ -51,35 +54,28 @@ public class SecurityConfiguration {
     @Bean
     @Order(Integer.MIN_VALUE)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        LOGGER.debug("in configure HttpSecurity");
+        LOGGER.debug("configure base security !!!");
         // 联合身份
         //FederatedIdentityConfigurer federatedIdentityConfigurer = new FederatedIdentityConfigurer()
         //        .oauth2UserHandler(new UserRepositoryOAuth2UserHandler());
 
         return http
                 .formLogin()
-                .loginPage("/login")
-                .failureUrl("/login-error")
-                .permitAll()
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers(EndpointRequest.toAnyEndpoint())
                 .permitAll()
-                .antMatchers("/webjars/**", "/image/**", "/static/**", "/oauth2/**", "/springauthserver/oauth2/**")
-                .permitAll()
                 .anyRequest()
                 .authenticated()
-                .and()
-                .csrf()
-//				.ignoringRequestMatchers(PathRequest.toH2Console())
                 .and()
                 .headers()
                 .frameOptions()
                 .sameOrigin()
                 .and()
-                //.apply(federatedIdentityConfigurer)
-                //.and()
                 .build();
     }
+
+
+
 
 }

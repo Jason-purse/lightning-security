@@ -15,6 +15,8 @@ import java.util.Map;
  * 解析url参数工具
  * @author weir
  *
+ * 对spring server 内置的工具类的一个镜像 ..
+ * @see org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2EndpointUtils
  */
 public class OAuth2EndpointUtils {
 

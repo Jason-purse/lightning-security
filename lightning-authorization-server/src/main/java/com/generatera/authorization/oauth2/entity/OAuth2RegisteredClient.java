@@ -14,6 +14,7 @@ import java.time.Instant;
  * 
  * @author basit
  */
+@Deprecated
 @Entity
 @Table(name = "oauth2_registered_client")
 public class OAuth2RegisteredClient implements Serializable {

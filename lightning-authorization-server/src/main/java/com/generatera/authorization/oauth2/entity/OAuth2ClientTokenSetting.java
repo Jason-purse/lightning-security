@@ -5,6 +5,7 @@ import com.generatera.authorization.jpa.audit.AuditDeletedDate;
 import javax.persistence.*;
 import java.io.Serializable;
 
+@Deprecated
 @Entity
 @Table(name = "oauth2_client_token_setting")
 public class OAuth2ClientTokenSetting implements Serializable {

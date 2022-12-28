@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+// 用来支持 oauth2-client  resource-owner 模式 ..
 public class OAuth2ResourceOwnerPasswordAuthenticationConverter implements AuthenticationConverter {
 
 	@Override
@@ -62,7 +63,9 @@ public class OAuth2ResourceOwnerPasswordAuthenticationConverter implements Authe
 				OAuth2ParameterNames.PASSWORD,
 				OAuth2EndpointUtils.ACCESS_TOKEN_REQUEST_ERROR_URI);
 		}
-		
+
+		// 需要客户端凭证 ..
+		// 详情查看 https://www.rfc-editor.org/rfc/rfc6749#section-4.3.2 ..
 		Authentication clientPrincipal = SecurityContextHolder.getContext().getAuthentication();
 		if (clientPrincipal == null) {
 			OAuth2EndpointUtils.throwError(
@@ -70,7 +73,8 @@ public class OAuth2ResourceOwnerPasswordAuthenticationConverter implements Authe
 				OAuth2ErrorCodes.INVALID_CLIENT,
 				OAuth2EndpointUtils.ACCESS_TOKEN_REQUEST_ERROR_URI);
 		}
-		
+
+		// 额外的参数
 		Map<String, Object> additionalParameters = parameters
 				.entrySet()
 				.stream()

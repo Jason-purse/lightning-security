@@ -1,0 +1,23 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # 授权服务器地址 ..
+          issuer-uri: http://localhost:9000
+      client:
+        registration:
+          generatera:
+            client-id: password-client-id
+            client-secret: secret3
+            client-name: password-client-name
+            client-authentication-method: client_secret_post
+            authorization-grant-type: password
+            scope:
+              - message.read
+              - message.write
+              - openid
+            redirectUri: "{baseScheme}://127.0.0.1{basePort}/api/auth/oauth2/login/code/{registrationId}"
+        provider:
+          generatera:
+            issuerUri: http://localhost:9000

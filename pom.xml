@@ -5,6 +5,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>lightning-authorization-server</module>
+        <module>lightning-application-authorization-server</module>
     </modules>
 
     <groupId>com.generatera</groupId>

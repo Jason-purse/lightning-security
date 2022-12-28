@@ -5,7 +5,13 @@ import com.generatera.authorization.jpa.audit.AuditDeletedDate;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
-
+/**
+ * @author FLJ
+ * @date 2022/12/27
+ * @time 16:44
+ * @Description oauth2 客户端(应用程序代表)
+ */
+@Deprecated
 @Entity
 @Table(name = "oauth2_client")
 public class OAuth2Client implements Serializable {
@@ -31,17 +37,36 @@ public class OAuth2Client implements Serializable {
 	@Column(name = "client_secret_expires_at")
 	private Instant clientSecretExpiresAt;
 
+	/**
+	 * 客户端认证方法列表
+	 * @see org.springframework.security.oauth2.core.ClientAuthenticationMethod
+	 */
 	@Column(name = "authentication_method")
 	private String clientAuthenticationMethods;
 
+	/**
+	 * 授权授予类型列表
+	 * @see org.springframework.security.oauth2.core.AuthorizationGrantType
+	 */
 	@Column(name = "authorization_grant_type")
 	private String authorizationGrantTypes;
 
+	/**
+	 * 重定向urls(仅当 授权码授予类型时才有效)
+	 */
 	@Column(name = "redirect_uris")
 	private String redirectUris;
 
+	/**
+	 * 客户端所持有的scopes ..
+	 */
 	private String scopes;
 
+	/**
+	 * 是否已经注册,默认已注册 ...
+	 *
+	 *
+	 */
 	private boolean registered;
 
 	@OneToOne(mappedBy = "oauth2Client", cascade = CascadeType.ALL, optional = false)
@@ -53,116 +78,4 @@ public class OAuth2Client implements Serializable {
 	@Embedded
     private AuditDeletedDate audit = new AuditDeletedDate();
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getClientId() {
-		return clientId;
-	}
-
-	public void setClientId(String clientId) {
-		this.clientId = clientId;
-	}
-	
-	public Instant getClientIdIssuedAt() {
-		return clientIdIssuedAt;
-	}
-
-	public void setClientIdIssuedAt(Instant clientIdIssuedAt) {
-		this.clientIdIssuedAt = clientIdIssuedAt;
-	}
-
-	public String getClientName() {
-		return clientName;
-	}
-
-	public void setClientName(String clientName) {
-		this.clientName = clientName;
-	}
-
-	public String getClientSecret() {
-		return clientSecret;
-	}
-
-	public void setClientSecret(String clientSecret) {
-		this.clientSecret = clientSecret;
-	}
-	
-	public Instant getClientSecretExpiresAt() {
-		return clientSecretExpiresAt;
-	}
-
-	public void setClientSecretExpiresAt(Instant clientSecretExpiresAt) {
-		this.clientSecretExpiresAt = clientSecretExpiresAt;
-	}
-
-	public String getClientAuthenticationMethods() {
-		return clientAuthenticationMethods;
-	}
-
-	public void setClientAuthenticationMethods(String clientAuthenticationMethods) {
-		this.clientAuthenticationMethods = clientAuthenticationMethods;
-	}
-
-	public String getAuthorizationGrantTypes() {
-		return authorizationGrantTypes;
-	}
-
-	public void setAuthorizationGrantTypes(String authorizationGrantTypes) {
-		this.authorizationGrantTypes = authorizationGrantTypes;
-	}
-
-	public String getRedirectUris() {
-		return redirectUris;
-	}
-
-	public void setRedirectUris(String redirectUris) {
-		this.redirectUris = redirectUris;
-	}
-
-	public String getScopes() {
-		return scopes;
-	}
-
-	public void setScopes(String scopes) {
-		this.scopes = scopes;
-	}
-
-	public boolean isRegistered() {
-		return registered;
-	}
-
-	public void setRegistered(boolean registered) {
-		this.registered = registered;
-	}
-
-	public OAuth2ClientTokenSetting getTokenSetting() {
-		return tokenSetting;
-	}
-
-	public void setTokenSetting(OAuth2ClientTokenSetting tokenSetting) {
-		this.tokenSetting = tokenSetting;
-	}
-
-	public OAuth2ClientSetting getClientSetting() {
-		return clientSetting;
-	}
-
-	public void setClientSetting(OAuth2ClientSetting clientSetting) {
-		this.clientSetting = clientSetting;
-	}
-
-	public AuditDeletedDate getAudit() {
-		return audit;
-	}
-
-	public void setAudit(AuditDeletedDate audit) {
-		this.audit = audit;
-	}
-	
 }
