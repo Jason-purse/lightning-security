@@ -147,72 +147,69 @@ public class AuthorizationServerConfiguration {
     // 详情查看 org.springframework.security.config.annotation.web.configuration.OAuth2ClientConfiguration
 
 
-    @Configuration
-    public static class OAuth2ServerConfiguration {
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
+    public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
-        @Bean
-        @Order(Ordered.HIGHEST_PRECEDENCE)
-        public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
+        // oauth2 server configuration
+        OAuth2AuthorizationServerConfigurer<HttpSecurity> authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer<HttpSecurity>()
+                .tokenEndpoint(oAuth2TokenEndpointConfigurer -> {
 
-            // oauth2 server configuration
-            OAuth2AuthorizationServerConfigurer<HttpSecurity> authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer<HttpSecurity>()
-                    .tokenEndpoint(oAuth2TokenEndpointConfigurer -> {
-
-                        // 修改访问token 请求转换器(让它支持 自定义密码模式)
-                        oAuth2TokenEndpointConfigurer.accessTokenRequestConverter(
-                                new DelegatingAuthenticationConverter(Arrays.asList(
-                                        new OAuth2AuthorizationCodeAuthenticationConverter(), // 授权码模式
-                                        new OAuth2RefreshTokenAuthenticationConverter(),  // 刷新token
-                                        new OAuth2ClientCredentialsAuthenticationConverter(),  // 客户端模式
-                                        new OAuth2ResourceOwnerPasswordAuthenticationConverter())) // 自定义密码模式
-                        );
-
-                        // oauth2.0 resourceOwnerPassword authentication support
-                        oAuth2TokenEndpointConfigurer.authenticationProvider(addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(http));
-                    })
-                    // 自定义授权同意页面
-                    .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI));
+                    // 修改访问token 请求转换器(让它支持 自定义密码模式)
+                    oAuth2TokenEndpointConfigurer.accessTokenRequestConverter(
+                            new DelegatingAuthenticationConverter(Arrays.asList(
+                                    new OAuth2AuthorizationCodeAuthenticationConverter(), // 授权码模式
+                                    new OAuth2RefreshTokenAuthenticationConverter(),  // 刷新token
+                                    new OAuth2ClientCredentialsAuthenticationConverter(),  // 客户端模式
+                                    new OAuth2ResourceOwnerPasswordAuthenticationConverter())) // 自定义密码模式
+                    );
 
 
-            // csrf handle
-            http
-                    .apply(authorizationServerConfigurer)
-                    .and()
-                    .csrf()
-                    .ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher());
-
-            return http.build();
-        }
+                })
+                // 自定义授权同意页面
+                .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI));
 
 
-        /**
-         * 自定义密码模式
-         *
-         * @param http httpSecurity
-         */
-        @SuppressWarnings("unchecked")
-        private AuthenticationProvider addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(HttpSecurity http) {
-
-            AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-            OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
-            OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = http.getSharedObject(OAuth2TokenGenerator.class);
-
-
-            return new OAuth2ResourceOwnerPasswordAuthenticationProvider(authenticationManager, authorizationService, tokenGenerator);
-        }
-
-
-        /**
-         * 已经注册的 客户端仓库
-         * @return registeredClient ..repository
-         */
-        @Bean
-        public RegisteredClientRepository clientRepository(LightningOAuth2ClientRepository lightningOAuth2ClientRepository) {
-            return new LightningRegisteredClientRepository(lightningOAuth2ClientRepository);
-        }
-
-
+        // csrf handle
+        http
+                .apply(authorizationServerConfigurer)
+                .and()
+                .csrf()
+                .ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher());
+        // oauth2.0 resourceOwnerPassword authentication support
+        AuthenticationProvider authenticationProvider = addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(http);
+        http.authenticationProvider(authenticationProvider);
+        return http.build();
     }
+
+
+    /**
+     * 自定义密码模式
+     *
+     * @param http httpSecurity
+     */
+    @SuppressWarnings("unchecked")
+    private AuthenticationProvider addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(HttpSecurity http) {
+
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+        OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
+        OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = http.getSharedObject(OAuth2TokenGenerator.class);
+
+
+        return new OAuth2ResourceOwnerPasswordAuthenticationProvider(authenticationManager, authorizationService, tokenGenerator);
+    }
+
+
+    /**
+     * 已经注册的 客户端仓库
+     * @return registeredClient ..repository
+     */
+    @Bean
+    public RegisteredClientRepository clientRepository(LightningOAuth2ClientRepository lightningOAuth2ClientRepository) {
+        return new LightningRegisteredClientRepository(lightningOAuth2ClientRepository);
+    }
+
+
 
 
 }
