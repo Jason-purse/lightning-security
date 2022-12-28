@@ -1,5 +1,6 @@
 package com.generatera.authorization.oauth2.entity;
 
+import com.jianyue.lightning.boot.starter.generic.crud.service.support.entity.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class BaseEntity {
+public class BaseEntity implements Entity {
 
     @CreatedBy
     @Column(name = "created_at")
@@ -31,4 +32,14 @@ public class BaseEntity {
     @LastModifiedDate
     @Column(name = "updated_date")
     private Instant updatedDate;
+
+    @Override
+    public void saveFill() {
+        // pass
+    }
+
+    @Override
+    public void updateFill() {
+        // pass
+    }
 }

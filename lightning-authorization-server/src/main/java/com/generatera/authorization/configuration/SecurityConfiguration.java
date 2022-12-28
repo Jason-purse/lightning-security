@@ -65,6 +65,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests()
                 .requestMatchers(EndpointRequest.toAnyEndpoint())
                 .permitAll()
+                .antMatchers("/api/*")
+                .permitAll()
                 .anyRequest()
                 .authenticated()
                 .and()

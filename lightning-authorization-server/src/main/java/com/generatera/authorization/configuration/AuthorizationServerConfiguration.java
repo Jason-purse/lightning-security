@@ -9,8 +9,10 @@ import com.generatera.authorization.oauth2.customizer.jwt.JwtCustomizerHandler;
 import com.generatera.authorization.oauth2.customizer.jwt.impl.JwtCustomizerImpl;
 import com.generatera.authorization.oauth2.customizer.token.claims.OAuth2TokenClaimsCustomizer;
 import com.generatera.authorization.oauth2.customizer.token.claims.impl.OAuth2TokenClaimsCustomizerImpl;
+import com.generatera.authorization.oauth2.repository.LightningOAuth2ClientRepository;
 import com.generatera.authorization.oauth2.repository.OAuth2AuthorizationConsentRepository;
 import com.generatera.authorization.oauth2.repository.OAuth2AuthorizationRepository;
+import com.generatera.authorization.oauth2.service.LightningRegisteredClientRepository;
 import com.generatera.authorization.oauth2.service.impl.JpaOAuth2AuthorizationConsentService;
 import com.generatera.authorization.oauth2.service.impl.JpaOAuth2AuthorizationService;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -24,7 +26,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -34,7 +35,6 @@ import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
@@ -204,12 +204,11 @@ public class AuthorizationServerConfiguration {
 
         /**
          * 已经注册的 客户端仓库
-         * @param jdbcTemplate jdbcTemplate
          * @return registeredClient ..repository
          */
         @Bean
-        public RegisteredClientRepository clientRepository(JdbcTemplate jdbcTemplate) {
-            return new JdbcRegisteredClientRepository(jdbcTemplate);
+        public RegisteredClientRepository clientRepository(LightningOAuth2ClientRepository lightningOAuth2ClientRepository) {
+            return new LightningRegisteredClientRepository(lightningOAuth2ClientRepository);
         }
 
 

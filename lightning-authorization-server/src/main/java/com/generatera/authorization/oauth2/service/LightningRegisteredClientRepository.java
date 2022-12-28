@@ -37,10 +37,8 @@ import java.util.function.Function;
  * @time 17:02
  * @Description 抓取自定义实现的 已注册的客户端仓库 ..
  */
-@Service
 @RequiredArgsConstructor
 public class LightningRegisteredClientRepository implements RegisteredClientRepository {
-
 
     private final Converter<RegisteredClient, OAuth2ClientEntity> entityConverter = new Converter<>() {
         @Override
@@ -183,7 +181,6 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
             return new OAuth2TokenFormat(format);
         }
     };
-
 
     private final LightningOAuth2ClientRepository oAuth2ClientRepository;
 
