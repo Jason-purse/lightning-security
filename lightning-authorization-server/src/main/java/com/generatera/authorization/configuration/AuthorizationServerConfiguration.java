@@ -1,20 +1,16 @@
 package com.generatera.authorization.configuration;
 
-import com.generatera.authorization.configs.ProviderSettingProperties;
 import com.generatera.authorization.configuration.jose.Jwks;
-import com.generatera.authorization.oauth2.authentication.OAuth2ResourceOwnerPasswordAuthenticationConverter;
-import com.generatera.authorization.oauth2.authentication.OAuth2ResourceOwnerPasswordAuthenticationProvider;
-import com.generatera.authorization.oauth2.customizer.jwt.JwtCustomizer;
-import com.generatera.authorization.oauth2.customizer.jwt.JwtCustomizerHandler;
-import com.generatera.authorization.oauth2.customizer.jwt.impl.JwtCustomizerImpl;
-import com.generatera.authorization.oauth2.customizer.token.claims.OAuth2TokenClaimsCustomizer;
-import com.generatera.authorization.oauth2.customizer.token.claims.impl.OAuth2TokenClaimsCustomizerImpl;
-import com.generatera.authorization.oauth2.repository.LightningOAuth2ClientRepository;
-import com.generatera.authorization.oauth2.repository.OAuth2AuthorizationConsentRepository;
-import com.generatera.authorization.oauth2.repository.OAuth2AuthorizationRepository;
-import com.generatera.authorization.oauth2.service.LightningRegisteredClientRepository;
-import com.generatera.authorization.oauth2.service.impl.JpaOAuth2AuthorizationConsentService;
-import com.generatera.authorization.oauth2.service.impl.JpaOAuth2AuthorizationService;
+import com.generatera.authorization.ext.oauth2.authentication.OAuth2ResourceOwnerPasswordAuthenticationConverter;
+import com.generatera.authorization.ext.oauth2.authentication.OAuth2ResourceOwnerPasswordAuthenticationProvider;
+import com.generatera.authorization.ext.oauth2.customizer.jwt.JwtCustomizer;
+import com.generatera.authorization.ext.oauth2.customizer.jwt.JwtCustomizerHandler;
+import com.generatera.authorization.ext.oauth2.customizer.jwt.impl.JwtCustomizerImpl;
+import com.generatera.authorization.ext.oauth2.customizer.token.claims.OAuth2TokenClaimsCustomizer;
+import com.generatera.authorization.ext.oauth2.customizer.token.claims.impl.OAuth2TokenClaimsCustomizerImpl;
+import com.generatera.authorization.model.constant.ProviderSettingProperties;
+import com.generatera.authorization.service.OAuth2AuthorizationConsentRepository;
+import com.generatera.authorization.service.impl.JpaOAuth2AuthorizationConsentService;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -61,7 +57,7 @@ import java.util.Arrays;
  *
  * @author FLJ
  */
-@EnableConfigurationProperties(ProviderSettingProperties.class)
+@EnableConfigurationProperties({ProviderSettingProperties.class})
 @Configuration(proxyBeanMethods = false)
 public class AuthorizationServerConfiguration {
 
@@ -70,14 +66,13 @@ public class AuthorizationServerConfiguration {
      */
     private static final String CUSTOM_CONSENT_PAGE_URI = "/oauth2/consent";
 
+    /**
+     * 提供者配置属性
+     */
     @Autowired
     private ProviderSettingProperties properties;
 
 
-    @Bean
-    public OAuth2AuthorizationService authorizationService(OAuth2AuthorizationRepository oauth2AuthorizationRepository, RegisteredClientRepository registeredClientRepository) {
-        return new JpaOAuth2AuthorizationService(oauth2AuthorizationRepository, registeredClientRepository);
-    }
 
     @Bean
     public OAuth2AuthorizationConsentService authorizationConsentService(OAuth2AuthorizationConsentRepository oauth2AuthorizationConsentRepository, RegisteredClientRepository registeredClientRepository) {
@@ -211,15 +206,6 @@ public class AuthorizationServerConfiguration {
     }
 
 
-    /**
-     * 已经注册的 客户端仓库
-     *
-     * @return registeredClient ..repository
-     */
-    @Bean
-    public RegisteredClientRepository clientRepository(LightningOAuth2ClientRepository lightningOAuth2ClientRepository) {
-        return new LightningRegisteredClientRepository(lightningOAuth2ClientRepository);
-    }
 
 
 }

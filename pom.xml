@@ -6,6 +6,7 @@
     <modules>
         <module>lightning-authorization-server</module>
         <module>lightning-application-authorization-server</module>
+        <module>lightning-authorization-server-configuration</module>
     </modules>
 
     <groupId>com.generatera</groupId>
@@ -15,6 +16,9 @@
     <description>lightning-security</description>
     <properties>
         <java.version>17</java.version>
+        <authorization.server.version>0.3.0</authorization.server.version>
+        <lombok.version>1.18.22</lombok.version>
+        <kotlin.version>1.6.21</kotlin.version>
     </properties>
 
     <dependencyManagement>
@@ -25,6 +29,11 @@
                 <version>1.0.0-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-oauth2-authorization-server</artifactId>
+                <version>${authorization.server.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
