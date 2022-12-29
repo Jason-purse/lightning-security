@@ -60,16 +60,17 @@ public class SecurityConfiguration {
         //FederatedIdentityConfigurer federatedIdentityConfigurer = new FederatedIdentityConfigurer()
         //        .oauth2UserHandler(new UserRepositoryOAuth2UserHandler());
 
+        http.requestMatchers()
+                .antMatchers("/api/**");
+
         return http
                 .formLogin()
                 .and()
                 .authorizeRequests()
+                .antMatchers("/api/admin/**")
+                .authenticated()
                 .requestMatchers(EndpointRequest.toAnyEndpoint())
                 .permitAll()
-                .anyRequest()
-                .permitAll()
-                //.anyRequest()
-                //.authenticated()
                 .and()
                 .csrf()
                 .disable()

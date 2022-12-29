@@ -175,16 +175,14 @@ public class AuthorizationServerConfiguration {
 
         // csrf handle
         http
-                .authorizeRequests()
-                .anyRequest()
-                .anonymous()
-                .and()
                 .apply(authorizationServerConfigurer)
                 .and()
                 .csrf()
-                .ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher());
-
+                .disable();
         addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(http);
+        // 仅仅拦截这一部分的 ..
+        http.requestMatchers()
+                .antMatchers("/auth/**");
 
 
         return http.build();
