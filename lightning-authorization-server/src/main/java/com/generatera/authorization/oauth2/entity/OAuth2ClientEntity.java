@@ -1,11 +1,13 @@
 package com.generatera.authorization.oauth2.entity;
 
+import com.jianyue.lightning.boot.starter.generic.crud.service.entity.JpaBaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serial;
 import java.time.Instant;
 
 /**
@@ -20,8 +22,9 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class OAuth2ClientEntity extends BaseEntity {
+public class OAuth2ClientEntity extends JpaBaseEntity<Long> {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -31,7 +34,7 @@ public class OAuth2ClientEntity extends BaseEntity {
     @Column(name = "client_id")
     private String clientId;
 
-    @Column(name = "client_id_issued_at")
+    @Column(name = "client_id_issued_at",columnDefinition = "timestamp")
     private Instant clientIdIssuedAt;
 
     @Column(name = "client_name")
@@ -40,7 +43,7 @@ public class OAuth2ClientEntity extends BaseEntity {
     @Column(name = "client_secret")
     private String clientSecret;
 
-    @Column(name = "client_secret_expires_at")
+    @Column(name = "client_secret_expires_at",columnDefinition = "timestamp")
     private Instant clientSecretExpiresAt;
 
     /**
@@ -120,7 +123,7 @@ public class OAuth2ClientEntity extends BaseEntity {
     /**
      * token other settings
      */
-    @Column(name = "token_other_settings")
+    @Column(name = "token_other_settings",length = 2000)
     private String tokenOtherSettings;
 
 
@@ -152,6 +155,6 @@ public class OAuth2ClientEntity extends BaseEntity {
     /**
      * 客户端其他配置
      */
-    @Column(name = "client_other_settings")
+    @Column(name = "client_other_settings",length = 2000)
     private String clientOtherSettings;
 }

@@ -3,9 +3,9 @@ package com.generatera.authorization.oauth2.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.generatera.authorization.oauth2.entity.OAuth2ClientEntity;
 import com.generatera.authorization.oauth2.repository.LightningOAuth2ClientRepository;
-import com.jianyue.lightning.boot.starter.util.BeanUtils;
 import com.jianyue.lightning.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +21,6 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.config.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.config.ConfigurationSettingNames;
 import org.springframework.security.oauth2.server.authorization.config.TokenSettings;
-import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -44,8 +43,13 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
         @Override
         public OAuth2ClientEntity convert(@NotNull RegisteredClient source) {
 
-            OAuth2ClientEntity entity = BeanUtils.transformFrom(source, OAuth2ClientEntity.class);
-            assert entity != null;
+            OAuth2ClientEntity entity = new OAuth2ClientEntity();
+            entity.setId(Long.parseLong(source.getId()));
+            entity.setClientId(source.getClientId());
+            entity.setClientName(source.getClientName());
+            entity.setClientSecret(source.getClientSecret());
+            entity.setClientIdIssuedAt(source.getClientIdIssuedAt());
+            entity.setClientSecretExpiresAt(source.getClientSecretExpiresAt());
             entity.setClientAuthenticationMethods(stringJoin(source.getClientAuthenticationMethods().toArray()));
 
             entity.setAuthorizationGrantTypes(
@@ -62,9 +66,10 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
             entity.setRequireAuthorizationConsent(source.getClientSettings().isRequireAuthorizationConsent());
             entity.setRequireProofKey(source.getClientSettings().isRequireProofKey());
             entity.setJwkSetUrl(source.getClientSettings().getJwkSetUrl());
-            // jws algorithm ..
-            entity.setTokenEndpointAuthenticationSigningAlgorithm(source.getClientSettings().getTokenEndpointAuthenticationSigningAlgorithm().getName());
-
+            if(ObjectUtils.isNotEmpty(source.getClientSettings().getTokenEndpointAuthenticationSigningAlgorithm())) {
+                // jws algorithm ..
+                entity.setTokenEndpointAuthenticationSigningAlgorithm(source.getClientSettings().getTokenEndpointAuthenticationSigningAlgorithm().getName());
+            }
 
             Map<String, Object> settings = source.getClientSettings().getSettings();
             HashMap<String, Object> clientOtherSettings = new HashMap<>(settings);
@@ -79,10 +84,19 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
 
 
             // token 配置
-            entity.setAccessTokenTime(source.getTokenSettings().getAccessTokenTimeToLive().toMillis());
-            entity.setAccessTokenFormat(source.getTokenSettings().getAccessTokenFormat().getValue());
-            entity.setRefreshTokenTime(source.getTokenSettings().getRefreshTokenTimeToLive().toMillis());
-            entity.setIdTokenSignatureAlgorithm(source.getTokenSettings().getIdTokenSignatureAlgorithm().getName());
+            if(ObjectUtils.isNotEmpty(source.getTokenSettings().getAccessTokenTimeToLive())) {
+                entity.setAccessTokenTime(source.getTokenSettings().getAccessTokenTimeToLive().toMillis());
+            }
+            if(ObjectUtils.isNotEmpty(source.getTokenSettings().getAccessTokenTimeToLive())) {
+                entity.setAccessTokenFormat(source.getTokenSettings().getAccessTokenFormat().getValue());
+            }
+            if(ObjectUtils.isNotEmpty(source.getTokenSettings().getAccessTokenTimeToLive())) {
+                entity.setRefreshTokenTime(source.getTokenSettings().getRefreshTokenTimeToLive().toMillis());
+            }
+            if(ObjectUtils.isNotEmpty(source.getTokenSettings().getAccessTokenTimeToLive())) {
+                entity.setIdTokenSignatureAlgorithm(source.getTokenSettings().getIdTokenSignatureAlgorithm().getName());
+            }
+
 
             Map<String, Object> tokenSettings = source.getTokenSettings().getSettings();
             HashMap<String, Object> tokenSettingsNoRequired = new HashMap<>(tokenSettings);
@@ -109,21 +123,59 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
     private final Converter<OAuth2ClientEntity, RegisteredClient> clientConverter = new Converter<>() {
         @Override
         public RegisteredClient convert(@NotNull OAuth2ClientEntity source) {
-            RegisteredClient registeredClient = BeanUtils.transformFrom(source, RegisteredClient.class);
-            assert registeredClient != null;
-            return RegisteredClient
-                    .from(registeredClient)
+
+            RegisteredClient.Builder builder = RegisteredClient.withId(source.getId().toString())
+                    .clientId(source.getClientId())
+                    .clientName(source.getClientName())
+                    .clientIdIssuedAt(source.getClientIdIssuedAt())
+                    .clientSecretExpiresAt(source.getClientSecretExpiresAt())
+                    .clientSecret(source.getClientSecret())
                     .clientAuthenticationMethods(stringToSet(source.getClientAuthenticationMethods(), ClientAuthenticationMethod::new))
                     .authorizationGrantTypes(stringToSet(source.getAuthorizationGrantTypes(), AuthorizationGrantType::new))
                     .redirectUris(stringToSet(source.getRedirectUris(), Function.identity()))
-                    .scopes(stringToSet(source.getScopes(), Function.identity()))
+                    .scopes(stringToSet(source.getScopes(), Function.identity()));
+
+
+            ClientSettings.Builder clientSettingsBuilder = ClientSettings.builder();
+            if (StringUtils.isNotBlank(source.getJwkSetUrl())) {
+                clientSettingsBuilder.jwkSetUrl(source.getJwkSetUrl());
+            }
+            if (ObjectUtils.isNotEmpty(source.getRequireAuthorizationConsent())) {
+                clientSettingsBuilder.requireAuthorizationConsent(source.getRequireAuthorizationConsent());
+            }
+            if (StringUtils.isNotBlank(source.getTokenEndpointAuthenticationSigningAlgorithm())) {
+                clientSettingsBuilder.tokenEndpointAuthenticationSigningAlgorithm(jwsAlgorithmResolve(source.getTokenEndpointAuthenticationSigningAlgorithm(), true));
+            }
+            if (ObjectUtils.isNotEmpty(source.getRequireProofKey())) {
+                clientSettingsBuilder.requireProofKey(source.getRequireProofKey());
+            }
+
+            TokenSettings.Builder tokenSettingsBuilder = TokenSettings
+                    .builder();
+            if (ObjectUtils.isNotEmpty(source.getAccessTokenFormat())) {
+                tokenSettingsBuilder
+                        .accessTokenFormat(accessTokenFormatResolve(source.getAccessTokenFormat()));
+            }
+            if (ObjectUtils.isNotEmpty(source.getAccessTokenTime())) {
+                tokenSettingsBuilder.accessTokenTimeToLive(Duration.ofMillis(source.getAccessTokenTime()));
+            }
+
+            if (ObjectUtils.isNotEmpty(source.getIdTokenSignatureAlgorithm())) {
+                tokenSettingsBuilder.idTokenSignatureAlgorithm((SignatureAlgorithm) jwsAlgorithmResolve(source.getIdTokenSignatureAlgorithm(), true));
+            }
+
+            if (ObjectUtils.isNotEmpty(source.getRefreshTokenTime())) {
+                tokenSettingsBuilder.refreshTokenTimeToLive(Duration.ofMillis(source.getRefreshTokenTime()));
+
+            }
+            if (ObjectUtils.isNotEmpty(source.getReuseRefreshToken())) {
+                tokenSettingsBuilder.reuseRefreshTokens(source.getReuseRefreshToken());
+            }
+
+
+            return builder
                     .clientSettings(
-                            ClientSettings.builder()
-                                    .jwkSetUrl(source.getJwkSetUrl())
-                                    .requireAuthorizationConsent(source.getRequireAuthorizationConsent())
-                                    .tokenEndpointAuthenticationSigningAlgorithm(jwsAlgorithmResolve(source.getTokenEndpointAuthenticationSigningAlgorithm(), true))
-                                    .requireProofKey(source.getRequireProofKey())
-                                    .settings(settings -> {
+                            clientSettingsBuilder.settings(settings -> {
                                         String clientOtherSettings = source.getClientOtherSettings();
                                         Map<String, Object> values = JsonUtil.fromJson(clientOtherSettings, new TypeReference<Map<String, Object>>() {
                                         });
@@ -133,14 +185,7 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
                                     .build()
                     )
                     .tokenSettings(
-                            TokenSettings
-                                    .builder()
-                                    .accessTokenFormat(accessTokenFormatResolve(source.getAccessTokenFormat()))
-                                    .accessTokenTimeToLive(Duration.ofMillis(source.getAccessTokenTime()))
-                                    .idTokenSignatureAlgorithm((SignatureAlgorithm) jwsAlgorithmResolve(source.getIdTokenSignatureAlgorithm(), true))
-                                    .refreshTokenTimeToLive(Duration.ofMillis(source.getRefreshTokenTime()))
-                                    .reuseRefreshTokens(source.getReuseRefreshToken())
-                                    .settings(settings -> {
+                            tokenSettingsBuilder.settings(settings -> {
                                         String clientOtherSettings = source.getTokenOtherSettings();
                                         Map<String, Object> values = JsonUtil.fromJson(clientOtherSettings, new TypeReference<Map<String, Object>>() {
                                         });
@@ -158,12 +203,15 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
                     .map(ele -> ele.split(","))
                     .ifPresent(values -> {
                         for (String s : values) {
-                            set.add(converter.apply(s));
+                            set.add(converter.apply(s.trim()));
                         }
                     });
         }
 
         private JwsAlgorithm jwsAlgorithmResolve(String algorithm, boolean isSignature) {
+            if (StringUtils.isBlank(algorithm)) {
+                return null;
+            }
             JwsAlgorithm from = SignatureAlgorithm.from(algorithm);
             if (from == null) {
                 if (!isSignature) {
