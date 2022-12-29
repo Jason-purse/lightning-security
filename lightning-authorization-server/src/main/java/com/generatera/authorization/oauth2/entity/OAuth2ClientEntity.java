@@ -16,7 +16,7 @@ import java.time.Instant;
  */
 @Data
 @Entity
-@Table(name = "oauth2-client")
+@Table(name = "lightning_oauth2_client")
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)

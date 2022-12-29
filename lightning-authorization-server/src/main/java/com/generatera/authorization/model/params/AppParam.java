@@ -1,7 +1,9 @@
 package com.generatera.authorization.model.params;
 
 import com.jianyue.lightning.boot.starter.generic.crud.service.entity.IdSupport;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.OAuth2TokenFormat;
@@ -13,12 +15,17 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AppParam implements ServerParam, IdSupport<Long> {
 
 
     private Long id;
 
 
+    /**
+     * 客户端id
+     */
     private String clientId;
 
     /**

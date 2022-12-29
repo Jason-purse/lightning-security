@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -52,7 +53,7 @@ public class SecurityConfiguration {
     // }
 
     @Bean
-    @Order(Integer.MIN_VALUE)
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         LOGGER.debug("configure base security !!!");
         // 联合身份
@@ -62,18 +63,20 @@ public class SecurityConfiguration {
         return http
                 .formLogin()
                 .and()
-                .authorizeHttpRequests()
+                .authorizeRequests()
                 .requestMatchers(EndpointRequest.toAnyEndpoint())
                 .permitAll()
-                .antMatchers("/api/*")
-                .permitAll()
                 .anyRequest()
-                .authenticated()
+                .permitAll()
+                //.anyRequest()
+                //.authenticated()
                 .and()
-                .headers()
-                .frameOptions()
-                .sameOrigin()
-                .and()
+                .csrf()
+                .disable()
+                //.headers()
+                //.frameOptions()
+                //.sameOrigin()
+                //.and()
                 .build();
     }
 

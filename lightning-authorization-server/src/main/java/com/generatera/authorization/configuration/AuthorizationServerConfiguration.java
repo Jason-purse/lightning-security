@@ -28,10 +28,12 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.SecurityConfigurer;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2TokenEndpointConfigurer;
 import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
@@ -46,7 +48,6 @@ import org.springframework.security.oauth2.server.authorization.web.authenticati
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2ClientCredentialsAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2RefreshTokenAuthenticationConverter;
-import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Arrays;
@@ -150,21 +151,23 @@ public class AuthorizationServerConfiguration {
 
 
     @Bean
-    @Order(Ordered.LOWEST_PRECEDENCE)
+    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
 
         // oauth2 server configuration
         OAuth2AuthorizationServerConfigurer<HttpSecurity> authorizationServerConfigurer = new OAuth2AuthorizationServerConfigurer<HttpSecurity>()
-                .tokenEndpoint(oAuth2TokenEndpointConfigurer -> {
-
-                    // 修改访问token 请求转换器(让它支持 自定义密码模式)
-                    oAuth2TokenEndpointConfigurer.accessTokenRequestConverter(
-                            new DelegatingAuthenticationConverter(Arrays.asList(
-                                    new OAuth2AuthorizationCodeAuthenticationConverter(), // 授权码模式
-                                    new OAuth2RefreshTokenAuthenticationConverter(),  // 刷新token
-                                    new OAuth2ClientCredentialsAuthenticationConverter(),  // 客户端模式
-                                    new OAuth2ResourceOwnerPasswordAuthenticationConverter())) // 自定义密码模式
-                    );
+                .tokenEndpoint(new Customizer<OAuth2TokenEndpointConfigurer>() {
+                    @Override
+                    public void customize(OAuth2TokenEndpointConfigurer oAuth2TokenEndpointConfigurer) {
+                        // 修改访问token 请求转换器(让它支持 自定义密码模式)
+                        oAuth2TokenEndpointConfigurer.accessTokenRequestConverter(
+                                new DelegatingAuthenticationConverter(Arrays.asList(
+                                        new OAuth2AuthorizationCodeAuthenticationConverter(), // 授权码模式
+                                        new OAuth2RefreshTokenAuthenticationConverter(),  // 刷新token
+                                        new OAuth2ClientCredentialsAuthenticationConverter(),  // 客户端模式
+                                        new OAuth2ResourceOwnerPasswordAuthenticationConverter())) // 自定义密码模式
+                        );
+                    }
                 })
                 // 自定义授权同意页面
                 .authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.consentPage(CUSTOM_CONSENT_PAGE_URI));
@@ -172,25 +175,16 @@ public class AuthorizationServerConfiguration {
 
         // csrf handle
         http
+                .authorizeRequests()
+                .anyRequest()
+                .anonymous()
+                .and()
                 .apply(authorizationServerConfigurer)
                 .and()
                 .csrf()
                 .ignoringRequestMatchers(authorizationServerConfigurer.getEndpointsMatcher());
 
-
-        http.apply(new SecurityConfigurer<DefaultSecurityFilterChain, HttpSecurity>() {
-            @Override
-            public void init(HttpSecurity builder) throws Exception {
-
-            }
-
-            @Override
-            public void configure(HttpSecurity builder) throws Exception {
-                // oauth2.0 resourceOwnerPassword authentication support
-                AuthenticationProvider authenticationProvider = addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(http);
-                http.authenticationProvider(authenticationProvider);
-            }
-        });
+        addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(http);
 
 
         return http.build();
@@ -203,27 +197,31 @@ public class AuthorizationServerConfiguration {
      * @param http httpSecurity
      */
     @SuppressWarnings("unchecked")
-    private AuthenticationProvider addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(HttpSecurity http) {
+    private void addCustomOAuth2ResourceOwnerPasswordAuthenticationProvider(HttpSecurity http) throws Exception {
 
-        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-        OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
-        OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = http.getSharedObject(OAuth2TokenGenerator.class);
-
-
-        return new OAuth2ResourceOwnerPasswordAuthenticationProvider(authenticationManager, authorizationService, tokenGenerator);
+        http.apply(new SecurityConfigurerAdapter<>() {
+            @Override
+            public void configure(HttpSecurity builder) throws Exception {
+                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+                OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
+                OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = http.getSharedObject(OAuth2TokenGenerator.class);
+                // oauth2.0 resourceOwnerPassword authentication support
+                AuthenticationProvider authenticationProvider = new OAuth2ResourceOwnerPasswordAuthenticationProvider(authenticationManager, authorizationService, tokenGenerator);
+                http.authenticationProvider(authenticationProvider);
+            }
+        });
     }
 
 
     /**
      * 已经注册的 客户端仓库
+     *
      * @return registeredClient ..repository
      */
     @Bean
     public RegisteredClientRepository clientRepository(LightningOAuth2ClientRepository lightningOAuth2ClientRepository) {
         return new LightningRegisteredClientRepository(lightningOAuth2ClientRepository);
     }
-
-
 
 
 }

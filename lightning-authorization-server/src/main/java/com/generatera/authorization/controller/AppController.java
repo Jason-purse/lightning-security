@@ -16,13 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
  * 这里主要负责 客户端的注册管理
  */
 @RestController
-@RequestMapping("api/app/v1")
+@RequestMapping("/api/app/v1")
 public class AppController extends AbstractGenericController<AppParam, AppService> {
 
     @Autowired
     public AppController(AppService appService) {
         super(appService);
     }
-
 
 }

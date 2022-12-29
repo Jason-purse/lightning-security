@@ -48,6 +48,13 @@ spring:
         order_inserts: true
         order_updates: true
     show-sql: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: true
+    deserialization:
+      read-date-timestamps-as-nanoseconds: false
 #security:
 #  oauth2:
 #    client:

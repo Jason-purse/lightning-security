@@ -10,4 +10,6 @@ import com.jianyue.lightning.boot.starter.generic.crud.service.support.service.C
  * @Description App service
  */
 public interface AppService extends CrudService<AppParam> {
+
+
 }
