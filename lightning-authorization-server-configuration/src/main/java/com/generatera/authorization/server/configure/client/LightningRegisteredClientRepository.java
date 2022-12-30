@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.generatera.authorization.server.configure.model.entity.OAuth2ClientEntity;
 import com.generatera.authorization.server.configure.model.param.AppParam;
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.result.CrudResult;
+import com.jianyue.lightning.boot.starter.generic.crud.service.support.validates.ValidationSupport;
 import com.jianyue.lightning.boot.starter.util.dataflow.impl.InputContext;
 import com.jianyue.lightning.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,7 @@ import org.springframework.security.oauth2.server.authorization.config.Configura
 import org.springframework.security.oauth2.server.authorization.config.TokenSettings;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -82,7 +80,7 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
             clientOtherSettings.remove(ConfigurationSettingNames.Client.REQUIRE_AUTHORIZATION_CONSENT);
 
             // json 序列化
-            entity.setClientOtherSettings(JsonUtil.asJSON(clientOtherSettings));
+            entity.setClientOtherSettings(JsonUtil.getDefaultJsonUtil().asJSON(clientOtherSettings));
 
 
             // token 配置
@@ -109,7 +107,7 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
             tokenSettingsNoRequired.remove(ConfigurationSettingNames.Token.REFRESH_TOKEN_TIME_TO_LIVE);
             tokenSettingsNoRequired.remove(ConfigurationSettingNames.Token.ACCESS_TOKEN_TIME_TO_LIVE);
             tokenSettingsNoRequired.remove(ConfigurationSettingNames.Token.ID_TOKEN_SIGNATURE_ALGORITHM);
-            entity.setTokenOtherSettings(JsonUtil.asJSON(tokenSettingsNoRequired));
+            entity.setTokenOtherSettings(JsonUtil.getDefaultJsonUtil().asJSON(tokenSettingsNoRequired));
 
             return entity;
         }
@@ -179,7 +177,7 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
                     .clientSettings(
                             clientSettingsBuilder.settings(settings -> {
                                         String clientOtherSettings = source.getClientOtherSettings();
-                                        Map<String, Object> values = JsonUtil.fromJson(clientOtherSettings, new TypeReference<Map<String, Object>>() {
+                                        Map<String, Object> values = JsonUtil.getDefaultJsonUtil().fromJson(clientOtherSettings, new TypeReference<Map<String, Object>>() {
                                         });
                                         // other settings
                                         settings.putAll(values);
@@ -189,7 +187,7 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
                     .tokenSettings(
                             tokenSettingsBuilder.settings(settings -> {
                                         String clientOtherSettings = source.getTokenOtherSettings();
-                                        Map<String, Object> values = JsonUtil.fromJson(clientOtherSettings, new TypeReference<Map<String, Object>>() {
+                                        Map<String, Object> values = JsonUtil.getDefaultJsonUtil().fromJson(clientOtherSettings, new TypeReference<Map<String, Object>>() {
                                         });
                                         // other settings
                                         settings.putAll(values);
@@ -264,11 +262,17 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
     public RegisteredClient findByClientId(String clientId) {
         AppParam appParam = new AppParam();
         appParam.setClientId(clientId);
+        // select 
+        ValidationSupport.Companion.setSelectListGroup();
         CrudResult crudResult = oAuth2ClientRepository.selectOperation(InputContext.of(appParam));
-        if(crudResult.hasResult()) {
+        if(crudResult.hasResults()) {
             assert crudResult.getResult() != null;
-            return clientConverter.convert((OAuth2ClientEntity) crudResult.getResult());
+            Collection<?> result = (Collection<?>) crudResult.getResult();
+            OAuth2ClientEntity next = ((OAuth2ClientEntity) result.iterator().next());
+            ValidationSupport.Companion.removeValidationGroupAndReturnOld();
+            return clientConverter.convert(next );
         }
+        ValidationSupport.Companion.removeValidationGroupAndReturnOld();
         return null;
     }
 }

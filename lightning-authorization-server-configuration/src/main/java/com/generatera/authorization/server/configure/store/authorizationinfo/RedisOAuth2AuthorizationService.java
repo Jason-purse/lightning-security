@@ -1,5 +1,6 @@
 package com.generatera.authorization.server.configure.store.authorizationinfo;
 
+import com.jianyue.lightning.util.JsonUtil;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +28,7 @@ import static org.springframework.security.oauth2.core.OAuth2TokenType.ACCESS_TO
 @AllArgsConstructor
 public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationService {
 
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
     private final OAuth2AuthorizationProperties properties;
 
@@ -58,8 +59,6 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
         // access token
         final OAuth2AccessToken token = authorization.getAccessToken().getToken();
         final String accessTokenKey = constructKey(token.getTokenType().getValue(), token.getTokenValue());
-        redisTemplate.opsForHash()
-                .put(ACCESS_TOKEN_KEY, accessTokenKey, authorization.getAccessToken());
         entity.setAccessToken(authorization.getAccessToken());
         // but token -> id ref
         redisTemplate.opsForHash().put(ACCESS_TOKEN_KEY, accessTokenKey, authorization.getId());
@@ -96,7 +95,7 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
         // 构建 key(形成一个用户登录的唯一性约束Key)
         final String key = constructKey(authorization.getId());
         // id -> token entity
-        redisTemplate.opsForValue().set(key, entity);
+        redisTemplate.opsForValue().set(key, JsonUtil.getDefaultJsonUtil().asJSON(entity));
 
 
     }
@@ -122,7 +121,7 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
     public OAuth2Authorization findById(String id) {
         Object entity = redisTemplate.opsForValue().get(constructKey(id));
         if (entity != null) {
-            OAuth2AuthorizationEntity auth2AuthorizationEntity = (OAuth2AuthorizationEntity) entity;
+            OAuth2AuthorizationEntity auth2AuthorizationEntity = JsonUtil.getDefaultJsonUtil().fromJson(entity.toString(), OAuth2AuthorizationEntity.class);
             OAuth2Authorization.Builder builder = OAuth2Authorization.withRegisteredClient(
                             RegisteredClient.withId(auth2AuthorizationEntity.getRegisteredClientId())
                                     .build()

@@ -13,6 +13,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "lightning.auth.server.authorization.store")
 public class OAuth2AuthorizationProperties {
 
+    /**
+     * 默认使用redis
+     */
+    private StoreKind kind = StoreKind.REDIS;
+
+
     private Redis redis = new Redis();
 
     @Data
@@ -23,5 +29,12 @@ public class OAuth2AuthorizationProperties {
         private final  String DEFAULT_KEY_PREFIX = "lightning-auth-server-authorization-";
 
         private String keyPrefix = DEFAULT_KEY_PREFIX;
+    }
+
+
+    public enum  StoreKind {
+       REDIS,
+       JPA,
+       MONGO
     }
 }

@@ -7,9 +7,8 @@ import com.generatera.authorization.server.configure.store.authorizationinfo.OAu
 import com.generatera.authorization.server.configure.store.authorizationinfo.RedisOAuth2AuthorizationService;
 import com.generatera.authorization.server.configure.store.authorizationinfo.repository.OAuth2AuthorizationRepository;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -19,11 +18,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-
-import javax.sql.DataSource;
 
 /**
  * @author FLJ
@@ -71,11 +68,10 @@ public class OAuthServerComponentConfiguration {
     public static class OAuth2AuthorizationStoreConfig {
 
         @Configuration
-        @ConditionalOnClass(RedisTemplate.class)
-        @ConditionalOnBean(RedisTemplate.class)
+        @ConditionalOnProperty(prefix = "lightning.auth.server.authorization.store",name = "kind",havingValue = "REDIS",matchIfMissing = true)
         public static class RedisOAuth2AuthorizationStoreConfig {
             @Bean
-            public OAuth2AuthorizationService oAuth2AuthorizationService(RedisTemplate<Object, Object> redisTemplate,
+            public OAuth2AuthorizationService oAuth2AuthorizationService(StringRedisTemplate redisTemplate,
                                                                          OAuth2AuthorizationProperties properties) {
                 return new RedisOAuth2AuthorizationService(redisTemplate,properties);
             }
@@ -83,8 +79,7 @@ public class OAuthServerComponentConfiguration {
 
 
         @Configuration
-        @ConditionalOnClass(DataSource.class)
-        @ConditionalOnBean(DataSource.class)
+        @ConditionalOnProperty(prefix = "lightning.auth.server.authorization.store",name = "kind",havingValue = "JPA")
         @EnableJpaRepositories(basePackages = "com.generatera.authorization.server.configure.store.authorizationinfo.repository")
         public static class JpaOAuth2AuthorizationStoreConfig {
 
@@ -95,8 +90,7 @@ public class OAuthServerComponentConfiguration {
         }
 
         @Configuration
-        @ConditionalOnClass(MongoTemplate.class)
-        @ConditionalOnBean(MongoTemplate.class)
+        @ConditionalOnProperty(prefix = "lightning.auth.server.authorization.store",name = "kind",havingValue = "MONGO")
         public static class MongoOAuth2AuthorizationStoreConfig {
             @Bean
             public OAuth2AuthorizationService oAuth2AuthorizationService(MongoTemplate mongoTemplate) {

@@ -13,6 +13,7 @@ import com.jianyue.lightning.boot.starter.util.isNotNull
 import com.jianyue.lightning.framework.generic.crud.abstracted.param.Param
 import com.jianyue.lightning.util.JsonUtil
 import com.safone.order.service.model.order.verification.support.converters.QueryConverter
+import org.springframework.beans.factory.annotation.Autowired
 import java.lang.reflect.Type
 
 /**
@@ -37,6 +38,9 @@ interface AppQueryHandler : QueryConverter<AppParam> {
 
 class DefaultAppQueryHandler : DefaultJpaValidationSupportForQueryAdapter<AppParam>, AppQueryHandler {
 
+    @Autowired
+    private lateinit var paramConverter: AppParamConverter;
+
     override fun addGroupHandle(s: AppParam): QuerySupport {
 
         return DefaultJpaQuery(
@@ -60,9 +64,9 @@ class DefaultAppQueryHandler : DefaultJpaValidationSupportForQueryAdapter<AppPar
         )
     }
 
-    override fun selectListGroupHandle(s: AppParam?): QuerySupport {
+    override fun selectListGroupHandle(s: AppParam): QuerySupport {
         return DefaultJpaQuery(
-            JpaQueryInfo(OAuth2ClientEntity())
+            JpaQueryInfo(paramConverter.convertToEntity(s))
         )
     }
 

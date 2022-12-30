@@ -1,5 +1,8 @@
 package com.generatera.authorization.server.configure.store.authorizationinfo;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.generatera.authorization.server.configure.store.authorizationinfo.jackson.deserializer.AuthorizationGrantTypeDeserializer;
+import com.generatera.authorization.server.configure.store.authorizationinfo.jackson.deserializer.OAuth2AuthorizationTokenDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +28,11 @@ import java.util.Map;
 @Builder
 public class OAuth2AuthorizationEntity implements Serializable {
 
+    public static final String ACCESS_TOKEN_FIELD_NAME = "accessToken";
+    public static final String REFRESH_TOKEN_FIELD_NAME = "refreshToken";
+    public static final String OIDC_TOKEN_FIELD_NAME = "oidcToken";
+    public static final String AUTHORIZATION_CODE_TOKEN_FIELD_NAME = "authorizationCodeToken";
+
     /**
      * id
      */
@@ -41,18 +49,23 @@ public class OAuth2AuthorizationEntity implements Serializable {
     /**
      * 授权授予类型
      */
+    @JsonDeserialize(using = AuthorizationGrantTypeDeserializer.class)
     private AuthorizationGrantType authorizationGrantType;
 
 
+    @JsonDeserialize(using = OAuth2AuthorizationTokenDeserializer.class)
     private OAuth2Authorization.Token<OAuth2AccessToken> accessToken;
 
     @Nullable
+    @JsonDeserialize(using = OAuth2AuthorizationTokenDeserializer.class)
     private OAuth2Authorization.Token<OAuth2RefreshToken> refreshToken;
 
     @Nullable
+    @JsonDeserialize(using = OAuth2AuthorizationTokenDeserializer.class)
     private OAuth2Authorization.Token<?> oidcToken;
 
     @Nullable
+    @JsonDeserialize(using = OAuth2AuthorizationTokenDeserializer.class)
     private OAuth2Authorization.Token<?> authorizationCodeToken;
 
     /**
