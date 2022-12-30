@@ -42,7 +42,7 @@ public class OAuth2AuthorizationEntityDeserializer extends StdDeserializer<OAuth
         JsonNode accessToken = jsonNode.get("accessToken");
         JsonNode token = accessToken.get("token");
         JsonNode access_metadata = accessToken.get("metadata");
-        JavaType javaType = JsonUtil.createJavaType(Map.class, String.class, Object.class);
+        JavaType javaType = JsonUtil.getDefaultJsonUtil().createJavaType(Map.class, String.class, Object.class);
         Map<String, Object> metaMap = deserializationContext.readTreeAsValue(access_metadata, javaType);
         // 访问token不为空
         OAuth2AccessToken oAuth2AccessToken = deserializationContext.readTreeAsValue(token, OAuth2AccessToken.class);

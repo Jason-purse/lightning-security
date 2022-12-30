@@ -109,10 +109,10 @@ class AppParamConverter : EntityConverter<AppParam, OAuth2ClientEntity> {
                 scopes = param.scopes.joinToString()
             }
             if (param.tokenOtherSettings.isNotNull()) {
-                tokenOtherSettings = JsonUtil.asJSON(param.tokenOtherSettings)
+                tokenOtherSettings = JsonUtil.getDefaultJsonUtil().asJSON(param.tokenOtherSettings)
             }
             if (param.clientOtherSettings.isNotNull()) {
-                clientOtherSettings = JsonUtil.asJSON(param.clientOtherSettings)
+                clientOtherSettings = JsonUtil.getDefaultJsonUtil().asJSON(param.clientOtherSettings)
             }
             if (param.accessTokenFormat.isNotNull()) {
                 accessTokenFormat = param.accessTokenFormat.value
