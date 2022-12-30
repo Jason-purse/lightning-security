@@ -17,7 +17,7 @@ import java.time.Instant;
  */
 @Entity
 @Table(name = "oauth2_authorization")
-public class OAuth2AuthorizationEntity implements Serializable {
+public class JpaOAuth2AuthorizationEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 

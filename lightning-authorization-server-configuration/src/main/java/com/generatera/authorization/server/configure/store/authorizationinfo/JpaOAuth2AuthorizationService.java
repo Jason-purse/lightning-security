@@ -3,7 +3,7 @@ package com.generatera.authorization.server.configure.store.authorizationinfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.generatera.authorization.server.configure.model.entity.OAuth2AuthorizationEntity;
+import com.generatera.authorization.server.configure.model.entity.JpaOAuth2AuthorizationEntity;
 import com.generatera.authorization.server.configure.model.ext.AuditDeletedDate;
 import com.generatera.authorization.server.configure.model.ext.UserAuthority;
 import com.generatera.authorization.server.configure.model.ext.UserPrincipal;
@@ -87,7 +87,7 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
 	public OAuth2Authorization findByToken(String token, OAuth2TokenType tokenType) {
 		Assert.hasText(token, "token cannot be empty");
 
-		Optional<OAuth2AuthorizationEntity> result;
+		Optional<JpaOAuth2AuthorizationEntity> result;
 		if (tokenType == null) {
 			result = this.oauth2AuthorizationRepository.findByStateOrAuthorizationCodeValueOrAccessTokenValueOrRefreshTokenValue(token);
 		} else if (OAuth2ParameterNames.STATE.equals(tokenType.getValue())) {
@@ -105,7 +105,7 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
 		return result.map(this::toObject).orElse(null);
 	}
 	
-	private OAuth2Authorization toObject(OAuth2AuthorizationEntity entity) {
+	private OAuth2Authorization toObject(JpaOAuth2AuthorizationEntity entity) {
 		RegisteredClient registeredClient = this.registeredClientRepository.findById(entity.getRegisteredClientId());
 		if (registeredClient == null) {
 			throw new DataRetrievalFailureException(
@@ -160,8 +160,8 @@ public class JpaOAuth2AuthorizationService implements OAuth2AuthorizationService
 		return builder.build();
 	}
 	
-	private OAuth2AuthorizationEntity toEntity(OAuth2Authorization authorization) {
-		OAuth2AuthorizationEntity entity = new OAuth2AuthorizationEntity();
+	private JpaOAuth2AuthorizationEntity toEntity(OAuth2Authorization authorization) {
+		JpaOAuth2AuthorizationEntity entity = new JpaOAuth2AuthorizationEntity();
 		entity.setId(authorization.getId());
 		entity.setRegisteredClientId(authorization.getRegisteredClientId());
 		entity.setPrincipalName(authorization.getPrincipalName());

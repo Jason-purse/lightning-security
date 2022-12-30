@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static com.generatera.authorization.server.configure.store.authorizationinfo.OAuth2AuthorizationEntity.*;
+import static com.generatera.authorization.server.configure.model.entity.RedisOAuth2AuthorizationEntity.*;
 
 /**
  * @author FLJ

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
-import com.generatera.authorization.server.configure.store.authorizationinfo.OAuth2AuthorizationEntity;
+import com.generatera.authorization.server.configure.model.entity.RedisOAuth2AuthorizationEntity;
 import com.jianyue.lightning.util.JsonUtil;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +26,7 @@ public class jacksonTests {
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS,true);
         objectMapper.configure(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS,false);
 
-        OAuth2AuthorizationEntity oAuth2AuthorizationEntity = objectMapper.readValue(json, OAuth2AuthorizationEntity.class);
+        RedisOAuth2AuthorizationEntity oAuth2AuthorizationEntity = objectMapper.readValue(json, RedisOAuth2AuthorizationEntity.class);
 
         System.out.println(oAuth2AuthorizationEntity);
     }

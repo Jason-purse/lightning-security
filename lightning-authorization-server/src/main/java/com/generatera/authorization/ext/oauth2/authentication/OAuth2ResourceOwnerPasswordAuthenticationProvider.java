@@ -1,5 +1,6 @@
 package com.generatera.authorization.ext.oauth2.authentication;
 
+import com.jianyue.lightning.boot.starter.util.SnowflakeIdWorker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,6 +40,9 @@ import java.util.stream.Collectors;
  * 虽然此种方式直接使用资源拥有者的凭证进行访问，但是仅仅在单词请求中用于交换访问token,这种授予类型能够减少客户端对
  * 资源拥有者凭证的存储(例如为了保留后续使用),应该通过交换一个长期访问token 或者刷新token ..
  *
+ *
+ * 并且这会合理的产生 refresh token / access token / oidc token(scope中包含了openid)
+ *
  * <a href="https://www.rfc-editor.org/rfc/rfc6749#section-1.3.3">Resource Owner Password Credentials</a>
  */
 public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements AuthenticationProvider {
@@ -50,6 +54,10 @@ public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements Authen
     private final AuthenticationManager authenticationManager;
     private final OAuth2AuthorizationService authorizationService;
     private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
+    // TODO: 2022/12/30  默认应该基于分布式系统的雪花算法进行唯一性id 处理 ..
+    // 但是目前先以单台worker,单个授权服务器的形式进行处理 ..
+    private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+
 
     /**
      * Constructs an {@code OAuth2ResourceOwnerPasswordAuthenticationProviderNew} using the provided parameters.
@@ -198,6 +206,8 @@ public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements Authen
             idToken = null;
         }
 
+        // 使用雪花算法保证永远不重复
+        authorizationBuilder.id(snowflakeIdWorker.nextId());
         OAuth2Authorization authorization = authorizationBuilder.build();
 
         this.authorizationService.save(authorization);

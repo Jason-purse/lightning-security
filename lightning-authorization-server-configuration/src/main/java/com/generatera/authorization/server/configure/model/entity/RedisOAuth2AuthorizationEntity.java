@@ -1,4 +1,4 @@
-package com.generatera.authorization.server.configure.store.authorizationinfo;
+package com.generatera.authorization.server.configure.model.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.generatera.authorization.server.configure.store.authorizationinfo.jackson.deserializer.AuthorizationGrantTypeDeserializer;
@@ -26,7 +26,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OAuth2AuthorizationEntity implements Serializable {
+public class RedisOAuth2AuthorizationEntity implements Serializable {
 
     public static final String ACCESS_TOKEN_FIELD_NAME = "accessToken";
     public static final String REFRESH_TOKEN_FIELD_NAME = "refreshToken";
