@@ -1,10 +1,14 @@
 package com.generatera.authorization.service.impl;
 
+import com.generatera.authorization.oauth2.entity.OAuth2UserEntity;
+import com.generatera.authorization.oauth2.repository.OAuth2UserRepository;
 import com.generatera.authorization.repository.UserPrincipalRepository;
 import com.generatera.authorization.server.configure.model.ext.UserPrincipal;
 import com.generatera.authorization.service.UserPrincipalService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 /**
  * Services are the next layer above repositories. Services encapsulate the business logic of the application and consume other
@@ -36,12 +40,15 @@ public class UserPrincipalServiceImpl implements UserPrincipalService {
 
     private final UserPrincipalRepository userPrincipalRepository;
 
+	private final OAuth2UserRepository oAuth2UserRepository;
+
     /**
 	 * The constructor is annotated with @Autowired, meaning that it injects the UserPrincipalRepository<UserPrincipal>
 	 * implementation. This annotation can be omitted; Spring automatically injects any declared dependency since version 4.3.
 	 */
-	public UserPrincipalServiceImpl(UserPrincipalRepository userPrincipalRepository) {
+	public UserPrincipalServiceImpl(UserPrincipalRepository userPrincipalRepository, OAuth2UserRepository oAuth2UserRepository) {
 		this.userPrincipalRepository = userPrincipalRepository;
+		this.oAuth2UserRepository = oAuth2UserRepository;
 	}
 
 	/**
@@ -57,14 +64,12 @@ public class UserPrincipalServiceImpl implements UserPrincipalService {
    	 */
     @Override
     @Transactional
-    public UserPrincipal loadUserByUsername(String username) {
+    public OAuth2UserEntity loadUserByUsername(String username) {
 
-    	UserPrincipal principal = userPrincipalRepository.getByUsername(username);
-
-    	// make sure the authorities and password are loaded
-        principal.getAuthorities().size();
-        principal.getPassword();
-        return principal;
+//    	UserPrincipal principal = userPrincipalRepository.getByUsername(username);
+		Optional<OAuth2UserEntity> optional = oAuth2UserRepository.findByUsernameAndDeletedIsFalse(username);
+		// make sure the authorities and password are loaded
+		return optional.orElse(null);
     }
 
 }

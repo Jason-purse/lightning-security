@@ -1,6 +1,7 @@
 package com.generatera.authorization.ext.oauth2.customizer.jwt.impl;
 
 import com.generatera.authorization.ext.oauth2.customizer.jwt.JwtCustomizerHandler;
+import com.generatera.authorization.oauth2.entity.OAuth2UserEntity;
 import com.generatera.authorization.server.configure.model.ext.UserPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,7 +26,7 @@ public class UsernamePasswordAuthenticationTokenJwtCustomizerHandler extends Abs
 	protected void customizeJwt(JwtEncodingContext jwtEncodingContext) {
 		
 		Authentication authentication = jwtEncodingContext.getPrincipal();
-		UserPrincipal userPrincipal = (UserPrincipal)authentication.getPrincipal();
+		OAuth2UserEntity userPrincipal = (OAuth2UserEntity)authentication.getPrincipal();
 		Long userId = userPrincipal.getId();
 		Set<String> authorities = userPrincipal.getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
