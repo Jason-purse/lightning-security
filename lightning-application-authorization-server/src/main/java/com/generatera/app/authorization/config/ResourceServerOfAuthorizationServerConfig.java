@@ -21,20 +21,36 @@ import java.util.function.Function;
  * @author FLJ
  * @date 2022/12/27
  * @time 11:18
- * @Description 资源服务器配置
+ * @Description 作为中心授权服务器的 资源服务器配置
+ * <p>
+ * <p>
+ * 采用根据授权服务器的 provider settings metadata 元数据端点请求 jwk set url 进一步配置自己 ..
  */
 @Configuration
-public class ResourceServerConfig {
+public class ResourceServerOfAuthorizationServerConfig {
 
     @Bean
     public SecurityFilterChain httpSecurity(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity.authorizeHttpRequests()
-                .antMatchers("/api/*")
+        return httpSecurity
+                .oauth2Login()
+                .authorizationEndpoint()
+                .and()
+                .and()
+                .requestMatchers()
+                .antMatchers("/auth/v1/**")
+                .and()
+                .authorizeHttpRequests()
+                // 登录相关的
+                .antMatchers("/auth/v1/login/**")
                 .permitAll()
                 .and()
                 .build();
     }
 
+
+
+    // 需要一个授权管理器,向中心授权服务器 进行授权请求
+    // 自定义的
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,
@@ -42,6 +58,8 @@ public class ResourceServerConfig {
 
         OAuth2AuthorizedClientProvider authorizedClientProvider =
                 OAuth2AuthorizedClientProviderBuilder.builder()
+                        .authorizationCode()
+                        .clientCredentials()
                         .password()
                         .refreshToken()
                         .build();

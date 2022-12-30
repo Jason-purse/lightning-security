@@ -7,7 +7,8 @@ spring:
           issuer-uri: http://localhost:9000
       client:
         registration:
-          generatera:
+          default:
+            provider: generatera
             client-id: password-client-id
             client-secret: secret3
             client-name: password-client-name
