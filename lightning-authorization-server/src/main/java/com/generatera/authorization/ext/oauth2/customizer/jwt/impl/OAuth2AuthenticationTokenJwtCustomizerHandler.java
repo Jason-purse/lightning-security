@@ -14,68 +14,65 @@ import java.util.*;
 
 public class OAuth2AuthenticationTokenJwtCustomizerHandler extends AbstractJwtCustomizerHandler {
 
-	private final Set<String> ID_TOKEN_CLAIMS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-			IdTokenClaimNames.ISS, 
-			IdTokenClaimNames.SUB,
-			IdTokenClaimNames.AUD, 
-			IdTokenClaimNames.EXP, 
-			IdTokenClaimNames.IAT, 
-			IdTokenClaimNames.AUTH_TIME,
-			IdTokenClaimNames.NONCE, 
-			IdTokenClaimNames.ACR, 
-			IdTokenClaimNames.AMR, 
-			IdTokenClaimNames.AZP,
-			IdTokenClaimNames.AT_HASH, 
-			IdTokenClaimNames.C_HASH
-		)));
-	
-	public OAuth2AuthenticationTokenJwtCustomizerHandler(JwtCustomizerHandler jwtCustomizerHandler) {
-		super(jwtCustomizerHandler);
-	}
+    private final Set<String> ID_TOKEN_CLAIMS = Set.of(
+            IdTokenClaimNames.ISS,
+            IdTokenClaimNames.SUB,
+            IdTokenClaimNames.AUD,
+            IdTokenClaimNames.EXP,
+            IdTokenClaimNames.IAT,
+            IdTokenClaimNames.AUTH_TIME,
+            IdTokenClaimNames.NONCE,
+            IdTokenClaimNames.ACR,
+            IdTokenClaimNames.AMR,
+            IdTokenClaimNames.AZP,
+            IdTokenClaimNames.AT_HASH,
+            IdTokenClaimNames.C_HASH);
 
-	@Override
-	protected void customizeJwt(JwtEncodingContext jwtEncodingContext) {
-		
-		Authentication authentication = jwtEncodingContext.getPrincipal();
-		
-		Map<String, Object> thirdPartyClaims = extractClaims(authentication);
-		
-		JwtClaimsSet.Builder jwtClaimSetBuilder = jwtEncodingContext.getClaims();
-		
-		jwtClaimSetBuilder.claims(existingClaims -> {
+    public OAuth2AuthenticationTokenJwtCustomizerHandler(JwtCustomizerHandler jwtCustomizerHandler) {
+        super(jwtCustomizerHandler);
+    }
 
-			// Remove conflicting claims set by this authorization server
-			existingClaims.keySet().forEach(thirdPartyClaims::remove);
+    @Override
+    protected void customizeJwt(JwtEncodingContext jwtEncodingContext) {
 
-			// Remove standard id_token claims that could cause problems with clients
-			ID_TOKEN_CLAIMS.forEach(thirdPartyClaims::remove);
+        Authentication authentication = jwtEncodingContext.getPrincipal();
 
-			// Add all other claims directly to id_token
-			existingClaims.putAll(thirdPartyClaims);
-		});
-		
-	}
-	
-	private Map<String, Object> extractClaims(Authentication authentication) {
-		Map<String, Object> claims;
-		Object principalObj = authentication.getPrincipal();
-		if (principalObj instanceof OidcUser) {
-			OidcUser oidcUser = (OidcUser) principalObj;
-			OidcIdToken idToken = oidcUser.getIdToken();
-			claims = idToken.getClaims();
-		} else if (principalObj instanceof OAuth2User) {
-			OAuth2User oauth2User = (OAuth2User) principalObj;
-			claims = oauth2User.getAttributes();
-		} else {
-			claims = Collections.emptyMap();
-		}
+        Map<String, Object> thirdPartyClaims = extractClaims(authentication);
 
-		return new HashMap<>(claims);
-	}
+        JwtClaimsSet.Builder jwtClaimSetBuilder = jwtEncodingContext.getClaims();
 
-	@Override
-	protected boolean supportCustomizeContext(Authentication authentication) {
-		return authentication != null && authentication instanceof OAuth2AuthenticationToken;
-	}
-	
+        jwtClaimSetBuilder.claims(existingClaims -> {
+
+            // Remove conflicting claims set by this authorization server
+            existingClaims.keySet().forEach(thirdPartyClaims::remove);
+
+            // Remove standard id_token claims that could cause problems with clients
+            ID_TOKEN_CLAIMS.forEach(thirdPartyClaims::remove);
+
+            // Add all other claims directly to id_token
+            existingClaims.putAll(thirdPartyClaims);
+        });
+
+    }
+
+    private Map<String, Object> extractClaims(Authentication authentication) {
+        Map<String, Object> claims;
+        Object principalObj = authentication.getPrincipal();
+        if (principalObj instanceof OidcUser oidcUser) {
+            OidcIdToken idToken = oidcUser.getIdToken();
+            claims = idToken.getClaims();
+        } else if (principalObj instanceof OAuth2User oauth2User) {
+            claims = oauth2User.getAttributes();
+        } else {
+            claims = Collections.emptyMap();
+        }
+
+        return new HashMap<>(claims);
+    }
+
+    @Override
+    protected boolean supportCustomizeContext(Authentication authentication) {
+        return authentication != null && authentication instanceof OAuth2AuthenticationToken;
+    }
+
 }

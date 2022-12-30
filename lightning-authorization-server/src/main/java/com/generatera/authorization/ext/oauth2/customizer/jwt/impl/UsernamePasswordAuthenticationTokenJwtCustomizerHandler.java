@@ -2,7 +2,6 @@ package com.generatera.authorization.ext.oauth2.customizer.jwt.impl;
 
 import com.generatera.authorization.ext.oauth2.customizer.jwt.JwtCustomizerHandler;
 import com.generatera.authorization.oauth2.entity.OAuth2UserEntity;
-import com.generatera.authorization.server.configure.model.ext.UserPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -11,6 +10,7 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -33,15 +33,18 @@ public class UsernamePasswordAuthenticationTokenJwtCustomizerHandler extends Abs
 				.collect(Collectors.toSet());
 		
 		Map<String, Object> userAttributes = new HashMap<>();
-		userAttributes.put("userId", userId);
-		userAttributes.put("authorities", authorities); // 自定义权限集合
+
+		// 自定义jwt 加入 openid
+		userAttributes.put("openid",userPrincipal.getOpenId());
+		//userAttributes.put("userId", userId);
+		//userAttributes.put("authorities", authorities); // 自定义权限集合
 		
 		Set<String> contextAuthorizedScopes = jwtEncodingContext.getAuthorizedScopes();
 		
 		JwtClaimsSet.Builder jwtClaimSetBuilder = jwtEncodingContext.getClaims();
 		
 		if (CollectionUtils.isEmpty(contextAuthorizedScopes)) {
-			jwtClaimSetBuilder.claim(OAuth2ParameterNames.SCOPE, authorities);
+			jwtClaimSetBuilder.claim(OAuth2ParameterNames.SCOPE, Collections.emptyList());
 //			jwtClaimSetBuilder.claim("authorities", authorities);
 		}
 		
