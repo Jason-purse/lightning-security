@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <modules>
-        <module>lightning-authorization-server</module>
-        <module>lightning-application-authorization-server</module>
-        <module>lightning-authorization-server-configuration</module>
+        <module>lightning-application-authorization-security</module>
+        <module>lightning-central-authorization-security</module>
+        <module>lightning-security-tests</module>
     </modules>
 
     <groupId>com.generatera</groupId>
@@ -27,6 +27,13 @@
                 <groupId>com.jianyue</groupId>
                 <artifactId>lightning-boot-dependencies</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-bom</artifactId>
+                <version>${kotlin.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
