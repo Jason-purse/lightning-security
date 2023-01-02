@@ -1,0 +1,18 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          generatera:
+            client-id: password-client-id
+            client-name: password-client-name
+            client-secret: secret3
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            scope:
+              - openid
+            redirect-uri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            provider: generatera
+        provider:
+          generatera:
+            issuer-uri: http://localhost:9090

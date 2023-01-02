@@ -8,11 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
-@Configuration
 public class ApplicationAuthorizedClientConfiguration {
 
-    @Configuration
-    @ConditionalOnProperty(prefix = "lightning.auth.app.server.oauth2.login.config",name = "authorized-client-store-kind",value = "JPA")
     @EnableJpaRepositories(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.client")
     public static class JpaAuthorizedClientConfiguration {
 
@@ -25,8 +22,6 @@ public class ApplicationAuthorizedClientConfiguration {
 
     }
 
-    @Configuration
-    @ConditionalOnProperty(prefix = "lightning.auth.app.server.oauth2.login.config",name = "authorized-client-store-kind",value = "MONGO")
     public static class MongoAuthorizedClientConfiguration {
         @Bean
         public LightningOAuthorizedClientService lightningOAuthorizedClientService(MongoTemplate mongoTemplate) {

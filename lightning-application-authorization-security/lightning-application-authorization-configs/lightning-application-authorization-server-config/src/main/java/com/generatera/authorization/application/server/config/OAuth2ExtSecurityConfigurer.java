@@ -15,7 +15,7 @@ import java.util.List;
  * 实现 oauth2 login 扩展
  */
 @Slf4j
-public class OAuth2ExtSecurityConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
+public class OAuth2ExtSecurityConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>  {
 
 
 
@@ -33,33 +33,52 @@ public class OAuth2ExtSecurityConfigurer extends SecurityConfigurerAdapter<Defau
     public void init(HttpSecurity builder) throws Exception {
 
         if(properties.formLogin.isEnable()) {
-            log.info("The current Form login is enabled !!!");
-            FormLoginConfigurer<HttpSecurity> formLoginConfigurer = builder.formLogin();
             if(ObjectUtils.isNotEmpty(configurers)) {
                 List<LightningAppAuthServerConfigurer> collect = configurers.stream()
                         .filter(ele -> ele instanceof LightningFormLoginConfigurer).toList();
-                for (LightningAppAuthServerConfigurer lightningAppAuthServerConfigurer : collect) {
-                    lightningAppAuthServerConfigurer.configure(formLoginConfigurer);
+
+                if(collect.size() > 0) {
+                    FormLoginConfigurer<HttpSecurity> formLoginConfigurer = builder.formLogin();
+                    for (LightningAppAuthServerConfigurer lightningAppAuthServerConfigurer : collect) {
+                        lightningAppAuthServerConfigurer.configure(formLoginConfigurer);
+                    }
+                    log.info("The current Form login is enabled !!!");
                 }
+                else {
+                    log.info("The current Form login is disabled. Although Form login has been enabled,because no dependencies exists !!!");
+                }
+
             }
+        }
+        else {
+            log.info("The current Form login is disabled.");
         }
 
         if(properties.oauth2Login.isEnable()) {
-            log.info("The current OAUth2 login is enabled!!!");
-            // oauth2 Login 在这里处理 ..
-            OAuth2LoginConfigurer<HttpSecurity> auth2LoginConfigurer = builder.oauth2Login();
             List<LightningAppAuthServerConfigurer> collect = configurers.stream()
                     .filter(ele -> ele instanceof LightningOAuth2LoginConfigurer)
                     .toList();
-
-            for (LightningAppAuthServerConfigurer lightningAppAuthServerConfigurer : collect) {
-                lightningAppAuthServerConfigurer.configure(auth2LoginConfigurer);
+            if(collect.size() > 0) {
+                // oauth2 Login 在这里处理 ..
+                OAuth2LoginConfigurer<HttpSecurity> auth2LoginConfigurer = builder.oauth2Login();
+                for (LightningAppAuthServerConfigurer lightningAppAuthServerConfigurer : collect) {
+                    lightningAppAuthServerConfigurer.configure(auth2LoginConfigurer);
+                }
+                log.info("The current OAUth2 login is enabled!!!");
+            }else {
+                log.info("The current OAuth2 login is disabled. Although Oauth2 login has been enabled,because no dependencies exists !!!");
             }
+        }
+        else {
+            log.info("The current OAuth2 login is disabled .");
         }
 
         if(properties.lcdpLogin.isEnable()) {
             // lcdp
             log.info("Lcdp login is not  currently supported  !!!");
+        }
+        else {
+            log.info("Lcdp login is not currently supported !!!");
         }
 
     }

@@ -5,21 +5,28 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.generatera</groupId>
-        <artifactId>lightning-security-tests</artifactId>
+        <artifactId>lightning-application-authorization-security-tests</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>lightning-application-authorization-security-tests</artifactId>
+    <artifactId>lightning-application-authorization-oauth2-login-security-test</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <packaging>pom</packaging>
-    <modules>
-        <module>lightning-application-authorization-form-login-security-test</module>
-        <module>lightning-application-authorization-oauth2-login-security-test</module>
-    </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.generatera</groupId>
+            <artifactId>lightning-application-authorization-oauth2-login-config</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jianyue</groupId>
+            <artifactId>lightning-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

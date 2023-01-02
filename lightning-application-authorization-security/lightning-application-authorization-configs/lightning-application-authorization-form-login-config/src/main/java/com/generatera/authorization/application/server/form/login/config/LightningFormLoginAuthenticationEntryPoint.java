@@ -27,6 +27,8 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
     // ----- 如果需要后端 国际化消息响应  ----------
     private String loginSuccessMessage = "LOGIN_SUCCESS";
 
+    private String loginFailureMessage = "";
+
     private String badCredentialsMessage = "";
 
     private String accountStatusExpiredMessage = "";
@@ -50,21 +52,21 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
 
         Result<?> result = null;
 
-        // 坏的凭证信息
-        if (exception instanceof BadCredentialsException) {
+        if(enableAccountStatusInform) {
+            // 坏的凭证信息
+            if (exception instanceof BadCredentialsException) {
 
-            if(StringUtils.hasText(badCredentialsMessage)) {
-                result = Result.error(ApplicationAuthException.badCredentialsException().getCode(), badCredentialsMessage);
+                if(StringUtils.hasText(badCredentialsMessage)) {
+                    result = Result.error(ApplicationAuthException.badCredentialsException().getCode(), badCredentialsMessage);
+                }
+                else {
+                    result = ApplicationAuthException.badCredentialsException().asResult();
+                }
             }
-            else {
-                result = ApplicationAuthException.badCredentialsException().asResult();
-            }
-        }
 
-        // 状态异常
-        else if(exception instanceof AccountStatusException) {
+            // 状态异常
+            else if(exception instanceof AccountStatusException) {
 
-            if(enableAccountStatusInform) {
                 if(exception instanceof AccountExpiredException) {
 
                     if(StringUtils.hasText(accountStatusExpiredMessage)) {
@@ -79,34 +81,42 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
                 }
                 else if(exception instanceof LockedException || exception instanceof DisabledException) {
                     if(StringUtils.hasText(accountStatusLockedMessage)) {
-                       result =  Result.error(
-                               ApplicationAuthException.accountLockedException().getCode(),
-                               accountStatusLockedMessage
-                       );
+                        result =  Result.error(
+                                ApplicationAuthException.accountLockedException().getCode(),
+                                accountStatusLockedMessage
+                        );
                     }
                     else {
                         result = ApplicationAuthException.accountLockedException().asResult();
                     }
                 }
+
+                // 无法区分的账户状态异常 ..
+                if(result == null) {
+
+                    if(StringUtils.hasText(accountStatusMessage)) {
+                        result = Result.error(ApplicationAuthException.accountStatusException().getCode(),
+                                accountStatusMessage);
+                    }
+                    else {
+                        result = ApplicationAuthException.accountStatusException().asResult();
+                    }
+                }
             }
-
-            // 无法区分的账户状态异常 ..
-            if(result == null) {
-
-                if(StringUtils.hasText(accountStatusMessage)) {
-                    result = Result.error(ApplicationAuthException.accountStatusException().getCode(),
-                            accountStatusMessage);
-                }
-                else {
-                    result = ApplicationAuthException.accountStatusException().asResult();
-                }
+            // 其他状态异常 ..
+            else {
+                result = ApplicationAuthException.authOtherException().asResult();
             }
         }
-
-        // 其他状态异常 ..
         else {
-            result = ApplicationAuthException.authOtherException().asResult();
+            if(StringUtils.hasText(loginFailureMessage)) {
+                result = Result.error(ApplicationAuthException.auth2AuthenticationException().getCode(),loginFailureMessage);
+            }
+            else {
+                result = ApplicationAuthException.auth2AuthenticationException().asResult();
+            }
         }
+
 
         AuthHttpResponseUtil.commence(response,
                 JsonUtil.of().asJSON(result)

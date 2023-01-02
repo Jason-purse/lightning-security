@@ -1,1 +1,28 @@
-lightning
+lightning:
+  auth:
+    app:
+      server:
+        form:
+          login:
+            config:
+              is-separation: false
+              backend-separation:
+                login-success-message: "登陆成功了呀，亲!"
+                login-failure-message: "登陆失败了呀，亲!"
+                enable-account-status-inform: true
+                bad-credential-message: "请检查账户密码呀，亲!"
+
+#              no-separation:
+#                success-forward-url: /login.html
+#                failure-forward-url: /failure.html
+#        config:
+#          form-login:
+#            enable: false
+
+server:
+  port: 8080
+
+spring:
+  security:
+    user:
+      password: 123456

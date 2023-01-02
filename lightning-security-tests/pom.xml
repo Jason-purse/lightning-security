@@ -14,9 +14,6 @@
     <modules>
         <module>lightning-application-authorization-security-tests</module>
         <module>lightning-central-authorization-security-tests</module>
-        <module>
-            lightning-application-authorization-security-tests/lightning-application-authorization-form-login-security-test
-        </module>
     </modules>
 
     <properties>

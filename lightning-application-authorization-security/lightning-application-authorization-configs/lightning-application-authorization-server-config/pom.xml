@@ -22,7 +22,8 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-
+<!--        Provides transitive vulnerable dependency maven:org.springframework.security:spring-security-core:5.7.4-->
+<!--        CVE-2022-31692 9.8 Incorrect Authorization vulnerability with high severity found-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>

@@ -10,17 +10,18 @@ import java.util.List;
 /**
  * 应用级别的 认证属性
  */
+@Data
 @ConfigurationProperties(prefix = "lightning.auth.app.server.config")
 public class ApplicationAuthServerProperties {
 
-    public AuthKind formLogin = AuthKind.enable();
+    public final AuthKind formLogin = AuthKind.enable();
 
-    public AuthKind oauth2Login = AuthKind.disable();
+    public final AuthKind oauth2Login = AuthKind.enable();
 
-    public AuthKind lcdpLogin = AuthKind.disable();
+    public final AuthKind lcdpLogin = AuthKind.enable();
 
 
-    public Permission permission = new Permission();
+    public final Permission permission = new Permission();
 
 
 
@@ -34,12 +35,12 @@ public class ApplicationAuthServerProperties {
         @Setter
         private Boolean enable = false;
 
-        public  static AuthKind enable() {
-            return new AuthKind(true);
+        public static AuthKind enable() {
+            return new AuthKind(Boolean.TRUE);
         }
 
         public static AuthKind disable() {
-            return new AuthKind(false);
+            return new AuthKind(Boolean.FALSE);
         }
 
         public AuthKind(Boolean enable) {

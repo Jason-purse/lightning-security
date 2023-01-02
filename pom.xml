@@ -68,14 +68,19 @@
     </repositories>
     <pluginRepositories>
         <pluginRepository>
+            <id>aliyun-plugin</id>
+            <url>https://maven.aliyun.com/repository/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
             <id>sf-snapshot-repository</id>
             <name>Snapshot Repository</name>
             <url>http://nexus.safone.ltd:8081/repository/maven-public/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>nexus-aliyun</id>
-            <name>Nexus aliyun</name>
-            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
         </pluginRepository>
         <pluginRepository>
             <id>spring-milestones</id>

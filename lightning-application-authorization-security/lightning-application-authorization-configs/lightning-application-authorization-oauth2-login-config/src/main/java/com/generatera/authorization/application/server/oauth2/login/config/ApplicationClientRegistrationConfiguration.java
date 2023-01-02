@@ -13,11 +13,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 /**
  * in memory 形式 spring 自动注入 ...
  */
-@Configuration
 public class ApplicationClientRegistrationConfiguration {
 
-    @Configuration
-    @ConditionalOnProperty(prefix = "lightning.auth.app.server.oauth2.login.config",name = "client-registration-store-kind",value = "MONGO")
     public static class MongoClientRegistrationConfiguration {
 
         @Bean
@@ -26,8 +23,6 @@ public class ApplicationClientRegistrationConfiguration {
         }
     }
 
-    @Configuration
-    @ConditionalOnProperty(prefix = "lightning.auth.app.server.oauth2.login.config",name = "client-registration-store-kind",value = "JPA")
     @EnableJpaRepositories(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.client")
     public static class JPAClientRegistrationConfiguration {
 
