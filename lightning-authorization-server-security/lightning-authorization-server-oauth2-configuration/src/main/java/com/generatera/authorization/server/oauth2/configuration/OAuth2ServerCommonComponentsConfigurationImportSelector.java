@@ -25,8 +25,6 @@ public class OAuth2ServerCommonComponentsConfigurationImportSelector extends Pro
     @Override
     public String[] selectImports(@NotNull AnnotationMetadata importingClassMetadata) {
 
-
-
         AuthorizationServerOAuth2CommonComponentsProperties properties = getProperties();
         List<String> candidates = new LinkedList<>();
         if(properties.getAuthorizationStore().getKind() != null) {

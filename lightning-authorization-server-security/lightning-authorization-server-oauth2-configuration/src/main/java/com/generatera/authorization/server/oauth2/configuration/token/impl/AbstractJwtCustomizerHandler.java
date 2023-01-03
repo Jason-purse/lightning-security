@@ -1,5 +1,6 @@
-package com.generatera.authorization.server.common.configuration.token.customizer.jwt.impl;
+package com.generatera.authorization.server.oauth2.configuration.token.impl;
 
+import com.generatera.authorization.server.common.configuration.token.LightningToken;
 import com.generatera.authorization.server.common.configuration.token.customizer.jwt.JwtEncodingContext;
 import com.generatera.authorization.server.common.configuration.token.customizer.jwt.LightningJwtCustomizerHandler;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -32,7 +33,7 @@ public abstract class AbstractJwtCustomizerHandler implements LightningJwtCustom
     	} 
     	
     	if (token != null) {
-    		if (token.isAuthenticated() && OAuth2TokenType.ACCESS_TOKEN.equals(jwtEncodingContext.getTokenType())) {
+    		if (token.isAuthenticated() && LightningToken.TokenType.ACCESS_TOKEN_TYPE.equals(jwtEncodingContext.getTokenType())) {
     			Authentication authentication = jwtEncodingContext.getPrincipal();
     			supportCustomizeContext = supportCustomizeContext(authentication);
     		}

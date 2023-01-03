@@ -170,6 +170,14 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
  *       2. 如果发起客户端注册请求 需要访问token具有 scope client.create
  *       3. 客户端读取请求需要token 具有 scope client.read ..
  *       由于需要解密访问TOKEN,所以需要一个 JwtDecoder @Bean ..
+ *
+ *
+ *       中央授权服务中心,相比普通的用户授权中心来说,需要额外的clientRegistrationRepository的配置 ..
+ *       其他的组件可以共享,因此被抽象到了 lightning-authorization-server-configuration中 ..
+ *
+ *       因为希望所有的授权中心遵守oauth2的token 生成和解析规范,所以, 一般来说,只要是授权中心都会拥有
+ *       oauth2 规范的一部分组件 ...
+ *       例如: providerSettings / TokenSettings .. / JwkSource .. / TokenGenerator / TokenDecoder ..
  */
 @AutoConfigureAfter(AuthorizationServerCommonComponentsConfiguration.class)
 @Configuration

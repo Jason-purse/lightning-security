@@ -20,6 +20,7 @@
         <authorization.server.version>0.3.0</authorization.server.version>
         <lombok.version>1.18.22</lombok.version>
         <kotlin.version>1.6.21</kotlin.version>
+        <jose-jwt.version>9.22</jose-jwt.version>
     </properties>
 
     <dependencyManagement>
@@ -30,6 +31,12 @@
                 <version>1.0.0-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>${jose-jwt.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>

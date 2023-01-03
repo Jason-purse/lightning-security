@@ -22,7 +22,10 @@ public class OAuth2ServerSwitchImportSelector extends PropertiesBindImportSelect
     public String[] selectImports(@NotNull AnnotationMetadata importingClassMetadata) {
         ApplicationAuthServerProperties properties = getProperties();
         if (properties.getOA2AuthServer().isEnable()) {
-            return new String[] {OAuth2ServerCommonComponentsConfigurationImportSelector.class.getName(),
+            return new String[] {
+                    OAuth2ServerCommonComponentsConfiguration.
+                            DefaultOAuth2ServerCommonComponentsConfiguration.class.getName(),
+                    OAuth2ServerCommonComponentsConfigurationImportSelector.class.getName(),
                     OAuth2TokenComponentConfiguration.class.getName()};
         }
         return new String[0];

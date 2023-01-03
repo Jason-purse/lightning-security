@@ -1,6 +1,5 @@
-package com.generatera.authorization.server.common.configuration.token.customizer.token.claims.impl;
+package com.generatera.authorization.server.oauth2.configuration.token.claims;
 
-import com.generatera.authorization.server.common.configuration.token.customizer.token.claims.OAuth2TokenClaimsCustomizer;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
 /**
  * @author FLJ

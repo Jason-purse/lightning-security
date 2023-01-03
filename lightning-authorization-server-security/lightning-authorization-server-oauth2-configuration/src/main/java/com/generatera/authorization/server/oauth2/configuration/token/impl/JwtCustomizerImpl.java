@@ -1,4 +1,4 @@
-package com.generatera.authorization.server.common.configuration.token.customizer.jwt.impl;
+package com.generatera.authorization.server.oauth2.configuration.token.impl;
 
 
 import com.generatera.authorization.server.common.configuration.token.customizer.jwt.JwtEncodingContext;

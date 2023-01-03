@@ -5,6 +5,4 @@ public interface LightningJwtCustomizerHandler {
 
 	void customize(JwtEncodingContext jwtEncodingContext);
 
-
-
 }

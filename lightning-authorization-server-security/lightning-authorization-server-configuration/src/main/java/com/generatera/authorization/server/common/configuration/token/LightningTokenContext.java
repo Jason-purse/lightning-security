@@ -1,16 +1,10 @@
 package com.generatera.authorization.server.common.configuration.token;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.OAuth2TokenType;
-import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.util.Assert;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 public interface LightningTokenContext extends Context {
@@ -23,17 +17,10 @@ public interface LightningTokenContext extends Context {
         return (ProviderContext)this.get(ProviderContext.class);
     }
 
-    default Set<String> getAuthorizedScopes() {
-        return this.hasKey(OAuth2Authorization.AUTHORIZED_SCOPE_ATTRIBUTE_NAME) ? (Set)this.get(OAuth2Authorization.AUTHORIZED_SCOPE_ATTRIBUTE_NAME) : Collections.emptySet();
+    default LightningToken.TokenType getTokenType() {
+        return this.get(LightningToken.TokenType.class);
     }
 
-    default OAuth2TokenType getTokenType() {
-        return (OAuth2TokenType)this.get(OAuth2TokenType.class);
-    }
-
-    default AuthorizationGrantType getAuthorizationGrantType() {
-        return (AuthorizationGrantType)this.get(AuthorizationGrantType.class);
-    }
 
     default <T extends Authentication> T getAuthorizationGrant() {
         return (T)this.get(LightningTokenContext.AbstractBuilder.AUTHORIZATION_GRANT_AUTHENTICATION_KEY);
@@ -47,10 +34,6 @@ public interface LightningTokenContext extends Context {
         public AbstractBuilder() {
         }
 
-        public B registeredClient(RegisteredClient registeredClient) {
-            return this.put(RegisteredClient.class, registeredClient);
-        }
-
         public B principal(Authentication principal) {
             return this.put(PRINCIPAL_AUTHENTICATION_KEY, principal);
         }
@@ -59,9 +42,6 @@ public interface LightningTokenContext extends Context {
             return this.put(ProviderContext.class, providerContext);
         }
 
-        public B authorizedScopes(Set<String> authorizedScopes) {
-            return this.put(OAuth2Authorization.AUTHORIZED_SCOPE_ATTRIBUTE_NAME, authorizedScopes);
-        }
 
         public B tokenType(LightningToken.TokenType tokenType) {
             return this.put(LightningToken.TokenType.class, tokenType);

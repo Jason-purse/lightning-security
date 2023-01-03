@@ -17,16 +17,26 @@
 
 
     <dependencies>
+<!--        // 遵循的部分oauth 通用规范,针对其他认证方式可以复用 ... -->
         <dependency>
             <groupId>com.generatera</groupId>
             <artifactId>lightning-authorization-server-configuration</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+<!--        // 目前支持 oauth2 server-->
         <dependency>
             <groupId>com.generatera</groupId>
             <artifactId>lightning-authorization-server-oauth2-configuration</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
+<!--        // oauth2 server 也需要表单登陆 让用户登陆来决定 authorization_code 流程-->
+        <dependency>
+            <groupId>com.generatera</groupId>
+            <artifactId>lightning-application-authorization-form-login-config</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>com.jianyue</groupId>
             <artifactId>lightning-boot-starter-generic-crud-service</artifactId>

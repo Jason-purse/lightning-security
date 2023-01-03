@@ -23,6 +23,11 @@
             <artifactId>lombok</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-authorization-server</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>com.generatera</groupId>
             <artifactId>lightning-authorization-server-configuration</artifactId>
             <version>0.0.1-SNAPSHOT</version>

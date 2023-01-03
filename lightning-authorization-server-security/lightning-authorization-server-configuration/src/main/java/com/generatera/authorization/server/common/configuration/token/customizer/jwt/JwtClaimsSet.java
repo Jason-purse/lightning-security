@@ -29,6 +29,10 @@ public final class JwtClaimsSet implements JwtClaimAccessor {
         return new JwtClaimsSet.Builder(claims);
     }
 
+    public static JwtClaimsSet.Builder from(Map<String,Object> claims) {
+        return new JwtClaimsSet.Builder(claims);
+    }
+
     public static final class Builder {
         private final Map<String, Object> claims;
 
@@ -40,6 +44,12 @@ public final class JwtClaimsSet implements JwtClaimAccessor {
             this.claims = new HashMap<>();
             Assert.notNull(claims, "claims cannot be null");
             this.claims.putAll(claims.getClaims());
+        }
+
+        private Builder(Map<String,Object> claims) {
+            this.claims = new HashMap<>();
+            Assert.notNull(claims, "claims cannot be null");
+            this.claims.putAll(claims);
         }
 
         public JwtClaimsSet.Builder issuer(String issuer) {

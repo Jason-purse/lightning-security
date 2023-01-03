@@ -9,11 +9,11 @@ import com.nimbusds.jose.proc.SecurityContext;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 
 import java.time.Duration;
@@ -22,9 +22,14 @@ import static com.generatera.authorization.server.common.configuration.Authoriza
 
 /**
  * 授权服务器的 通用组件配置
+ *
+ * 希望非oauth2 / 或者 oauth2 都遵循 oauth2的一部分规范(token 解析)
+ * 例如: 1. token 自解析
+ *      2. token 撤销
+ *      3. token 自省
  */
 @Configuration
-@AutoConfigureBefore(OAuth2AuthorizationServerConfiguration.class)
+@AutoConfigureBefore(SecurityAutoConfiguration.class)
 @EnableConfigurationProperties(AuthorizationServerComponentProperties.class)
 @Import(AuthorizationServerComponentImportSelector.class)
 public class AuthorizationServerCommonComponentsConfiguration {
