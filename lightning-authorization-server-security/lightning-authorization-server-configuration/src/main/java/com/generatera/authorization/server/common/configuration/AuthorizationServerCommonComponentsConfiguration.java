@@ -1,10 +1,9 @@
 package com.generatera.authorization.server.common.configuration;
 
-import com.generatera.authorization.server.common.configuration.token.customizer.jwt.LightningJwtCustomizer;
-import com.generatera.authorization.server.common.configuration.token.customizer.jwt.LightningJwtCustomizerHandler;
-import com.generatera.authorization.server.common.configuration.token.customizer.jwt.impl.JwtCustomizerImpl;
-import com.generatera.authorization.server.common.configuration.token.customizer.token.claims.OAuth2TokenClaimsCustomizer;
-import com.generatera.authorization.server.common.configuration.token.customizer.token.claims.impl.OAuth2TokenClaimsCustomizerImpl;
+import com.generatera.authorization.server.common.configuration.token.DefaultAuthenticationTokenGenerator;
+import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenGenerator;
+import com.generatera.authorization.server.common.configuration.token.TokenSettings;
+import com.generatera.authorization.server.common.configuration.token.TokenSettingsProvider;
 import com.generatera.authorization.server.common.configuration.util.jose.Jwks;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -18,9 +17,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
+
+import java.time.Duration;
+
+import static com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.TOKEN_GENERATOR_NAME;
 
 /**
  * 授权服务器的 通用组件配置
@@ -32,7 +32,7 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 public class AuthorizationServerCommonComponentsConfiguration {
 
     /**
-     * jwke set
+     * jwk set
      */
     @Bean
     @ConditionalOnMissingBean(JWKSource.class)
@@ -42,6 +42,11 @@ public class AuthorizationServerCommonComponentsConfiguration {
         return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
     }
 
+    /**
+     * 解码器 ... 必要 ...
+     * @param jwkSource jwtSource ....
+     * @return
+     */
 
     @Bean
     @ConditionalOnMissingBean(JwtDecoder.class)
@@ -49,28 +54,44 @@ public class AuthorizationServerCommonComponentsConfiguration {
         return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
     }
 
-
-    // Token 自定义 ..
-
-
-    @Bean
-    @ConditionalOnMissingBean(OAuth2TokenClaimsCustomizer.class)
-    public OAuth2TokenCustomizer<JwtEncodingContext> buildJwtCustomizer() {
-
-
-    }
-
     /**
-     * oauth2 token 自定义器
-     * @return
+     * 需要配置SettingProvider
+     *
+     * ProviderContextHolder 需要单独处理
      */
     @Bean
-    @ConditionalOnMissingBean(OAuth2TokenClaimsCustomizer.class)
-    public OAuth2TokenCustomizer<OAuth2TokenClaimsContext> buildOAuth2TokenClaimsCustomizer() {
+    public TokenSettingsProvider settingsProvider(AuthorizationServerComponentProperties properties) {
 
-        OAuth2TokenClaimsCustomizer oauth2TokenClaimsCustomizer = new OAuth2TokenClaimsCustomizerImpl();
+        TokenSettings.Builder builder = TokenSettings.builder();
 
-        return oauth2TokenClaimsCustomizer::customizeTokenClaims;
+        return new TokenSettingsProvider(
+                builder
+                        .accessTokenFormat(properties.getTokenSettings().getTokenFormat())
+                        .accessTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getAccessTokenTimeToLive()))
+                        .refreshTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getRefreshTokenTimeToLive()))
+                        .reuseRefreshTokens(properties.getTokenSettings().getReuseRefreshToken())
+                        .build()
+        );
     }
 
+
+
+    /**
+     * token 生成器
+     *
+     * @param properties component properties
+     * @param jwkSource  jwtSource
+     * @return tokenGenerator ..
+     * <p>
+     * 用户有机会提供自己的认证Token 生成器  ..
+     * 包括 oauth2 / 或者 form-login 配置 ..
+     */
+    @Bean(TOKEN_GENERATOR_NAME)
+    @ConditionalOnMissingBean(LightningAuthenticationTokenGenerator.class)
+    public LightningAuthenticationTokenGenerator lightningAuthenticationTokenGenerator(
+            AuthorizationServerComponentProperties properties,
+            JWKSource<SecurityContext> jwkSource) {
+        Boolean isPlain = properties.getTokenSettings().getIsPlain();
+        return new DefaultAuthenticationTokenGenerator(isPlain != null ? isPlain : Boolean.FALSE, jwkSource);
+    }
 }

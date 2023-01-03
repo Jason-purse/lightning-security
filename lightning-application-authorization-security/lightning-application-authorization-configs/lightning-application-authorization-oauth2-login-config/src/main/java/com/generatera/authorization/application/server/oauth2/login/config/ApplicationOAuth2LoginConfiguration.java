@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.LightningOAuth2LoginConfigurer;
 import com.generatera.authorization.application.server.config.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint;
@@ -12,9 +13,11 @@ import com.generatera.authorization.application.server.oauth2.login.config.autho
 import com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized.LightningAnonymousOAuthorizedClientRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized.LightningOAuthorizedClientService;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
+import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -22,13 +25,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Configuration
+@AutoConfigureAfter(ApplicationAuthServerConfig.class)
 @Import({OAuth2LoginConfigurationImportSelector.class,ApplicationOAuth2LoginComponentsImportSelector.class})
 public class ApplicationOAuth2LoginConfiguration {
 
@@ -45,6 +46,8 @@ public class ApplicationOAuth2LoginConfiguration {
     public static class OAuth2LoginConfiguration {
         private final AuthorizationExtEndpointConfig authorizationExtEndpointConfig = new AuthorizationExtEndpointConfig();
         private final OAuth2LoginProperties oAuth2LoginProperties;
+
+        private final LightningAuthenticationTokenGenerator tokenGenerator;
 
         @Bean
         @Qualifier("oauth2")
@@ -72,6 +75,9 @@ public class ApplicationOAuth2LoginConfiguration {
             if (StringUtils.hasText(backendSeparation.getLoginFailureMessage())) {
                 point.setAuthErrorMessage(backendSeparation.getLoginFailureMessage());
             }
+
+            // 必须存在
+            point.setTokenGenerator(tokenGenerator);
             return point;
         }
 

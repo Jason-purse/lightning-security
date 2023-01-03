@@ -1,14 +1,10 @@
 package com.generatera.authorization.server.common.configuration.token;
 
-import org.springframework.lang.NonNull;
-
 /**
  * Token Generator ..
  * 提供 token generator
  */
-public interface LightningTokenGeneratorProvider {
+public interface LightningTokenGenerator<T extends LightningToken> {
 
-    @NonNull
-    Object get();
-
+    T generate(LightningSecurityContext context);
 }

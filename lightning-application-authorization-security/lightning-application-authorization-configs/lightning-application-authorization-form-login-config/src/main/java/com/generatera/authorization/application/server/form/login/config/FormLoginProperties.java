@@ -2,7 +2,6 @@ package com.generatera.authorization.application.server.form.login.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 
 @Data
 @ConfigurationProperties(prefix = "lightning.auth.app.server.form.login.config")
@@ -31,6 +30,7 @@ public class FormLoginProperties {
 
 
 
+
     @Data
     public static class BackendSeparation {
 
@@ -48,6 +48,8 @@ public class FormLoginProperties {
 
 
         private String badCredentialMessage = "BAD CREDENTIAL ERROR";
+
+        private final TokenSettings tokenSettings = new TokenSettings();
     }
 
     @Data
@@ -95,5 +97,42 @@ public class FormLoginProperties {
          */
         private Boolean enableSavedRequestForward = true;
     }
+
+    @Data
+    public static class TokenSettings {
+        /**
+         * 简单生成,就是生成一个唯一字符串即可 - 映射 用户信息
+         * 否则直接将 用户信息放入jwt token中 ..
+         */
+        private Boolean accessTokenIsPlain;
+
+        private Long accessTokenExpiredDuration = 30 * 1000 * 60L;
+
+        /**
+         * 刷新Token 保留一周 时间
+         */
+        private Long refreshTokenExpiredDuration = 7 * 24 * 60 * 60 * 1000L;
+
+        /**
+         * 前端地址 ..
+         */
+        private String frontEndUrl;
+
+
+        public Boolean isPlain() {
+            return accessTokenIsPlain;
+        }
+
+        public Long getAccessTokenExpiredDuration() {
+            return accessTokenExpiredDuration - 5 * 1000L;
+        }
+
+        public Long getRefreshTokenExpiredDuration() {
+            return refreshTokenExpiredDuration - 5 * 1000L;
+        }
+
+
+    }
+
 
 }

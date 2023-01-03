@@ -1,7 +1,6 @@
 package com.generatera.authorization.service;
 
 import com.generatera.authorization.model.entity.LightningOAuth2UserDetails;
-import com.generatera.authorization.server.configure.model.ext.UserPrincipal;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.validation.annotation.Validated;
 

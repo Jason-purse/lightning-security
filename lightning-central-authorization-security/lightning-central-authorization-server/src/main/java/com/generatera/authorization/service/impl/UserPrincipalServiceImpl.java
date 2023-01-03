@@ -4,7 +4,6 @@ import com.generatera.authorization.model.entity.LightningOAuth2UserDetails;
 import com.generatera.authorization.model.entity.OAuth2UserEntity;
 import com.generatera.authorization.repository.OAuth2UserRepository;
 import com.generatera.authorization.repository.UserPrincipalRepository;
-import com.generatera.authorization.server.configure.model.ext.UserPrincipal;
 import com.generatera.authorization.service.UserPrincipalService;
 import com.jianyue.lightning.boot.starter.util.BeanUtils;
 import org.springframework.security.authentication.BadCredentialsException;

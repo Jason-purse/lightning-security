@@ -3,6 +3,7 @@ package com.generatera.authorization.server.common.configuration.model.ext;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.persistence.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;

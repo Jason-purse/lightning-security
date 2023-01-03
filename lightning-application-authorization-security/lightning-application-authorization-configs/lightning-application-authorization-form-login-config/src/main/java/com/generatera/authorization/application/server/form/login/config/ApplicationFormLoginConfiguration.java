@@ -3,6 +3,8 @@ package com.generatera.authorization.application.server.form.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.LightningFormLoginConfigurer;
 import com.generatera.authorization.application.server.config.RedirectAuthenticationSuccessOrFailureHandler;
+import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenGenerator;
+import com.generatera.authorization.server.common.configuration.token.TokenSettingsProvider;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -35,7 +37,12 @@ public class ApplicationFormLoginConfiguration {
     @RequiredArgsConstructor
     public static class FormLoginConfiguration {
 
+
        private final FormLoginProperties formLoginProperties;
+
+       private final LightningAuthenticationTokenGenerator tokenGenerator;
+
+       private final TokenSettingsProvider tokenSettingsProvider;
 
        @Bean
        @ConditionalOnMissingBean({AuthenticationSuccessHandler.class})
@@ -49,13 +56,15 @@ public class ApplicationFormLoginConfiguration {
            return lightningFormLoginAuthenticationEntryPoint();
        }
 
+
+
        /**
         * 代理此方法 ..
         * @return authentication success / failure 都是同一个对象
         */
        private LightningFormLoginAuthenticationEntryPoint lightningFormLoginAuthenticationEntryPoint() {
 
-           LightningFormLoginAuthenticationEntryPoint point = new LightningFormLoginAuthenticationEntryPoint();
+           LightningFormLoginAuthenticationEntryPoint point = new LightningFormLoginAuthenticationEntryPoint(tokenGenerator,tokenSettingsProvider);
            FormLoginProperties.BackendSeparation backendSeparation = formLoginProperties.getBackendSeparation();
 
            if(StringUtils.hasText(backendSeparation.getLoginSuccessMessage())) {

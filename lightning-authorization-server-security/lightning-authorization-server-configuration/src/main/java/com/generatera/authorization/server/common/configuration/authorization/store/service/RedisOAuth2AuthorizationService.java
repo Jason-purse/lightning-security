@@ -101,9 +101,9 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
     }
 
     protected String constructKey(Object... name) {
-        return Optional.ofNullable(properties.getAuthorizationStore().getRedis().getDEFAULT_KEY_PREFIX())
+        return Optional.ofNullable(properties.getAuthorizationStore().getRedis().getKeyPrefix())
                 .filter(ele -> !StringUtils.isBlank(ele))
-                .orElse(properties.getAuthorizationStore().getRedis().getDEFAULT_KEY_PREFIX())
+                .orElse(properties.getAuthorizationStore().getRedis().getKeyPrefix())
                 + StringUtils.joinWith("-", name);
 
     }

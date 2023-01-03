@@ -1,6 +1,7 @@
 package com.generatera.authorization.server.common.configuration.token.customizer.jwt;
 
-import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+
+import com.generatera.authorization.server.common.configuration.token.JwtEncodingContext;
 
 public interface LightningJwtCustomizerHandler {
 

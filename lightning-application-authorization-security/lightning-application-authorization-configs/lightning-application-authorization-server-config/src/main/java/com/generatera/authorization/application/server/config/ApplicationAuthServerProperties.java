@@ -57,6 +57,7 @@ public class ApplicationAuthServerProperties {
     }
 
 
+
     @Data
     public static class Permission {
 

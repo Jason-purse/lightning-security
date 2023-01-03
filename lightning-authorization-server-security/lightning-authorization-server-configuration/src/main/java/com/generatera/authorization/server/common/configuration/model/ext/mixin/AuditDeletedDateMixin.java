@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.generatera.authorization.server.configure.store.authorizationinfo.jackson.deserializer.AuditDeletedDateDeserializer;
+import com.generatera.authorization.server.common.configuration.authorization.store.jackson.deserializer.AuditDeletedDateDeserializer;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY)
 @JsonDeserialize(using = AuditDeletedDateDeserializer.class)

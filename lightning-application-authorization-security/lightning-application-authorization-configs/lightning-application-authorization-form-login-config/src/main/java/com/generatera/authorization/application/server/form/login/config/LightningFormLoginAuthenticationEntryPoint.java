@@ -2,6 +2,7 @@ package com.generatera.authorization.application.server.form.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.AuthHttpResponseUtil;
+import com.generatera.authorization.server.common.configuration.token.*;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
 import lombok.Data;
@@ -10,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.ServletException;
@@ -44,7 +46,21 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
     private String accountStatusMessage = "";
 
 
+    private LightningAuthenticationTokenGenerator tokenGenerator;
 
+    private TokenSettingsProvider tokenSettingsProvider;
+
+    public LightningFormLoginAuthenticationEntryPoint(LightningAuthenticationTokenGenerator tokenGenerator,
+                                                      TokenSettingsProvider tokenSettingsProvider) {
+        Assert.notNull(
+                tokenGenerator,
+                "Form login tokenGenerator must not be null !!!"
+        );
+        Assert.notNull(tokenSettingsProvider,
+                "token settings must not be null !!!");
+        this.tokenGenerator = tokenGenerator;
+        this.tokenSettingsProvider = tokenSettingsProvider;
+    }
 
 
     @Override
@@ -52,53 +68,48 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
 
         Result<?> result = null;
 
-        if(enableAccountStatusInform) {
+        if (enableAccountStatusInform) {
             // 坏的凭证信息
             if (exception instanceof BadCredentialsException) {
 
-                if(StringUtils.hasText(badCredentialsMessage)) {
+                if (StringUtils.hasText(badCredentialsMessage)) {
                     result = Result.error(ApplicationAuthException.badCredentialsException().getCode(), badCredentialsMessage);
-                }
-                else {
+                } else {
                     result = ApplicationAuthException.badCredentialsException().asResult();
                 }
             }
 
             // 状态异常
-            else if(exception instanceof AccountStatusException) {
+            else if (exception instanceof AccountStatusException) {
 
-                if(exception instanceof AccountExpiredException) {
+                if (exception instanceof AccountExpiredException) {
 
-                    if(StringUtils.hasText(accountStatusExpiredMessage)) {
+                    if (StringUtils.hasText(accountStatusExpiredMessage)) {
                         result = Result.error(
                                 ApplicationAuthException.accountExpiredException().getCode(),
                                 accountStatusExpiredMessage
                         );
-                    }
-                    else {
+                    } else {
                         result = ApplicationAuthException.accountExpiredException().asResult();
                     }
-                }
-                else if(exception instanceof LockedException || exception instanceof DisabledException) {
-                    if(StringUtils.hasText(accountStatusLockedMessage)) {
-                        result =  Result.error(
+                } else if (exception instanceof LockedException || exception instanceof DisabledException) {
+                    if (StringUtils.hasText(accountStatusLockedMessage)) {
+                        result = Result.error(
                                 ApplicationAuthException.accountLockedException().getCode(),
                                 accountStatusLockedMessage
                         );
-                    }
-                    else {
+                    } else {
                         result = ApplicationAuthException.accountLockedException().asResult();
                     }
                 }
 
                 // 无法区分的账户状态异常 ..
-                if(result == null) {
+                if (result == null) {
 
-                    if(StringUtils.hasText(accountStatusMessage)) {
+                    if (StringUtils.hasText(accountStatusMessage)) {
                         result = Result.error(ApplicationAuthException.accountStatusException().getCode(),
                                 accountStatusMessage);
-                    }
-                    else {
+                    } else {
                         result = ApplicationAuthException.accountStatusException().asResult();
                     }
                 }
@@ -107,12 +118,10 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
             else {
                 result = ApplicationAuthException.authOtherException().asResult();
             }
-        }
-        else {
-            if(StringUtils.hasText(loginFailureMessage)) {
-                result = Result.error(ApplicationAuthException.auth2AuthenticationException().getCode(),loginFailureMessage);
-            }
-            else {
+        } else {
+            if (StringUtils.hasText(loginFailureMessage)) {
+                result = Result.error(ApplicationAuthException.auth2AuthenticationException().getCode(), loginFailureMessage);
+            } else {
                 result = ApplicationAuthException.auth2AuthenticationException().asResult();
             }
         }
@@ -127,11 +136,17 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
     public void onAuthenticationSuccess(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
         // 返回凭证信息
-        Object principal = authentication.getPrincipal();
+        LightningAuthenticationToken token = tokenGenerator.generate(
+                LightningAuthenticationSecurityContext.of(
+                        authentication,
+                        ProviderContextHolder.getProviderContext(),
+                        tokenSettingsProvider.getTokenSettings()
+                )
+        );
         AuthHttpResponseUtil.commence(
                 response,
                 JsonUtil.of().asJSON(
-                        Result.success(200,loginSuccessMessage,principal)
+                        Result.success(200, loginSuccessMessage, token)
                 )
         );
     }

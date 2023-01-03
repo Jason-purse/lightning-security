@@ -1,8 +1,8 @@
 package com.generatera.authorization.server.common.configuration.model.entity;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.generatera.authorization.server.configure.store.authorizationinfo.jackson.deserializer.AuthorizationGrantTypeDeserializer;
-import com.generatera.authorization.server.configure.store.authorizationinfo.jackson.deserializer.OAuth2AuthorizationTokenDeserializer;
+import com.generatera.authorization.server.common.configuration.authorization.store.jackson.deserializer.AuthorizationGrantTypeDeserializer;
+import com.generatera.authorization.server.common.configuration.authorization.store.jackson.deserializer.OAuth2AuthorizationTokenDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
