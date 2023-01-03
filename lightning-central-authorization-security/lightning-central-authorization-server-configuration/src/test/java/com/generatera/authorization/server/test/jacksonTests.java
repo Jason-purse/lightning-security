@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import com.fasterxml.jackson.datatype.jsr310.deser.InstantDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.InstantSerializer;
-import com.generatera.authorization.server.common.configuration.model.entity.RedisOAuth2AuthorizationEntity;
+import com.generatera.authorization.server.oauth2.configuration.model.entity.RedisOAuth2AuthorizationEntity;
 import com.jianyue.lightning.util.JsonUtil;
 import org.junit.jupiter.api.Test;
 

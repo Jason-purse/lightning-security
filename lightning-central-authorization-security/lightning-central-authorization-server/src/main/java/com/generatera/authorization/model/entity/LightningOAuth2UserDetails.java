@@ -1,7 +1,8 @@
 package com.generatera.authorization.model.entity;
 
-import com.generatera.authorization.server.common.configuration.model.ext.UserAuthority;
-import com.generatera.authorization.server.common.configuration.model.ext.jackson.SafeSerialize;
+
+import com.generatera.authorization.server.oauth2.configuration.model.ext.UserAuthority;
+import com.generatera.authorization.server.oauth2.configuration.model.ext.jackson.SafeSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -7,6 +7,8 @@ import com.generatera.authorization.server.common.configuration.token.LightningS
  * @date 2023/1/3
  * @time 10:36
  * @Description Lightning Jwt Generator ..
+ *
+ * 需要借助jwt encoder {@link LightningJwtEncoder} 完成jwt 生成
  */
 public interface LightningJwtGenerator<T extends LightningSecurityContext> {
 

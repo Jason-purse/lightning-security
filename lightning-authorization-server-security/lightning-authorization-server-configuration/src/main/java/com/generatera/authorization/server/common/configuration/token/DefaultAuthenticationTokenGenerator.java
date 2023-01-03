@@ -19,6 +19,8 @@ import java.time.Instant;
  * 这种情况下,我们有两种选择 ...
  * 1. 简单生成 自省token
  * 2. 将用户信息放入token ..
+ *
+ * 这里借助了jwt encoder 完成jwt 令牌的生成 ..
  */
 public class DefaultAuthenticationTokenGenerator implements LightningAuthenticationTokenGenerator {
     /**

@@ -2,6 +2,7 @@ package com.generatera.authorization.application.server.form.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.AuthHttpResponseUtil;
+import com.generatera.authorization.application.server.form.login.config.token.FormLoginAuthenticationTokenGenerator;
 import com.generatera.authorization.server.common.configuration.token.*;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
@@ -46,11 +47,11 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
     private String accountStatusMessage = "";
 
 
-    private LightningAuthenticationTokenGenerator tokenGenerator;
+    private FormLoginAuthenticationTokenGenerator tokenGenerator;
 
     private TokenSettingsProvider tokenSettingsProvider;
 
-    public LightningFormLoginAuthenticationEntryPoint(LightningAuthenticationTokenGenerator tokenGenerator,
+    public LightningFormLoginAuthenticationEntryPoint(FormLoginAuthenticationTokenGenerator tokenGenerator,
                                                       TokenSettingsProvider tokenSettingsProvider) {
         Assert.notNull(
                 tokenGenerator,

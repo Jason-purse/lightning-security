@@ -1,14 +1,12 @@
 package com.generatera.authorization.server.common.configuration;
 
-import com.generatera.authorization.server.common.configuration.token.DefaultAuthenticationTokenGenerator;
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenGenerator;
-import com.generatera.authorization.server.common.configuration.token.TokenSettings;
-import com.generatera.authorization.server.common.configuration.token.TokenSettingsProvider;
+import com.generatera.authorization.server.common.configuration.token.*;
 import com.generatera.authorization.server.common.configuration.util.jose.Jwks;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 
 import java.time.Duration;
 
@@ -49,10 +47,34 @@ public class AuthorizationServerCommonComponentsConfiguration {
      */
 
     @Bean
-    @ConditionalOnMissingBean(JwtDecoder.class)
-    public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
-        return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
+    @ConditionalOnMissingBean(LightningAuthenticationTokenParser.class)
+    public LightningAuthenticationTokenParser jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+        return new DefaultLightningAuthenticationTokenParser(jwkSource);
     }
+
+
+    /**
+     * token 生成器
+     *
+     *
+     * @param properties component properties
+     * @param jwkSource  jwtSource
+     * @return tokenGenerator ..
+     * <p>
+     * 用户有机会提供自己的认证Token 生成器  ..
+     * 包括 oauth2 / 或者 form-login 配置 ..
+     *
+     * 如果最后没有提供,则提供默认的 ..
+     */
+    @Bean(TOKEN_GENERATOR_NAME)
+    @ConditionalOnMissingBean(LightningAuthenticationTokenGenerator.class)
+    public LightningAuthenticationTokenGenerator lightningAuthenticationTokenGenerator(
+            AuthorizationServerComponentProperties properties,
+            JWKSource<SecurityContext> jwkSource) {
+        Boolean isPlain = properties.getTokenSettings().getIsPlain();
+        return new DefaultAuthenticationTokenGenerator(isPlain, jwkSource);
+    }
+
 
     /**
      * 需要配置SettingProvider
@@ -77,21 +99,29 @@ public class AuthorizationServerCommonComponentsConfiguration {
 
 
     /**
-     * token 生成器
+     * 当前我们自己第三方 授权服务提供商的一些端点配置 ..
      *
-     * @param properties component properties
-     * @param jwkSource  jwtSource
-     * @return tokenGenerator ..
-     * <p>
-     * 用户有机会提供自己的认证Token 生成器  ..
-     * 包括 oauth2 / 或者 form-login 配置 ..
+     * @return provider config
      */
-    @Bean(TOKEN_GENERATOR_NAME)
-    @ConditionalOnMissingBean(LightningAuthenticationTokenGenerator.class)
-    public LightningAuthenticationTokenGenerator lightningAuthenticationTokenGenerator(
-            AuthorizationServerComponentProperties properties,
-            JWKSource<SecurityContext> jwkSource) {
-        Boolean isPlain = properties.getTokenSettings().getIsPlain();
-        return new DefaultAuthenticationTokenGenerator(isPlain != null ? isPlain : Boolean.FALSE, jwkSource);
+    @Bean
+    public ProviderSettings authorizationServerSettings(AuthorizationServerComponentProperties properties) {
+        AuthorizationServerComponentProperties.ProviderSettingProperties settingProperties = properties.getProviderSettingProperties();
+
+        final ProviderSettings.Builder builder = ProviderSettings
+                .builder();
+
+        // issuer 可以自动生成
+        if (StringUtils.isNotBlank(settingProperties.getIssuer())) {
+            builder.issuer(settingProperties.getIssuer());
+        }
+        return builder
+                .authorizationEndpoint(settingProperties.getAuthorizationEndpoint())
+                .tokenEndpoint(settingProperties.getTokenEndpoint())
+                .jwkSetEndpoint(settingProperties.getJwkSetEndpoint())
+                .tokenRevocationEndpoint(settingProperties.getTokenRevocationEndpoint())
+                .tokenIntrospectionEndpoint(settingProperties.getTokenIntrospectionEndpoint())
+                .oidcClientRegistrationEndpoint(settingProperties.getOidcClientRegistrationEndpoint())
+                .oidcUserInfoEndpoint(settingProperties.getOidcUserInfoEndpoint())
+                .build();
     }
 }

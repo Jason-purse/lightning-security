@@ -1,6 +1,6 @@
 package com.generatera.authorization.model.entity;
 
-import com.generatera.authorization.server.common.configuration.model.ext.jackson.SafeSerialize;
+import com.generatera.authorization.server.oauth2.configuration.model.ext.jackson.SafeSerialize;
 import com.google.common.collect.Lists;
 import com.jianyue.lightning.boot.starter.generic.crud.service.entity.JpaBaseEntity;
 import lombok.AllArgsConstructor;

@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * 抽象配置 .. 类似于map
+ */
 public abstract class AbstractSettings implements Serializable {
     private static final long serialVersionUID;
     private final Map<String, Object> settings;

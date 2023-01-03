@@ -1,6 +1,6 @@
 package com.generatera.authorization.repository;
 
-import com.generatera.authorization.server.common.configuration.model.ext.UserPrincipal;
+import com.generatera.authorization.server.oauth2.configuration.model.ext.UserPrincipal;
 import org.springframework.data.repository.CrudRepository;
 
 /**

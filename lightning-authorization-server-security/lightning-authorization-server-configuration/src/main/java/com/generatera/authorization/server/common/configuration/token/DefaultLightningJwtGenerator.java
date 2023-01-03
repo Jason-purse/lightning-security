@@ -17,11 +17,11 @@ import java.time.Instant;
  */
 public final class DefaultLightningJwtGenerator implements LightningJwtGenerator<LightningSecurityContext> {
 
-    private final JwtEncoder jwtEncoder;
+    private final LightningJwtEncoder jwtEncoder;
 
     private LightningJwtCustomizer jwtCustomizer;
 
-    public DefaultLightningJwtGenerator(JwtEncoder jwtEncoder) {
+    public DefaultLightningJwtGenerator(LightningJwtEncoder jwtEncoder) {
         Assert.notNull(jwtEncoder, "jwtEncoder cannot be null");
         this.jwtEncoder = jwtEncoder;
     }

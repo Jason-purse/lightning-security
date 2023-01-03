@@ -23,6 +23,11 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>com.generatera</groupId>
+            <artifactId>lightning-authorization-server-oauth2-configuration</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com.jianyue</groupId>
             <artifactId>lightning-boot-starter-generic-crud-service</artifactId>
         </dependency>

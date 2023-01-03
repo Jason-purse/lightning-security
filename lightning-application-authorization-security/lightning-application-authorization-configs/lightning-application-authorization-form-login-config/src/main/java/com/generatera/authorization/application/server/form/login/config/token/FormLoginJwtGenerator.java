@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.form.login.config.token;
 
-import com.generatera.authorization.server.common.configuration.token.JwtEncodingContext;
+import com.generatera.authorization.server.common.configuration.token.customizer.jwt.JwtEncodingContext;
 import com.generatera.authorization.server.common.configuration.token.LightningToken;
 import com.generatera.authorization.server.common.configuration.token.LightningUserPrincipal;
 import com.generatera.authorization.server.common.configuration.token.OAuthTokenFormat;
@@ -20,11 +20,11 @@ import java.time.Instant;
  */
 public final class FormLoginJwtGenerator implements LightningJwtGenerator<FormLoginSecurityContext> {
 
-    private final JwtEncoder jwtEncoder;
+    private final LightningJwtEncoder jwtEncoder;
 
     private LightningJwtCustomizer jwtCustomizer;
 
-    public FormLoginJwtGenerator(JwtEncoder jwtEncoder) {
+    public FormLoginJwtGenerator(LightningJwtEncoder jwtEncoder) {
         Assert.notNull(jwtEncoder, "jwtEncoder cannot be null");
         this.jwtEncoder = jwtEncoder;
     }

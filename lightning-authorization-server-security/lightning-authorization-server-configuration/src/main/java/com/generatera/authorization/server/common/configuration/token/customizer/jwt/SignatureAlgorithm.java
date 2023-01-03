@@ -1,5 +1,8 @@
 package com.generatera.authorization.server.common.configuration.token.customizer.jwt;
 
+/**
+ * 参考oauth2-jose copy
+ */
 public enum SignatureAlgorithm implements JwsAlgorithm {
     RS256("RS256"),
     RS384("RS384"),

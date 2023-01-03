@@ -49,6 +49,26 @@ public interface LightningToken {
         return new DefaultRefreshToken(tokenValue, issuedAt, expiresAt);
     }
 
+    static LightningToken token(
+            String tokenValue,
+            TokenType tokenType,
+            Instant issuedAt,
+            Instant expiresAt
+    ) {
+        if(tokenType == TokenType.ACCESS_TOKEN_TYPE) {
+            return accessToken(tokenValue,issuedAt,expiresAt);
+        }
+        else if(tokenType == TokenType.REFRESH_TOKEN_TYPE) {
+            return refreshToken(tokenValue,issuedAt,expiresAt);
+        }
+        return new DefaultLightningToken(
+                tokenValue,
+                issuedAt,
+                expiresAt,
+                tokenType
+        );
+    }
+
 
     @AllArgsConstructor
     class TokenType {

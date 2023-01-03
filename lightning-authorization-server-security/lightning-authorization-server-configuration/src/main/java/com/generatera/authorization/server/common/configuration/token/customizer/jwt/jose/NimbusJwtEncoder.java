@@ -22,7 +22,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public final class NimbusJwtEncoder implements JwtEncoder {
+public final class NimbusJwtEncoder implements LightningJwtEncoder {
     private static final String ENCODING_ERROR_MESSAGE_TEMPLATE = "An error occurred while attempting to encode the Jwt: %s";
     private static final JwsHeader DEFAULT_JWS_HEADER;
     private static final JWSSignerFactory JWS_SIGNER_FACTORY;

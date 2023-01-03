@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface LightningAuthenticationToken  {
 
-    @NotNull
+    @Nullable
     LightningToken accessToken();
 
 
@@ -20,9 +20,23 @@ public interface LightningAuthenticationToken  {
     LightningToken refreshToken();
 
 
+    @Nullable
+    LightningToken otherToken();
+
+
     static LightningAuthenticationToken of(LightningToken accessToken, LightningToken refreshToken) {
-        return new DefaultLightningAuthenticationToken(accessToken,refreshToken);
+        return new DefaultLightningAuthenticationToken(accessToken,refreshToken,null);
     }
+
+    static LightningAuthenticationToken of(LightningToken accessToken,LightningToken refreshToken,LightningToken otherToken) {
+        return new DefaultLightningAuthenticationToken(accessToken,refreshToken,otherToken);
+    }
+
+    static LightningAuthenticationToken of(LightningToken token) {
+        return new DefaultLightningAuthenticationToken(null,null,token);
+    }
+
+
 }
 
 @AllArgsConstructor
@@ -32,6 +46,9 @@ class DefaultLightningAuthenticationToken implements LightningAuthenticationToke
 
     private LightningToken refreshToken;
 
+
+    private LightningToken otherToken;
+
     @Override
     public LightningToken accessToken() {
         return accessToken;
@@ -40,5 +57,9 @@ class DefaultLightningAuthenticationToken implements LightningAuthenticationToke
     @Override
     public LightningToken refreshToken() {
         return refreshToken;
+    }
+
+    public LightningToken otherToken() {
+        return otherToken;
     }
 }

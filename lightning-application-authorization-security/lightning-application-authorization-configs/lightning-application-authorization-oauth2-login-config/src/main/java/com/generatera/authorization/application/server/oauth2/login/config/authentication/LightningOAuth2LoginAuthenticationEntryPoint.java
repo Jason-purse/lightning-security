@@ -2,6 +2,7 @@ package com.generatera.authorization.application.server.oauth2.login.config.auth
 
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.AuthHttpResponseUtil;
+import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginAuthenticationTokenGenerator;
 import com.generatera.authorization.server.common.configuration.token.*;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
@@ -29,12 +30,12 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
     private String authErrorMessage = "LOGIN_FAILURE";
 
 
-    private LightningAuthenticationTokenGenerator tokenGenerator;
+    private LightningOAuth2LoginAuthenticationTokenGenerator tokenGenerator;
 
     private TokenSettingsProvider tokenSettingsProvider;
 
 
-    public void setTokenGenerator(LightningAuthenticationTokenGenerator tokenGenerator) {
+    public void setTokenGenerator(LightningOAuth2LoginAuthenticationTokenGenerator tokenGenerator) {
         Assert.notNull(tokenGenerator, "tokenGenerator must not be null !!!");
         this.tokenGenerator = tokenGenerator;
     }

@@ -12,8 +12,13 @@ import com.generatera.authorization.application.server.oauth2.login.config.autho
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningAuthorizationRequestResolver;
 import com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized.LightningAnonymousOAuthorizedClientRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized.LightningOAuthorizedClientService;
+import com.generatera.authorization.application.server.oauth2.login.config.token.DefaultOAuth2LoginAuthenticationTokenGenerator;
+import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginAuthenticationTokenGenerator;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
 import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenGenerator;
+import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenParser;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,8 +39,16 @@ import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * 可以 需要 一个token 生成器 (作为oauth2 client 登陆时）
+ *
+ * 同样还也需要一个 token 解析器
+ *
+ *
+ */
 @Configuration
 @AutoConfigureAfter(ApplicationAuthServerConfig.class)
 @Import({OAuth2LoginConfigurationImportSelector.class,ApplicationOAuth2LoginComponentsImportSelector.class})
@@ -47,7 +60,18 @@ public class ApplicationOAuth2LoginConfiguration {
         private final AuthorizationExtEndpointConfig authorizationExtEndpointConfig = new AuthorizationExtEndpointConfig();
         private final OAuth2LoginProperties oAuth2LoginProperties;
 
-        private final LightningAuthenticationTokenGenerator tokenGenerator;
+
+        @Autowired(required = false)
+        private LightningOAuth2LoginAuthenticationTokenGenerator tokenGenerator;
+
+        /**
+         * TODO 分配token 解析任务
+         */
+        @Autowired(required = false)
+        private LightningAuthenticationTokenParser tokenParser;
+
+
+        private final JWKSource<SecurityContext> jwkSource;
 
         @Bean
         @Qualifier("oauth2")
@@ -77,7 +101,8 @@ public class ApplicationOAuth2LoginConfiguration {
             }
 
             // 必须存在
-            point.setTokenGenerator(tokenGenerator);
+            point.setTokenGenerator(Objects.requireNonNullElseGet(tokenGenerator, () -> new DefaultOAuth2LoginAuthenticationTokenGenerator(jwkSource)));
+
             return point;
         }
 
