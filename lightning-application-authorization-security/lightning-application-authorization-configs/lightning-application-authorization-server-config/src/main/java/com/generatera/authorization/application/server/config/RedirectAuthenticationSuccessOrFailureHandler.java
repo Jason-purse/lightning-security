@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * 重定向 成功或者失败 处理器 ..
+ */
 public class RedirectAuthenticationSuccessOrFailureHandler implements AuthenticationSuccessHandler, AuthenticationFailureHandler {
 
     private final String redirectUrl;

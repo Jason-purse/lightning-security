@@ -17,6 +17,9 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.util.StringUtils;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * 表单登陆配置
  */
@@ -93,6 +96,8 @@ public class ApplicationFormLoginConfiguration {
            return new LightningFormLoginConfigurer() {
                @Override
                public void configure(FormLoginConfigurer<HttpSecurity> formLoginConfigurer) {
+
+                   List<String> patterns = new LinkedList<>();
                    // 如果是前后端分离的 ..
                    if (formLoginProperties.getIsSeparation()) {
                        // 前后端分离的 handler 配置 ..
@@ -106,39 +111,54 @@ public class ApplicationFormLoginConfiguration {
                            formLoginConfigurer.loginPage(noSeparation.getLoginPageUrl());
                        }
 
-                       // 针对于 转发url 是post请求,所以静态资源不支持,会报错 405
-                       // 所以需要自己重写 登陆成功的跳转地址 ..
-
-                       // 如果都没有填写转发地址 ..
-                       // 这里直接启用 强制重定向到 /
-
-                       if(StringUtils.hasText(noSeparation.getSuccessForwardUrl())) {
-                           formLoginConfigurer.successForwardUrl(noSeparation.getSuccessForwardUrl());
-                       }
-                       else {
-                           if(!noSeparation.getEnableSavedRequestForward()) {
-                               formLoginConfigurer.successHandler(new RedirectAuthenticationSuccessOrFailureHandler("/"));
+                       if(noSeparation.getEnableSavedRequestForward() != null && noSeparation.getEnableSavedRequestForward()) {
+                           if(StringUtils.hasText(noSeparation.getDefaultSuccessUrl())) {
+                               formLoginConfigurer.defaultSuccessUrl(noSeparation.getDefaultSuccessUrl());
+                               patterns.add(noSeparation.getDefaultSuccessUrl());
                            }
                        }
-
-                       if(StringUtils.hasText(noSeparation.getFailureForwardUrl())) {
-                           formLoginConfigurer.failureForwardUrl(noSeparation.getFailureForwardUrl());
-                       }
                        else {
-                           if(!noSeparation.getEnableSavedRequestForward()) {
-                               formLoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler("/login"));
+                           // 针对于 转发url 是post请求,所以静态资源不支持,会报错 405
+                           // 所以需要自己重写 登陆成功的跳转地址 ..
+                           if(noSeparation.getEnableForward() != null && noSeparation.getEnableForward()) {
+                               if(StringUtils.hasText(noSeparation.getSuccessForwardOrRedirectUrl())) {
+                                   formLoginConfigurer.successForwardUrl(noSeparation.getSuccessForwardOrRedirectUrl());
+                                   patterns.add(noSeparation.getSuccessForwardOrRedirectUrl());
+                               }
+
+                               if(StringUtils.hasText(noSeparation.getFailureForwardOrRedirectUrl())) {
+                                   formLoginConfigurer.failureForwardUrl(noSeparation.getFailureForwardOrRedirectUrl());
+                                   patterns.add(noSeparation.getFailureForwardOrRedirectUrl());
+                               }
+                           }
+                           else {
+                               // 如果都没有填写转发地址 ..
+                               // 这里直接启用 强制重定向到 /
+                               if(StringUtils.hasText(noSeparation.getSuccessForwardOrRedirectUrl())) {
+                                   formLoginConfigurer.successHandler(new RedirectAuthenticationSuccessOrFailureHandler(noSeparation.getSuccessForwardOrRedirectUrl()));
+                                   patterns.add(noSeparation.getSuccessForwardOrRedirectUrl());
+                               }
+                               else {
+                                   if(!noSeparation.getEnableSavedRequestForward()) {
+                                       formLoginConfigurer.successHandler(new RedirectAuthenticationSuccessOrFailureHandler("/"));
+                                       patterns.add("/");
+                                   }
+                               }
+
+                               if(StringUtils.hasText(noSeparation.getFailureForwardOrRedirectUrl())) {
+                                   formLoginConfigurer.successHandler(new RedirectAuthenticationSuccessOrFailureHandler(noSeparation.getFailureForwardOrRedirectUrl()));
+                                   patterns.add(noSeparation.getFailureForwardOrRedirectUrl());
+                               }
+                               else {
+                                   if(StringUtils.hasText(noSeparation.getLoginPageUrl())) {
+                                       formLoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler(noSeparation.getLoginPageUrl()));
+                                   }
+                                   else {
+                                       formLoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler("/login"));
+                                   }
+                               }
                            }
                        }
-
-                       // todo
-                       //  不应该开启session
-                       // 所以 需要重写(但是目前使用了  successForwardUrl,不需要处理了)
-                       // default success url 等价于 successForwardUrl 所以我们使用一个即可 ..
-
-                       // default success url 会导致使用之前的请求url进行 重定向 ..
-                       // 我们是否应该这样做 ..
-                       // 目前只要登陆,直接跳转到指定的url 即可,所以还是使用 successForwardUrl
-                       // 后续如果需要跳转到目标url 可以添加配置 ..
                    }
 
                    // username / password

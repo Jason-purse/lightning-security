@@ -2,6 +2,7 @@ package com.generatera.authorization.application.server.form.login.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 
 @Data
 @ConfigurationProperties(prefix = "lightning.auth.app.server.form.login.config")
@@ -54,12 +55,30 @@ public class FormLoginProperties {
 
         private String loginPageUrl;
 
-        private String successForwardUrl;
+        /**
+         * 仅当开启了 enableSavedRequestForward 才有效
+         */
+        private String defaultSuccessUrl;
 
-        private String failureForwardUrl;
+        /**
+         * 仅当开启了 enableForward才有效
+         */
+        private String successForwardOrRedirectUrl;
+
+        /**
+         * 仅当开启了 enableForward才有效
+         */
+        private String failureForwardOrRedirectUrl;
+
+        /**
+         * 默认是转发,如果不是就是重定向
+         */
+        private Boolean enableForward = true;
 
 
         /**
+         * 开启了它,与 enableForward属性互斥 ..(则后者无效)
+         *
          * 基于使用场景开启它:
          * 主要它是基于jvm 内存存储发起的请求 ..
          *

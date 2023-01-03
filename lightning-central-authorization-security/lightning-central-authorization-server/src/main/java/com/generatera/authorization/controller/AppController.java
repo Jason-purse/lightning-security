@@ -1,7 +1,7 @@
 package com.generatera.authorization.controller;
 
-import com.generatera.authorization.server.configure.client.AppService;
-import com.generatera.authorization.server.configure.model.param.AppParam;
+import com.generatera.central.authorization.server.configuration.client.AppService;
+import com.generatera.central.authorization.server.configuration.model.param.AppParam;
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.controller.AbstractGenericController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;

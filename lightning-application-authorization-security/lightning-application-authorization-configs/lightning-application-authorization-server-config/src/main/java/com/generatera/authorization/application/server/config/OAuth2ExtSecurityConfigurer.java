@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 
 import java.util.List;
@@ -79,6 +80,24 @@ public class OAuth2ExtSecurityConfigurer extends SecurityConfigurerAdapter<Defau
         }
         else {
             log.info("Lcdp login is not currently supported !!!");
+        }
+
+        if(properties.getOA2AuthServer().isEnable()) {
+            List<LightningAppAuthServerConfigurer> serverConfigurers = configurers.stream().filter(ele -> ele instanceof LightningOAuth2ServerConfigurer).toList();
+            if(configurers.size() > 0) {
+                OAuth2AuthorizationServerConfigurer<HttpSecurity> oAuth2AuthorizationServerConfigurer
+                        = new OAuth2AuthorizationServerConfigurer<>();
+                for (LightningAppAuthServerConfigurer serverConfigurer : serverConfigurers) {
+                    serverConfigurer.configure(oAuth2AuthorizationServerConfigurer);
+                }
+                log.info("OAuth2 Authorization Server is enabled !!!");
+            }
+            else {
+                log.info("The current OAuth2 auth server is disabled. Although Oauth2 auth server has been enabled,because no dependencies exists !!!");
+            }
+        }
+        else {
+            log.info("The current OAuth2 auth server is disabled.");
         }
 
     }

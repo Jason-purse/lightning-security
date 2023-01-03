@@ -1,15 +1,13 @@
 package com.generatera.authorization.service.impl;
 
-import com.generatera.authorization.oauth2.entity.LightningOAuth2UserDetails;
-import com.generatera.authorization.oauth2.entity.OAuth2UserEntity;
-import com.generatera.authorization.oauth2.repository.OAuth2UserRepository;
+import com.generatera.authorization.model.entity.LightningOAuth2UserDetails;
+import com.generatera.authorization.model.entity.OAuth2UserEntity;
+import com.generatera.authorization.repository.OAuth2UserRepository;
 import com.generatera.authorization.repository.UserPrincipalRepository;
 import com.generatera.authorization.server.configure.model.ext.UserPrincipal;
 import com.generatera.authorization.service.UserPrincipalService;
 import com.jianyue.lightning.boot.starter.util.BeanUtils;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.CredentialsExpiredException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -11,10 +11,13 @@ lightning:
                 login-failure-message: "登陆失败了呀，亲!"
                 enable-account-status-inform: true
                 bad-credential-message: "请检查账户密码呀，亲!"
-
+              no-separation:
+                enable-saved-request-forward: true
+                enable-forward: false
 #              no-separation:
 #                success-forward-url: /login.html
 #                failure-forward-url: /failure.html
+
 #        config:
 #          form-login:
 #            enable: false

@@ -22,6 +22,11 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.generatera</groupId>
+            <artifactId>lightning-authorization-server-configuration</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 <!--        Provides transitive vulnerable dependency maven:org.springframework.security:spring-security-core:5.7.4-->
 <!--        CVE-2022-31692 9.8 Incorrect Authorization vulnerability with high severity found-->
         <dependency>

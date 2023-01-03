@@ -79,11 +79,33 @@ public class OAuth2LoginProperties {
 
     @Data
     public static class NoSeparation {
-        private String loginPageUrl = DefaultLoginPageGeneratingFilter.DEFAULT_LOGIN_PAGE_URL;
+        private String loginPageUrl;
 
-        private String defaultSuccessUrl = "/";
+        /**
+         * 仅当启用了 enableSavedRequestForward 才有效果
+         */
+        private String defaultSuccessUrl;
 
-        private String defaultFailureUrl;
+        /**
+         * 仅当开启了 enableForward 才有效果
+         */
+        private String successUrl;
+
+        /**
+         * 仅当开启了 enableForward 才有效果
+         */
+        private String failureUrl;
+
+
+        /**
+         * 默认开启转发
+         */
+        private Boolean enableForward = true;
+
+        /**
+         * 此选项和 enableForward 互斥
+         */
+        private Boolean enableSavedRequestForward = true;
 
     }
 

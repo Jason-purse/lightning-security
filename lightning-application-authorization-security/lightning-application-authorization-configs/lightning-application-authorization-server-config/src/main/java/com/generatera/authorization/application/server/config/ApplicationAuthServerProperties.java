@@ -20,6 +20,10 @@ public class ApplicationAuthServerProperties {
 
     public final AuthKind lcdpLogin = AuthKind.enable();
 
+    /**
+     * oauth2 server 服务器启用
+     */
+    public final AuthKind OA2AuthServer = AuthKind.enable();
 
     public final Permission permission = new Permission();
 

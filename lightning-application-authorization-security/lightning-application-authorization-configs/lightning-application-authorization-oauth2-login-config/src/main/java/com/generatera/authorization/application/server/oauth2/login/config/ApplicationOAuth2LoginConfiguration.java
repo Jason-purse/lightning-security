@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.config.LightningOAuth2LoginConfigurer;
+import com.generatera.authorization.application.server.config.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningGrantedAuthoritiesMapper;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2UserService;
@@ -21,13 +22,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 
 @Configuration
@@ -97,7 +103,7 @@ public class ApplicationOAuth2LoginConfiguration {
             return new LightningOAuth2LoginConfigurer() {
                 @Override
                 public void configure(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer) {
-
+                    List<String> patterns = new LinkedList<>();
                     if (properties.getIsSeparation()) {
 
                         // backend separation config
@@ -110,28 +116,86 @@ public class ApplicationOAuth2LoginConfiguration {
                         if (StringUtils.hasText(properties.getLoginProcessUrl())) {
                             oAuth2LoginConfigurer.loginPage(noSeparation.getLoginPageUrl());
                         }
+
                         // success handler
-
                         // exception handler ..
-
-                        // 不开启session ,所以需要一个默认实现 ..
-                        if (StringUtils.hasText(noSeparation.getDefaultSuccessUrl())) {
-                            oAuth2LoginConfigurer.successHandler(
-                                    new ForwardAuthenticationSuccessHandler(noSeparation.getDefaultSuccessUrl())
-                            );
-                        } else {
-                            // fallback
-                            oAuth2LoginConfigurer.successHandler(
-                                    new ForwardAuthenticationSuccessHandler("/")
-                            );
+                        if(noSeparation.getEnableSavedRequestForward() != null && noSeparation.getEnableSavedRequestForward()) {
+                            if (StringUtils.hasText(noSeparation.getDefaultSuccessUrl())) {
+                                oAuth2LoginConfigurer.defaultSuccessUrl(noSeparation.getDefaultSuccessUrl());
+                            }
                         }
+                        else {
+                            if(noSeparation.getEnableForward()!= null && noSeparation.getEnableForward()) {
 
-                        // fail url handle
-                        if (StringUtils.hasText(noSeparation.getDefaultFailureUrl())) {
-                            oAuth2LoginConfigurer.failureUrl(noSeparation.getDefaultFailureUrl());
+                                if(StringUtils.hasText(noSeparation.getSuccessUrl())) {
+                                    oAuth2LoginConfigurer.successHandler(
+                                            new ForwardAuthenticationSuccessHandler(noSeparation.getSuccessUrl())
+                                    );
+                                    patterns.add(noSeparation.getSuccessUrl());
+                                }
+
+                                // fail url handle
+                                if (StringUtils.hasText(noSeparation.getFailureUrl())) {
+                                    oAuth2LoginConfigurer.failureUrl(noSeparation.getFailureUrl());
+                                    patterns.add(noSeparation.getFailureUrl());
+                                }
+                            }
+                            else {
+                                // 不开启session ,所以需要一个默认实现 ..
+                                if (StringUtils.hasText(noSeparation.getSuccessUrl())) {
+                                    oAuth2LoginConfigurer.successHandler(
+                                            new RedirectAuthenticationSuccessOrFailureHandler(noSeparation.getSuccessUrl())
+                                    );
+
+                                    patterns.add(noSeparation.getSuccessUrl());
+                                } else {
+                                    // fallback
+                                    oAuth2LoginConfigurer.successHandler(
+                                            new RedirectAuthenticationSuccessOrFailureHandler("/")
+                                    );
+                                    patterns.add("/");
+                                }
+
+                                // fail url handle
+                                if (StringUtils.hasText(noSeparation.getFailureUrl())) {
+                                    oAuth2LoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler(noSeparation.getFailureUrl()));
+                                    patterns.add(noSeparation.getFailureUrl());
+                                }
+                                else {
+                                    if(StringUtils.hasText(noSeparation.getLoginPageUrl())) {
+                                        oAuth2LoginConfigurer.failureHandler(
+                                                new RedirectAuthenticationSuccessOrFailureHandler(
+                                                        noSeparation.getLoginPageUrl())
+                                        );
+                                    }
+
+                                    else {
+                                        // fall back
+                                        oAuth2LoginConfigurer.failureHandler(
+                                                new RedirectAuthenticationSuccessOrFailureHandler(
+                                                        "/login"
+                                                )
+                                        );
+                                    }
+
+                                }
+                            }
                         }
 
                     }
+
+                    // 授权放行url
+                    try {
+                        oAuth2LoginConfigurer.and()
+                                .authorizeHttpRequests()
+                                .antMatchers(
+                                     patterns.toArray(String[]::new)
+                                )
+                                .permitAll();
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(e);
+                    }
+
 
                     if (StringUtils.hasText(properties.getLoginProcessUrl())) {
                         oAuth2LoginConfigurer.loginProcessingUrl(properties.getLoginProcessUrl());
@@ -225,4 +289,5 @@ public class ApplicationOAuth2LoginConfiguration {
 
         }
     }
+
 }

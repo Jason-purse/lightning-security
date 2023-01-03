@@ -8,6 +8,9 @@ import com.jianyue.lightning.util.JsonUtil;
 import lombok.Setter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationToken;
+import org.springframework.security.oauth2.core.AbstractOAuth2Token;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.util.StringUtils;
@@ -16,6 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
 public class LightningOAuth2LoginAuthenticationEntryPoint implements AuthenticationSuccessHandler, AuthenticationFailureHandler {
 
@@ -82,7 +86,17 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        ApplicationLevelAuthorizationToken oAuth2AuthenticationToken = (ApplicationLevelAuthorizationToken)authentication.getPrincipal();
+        OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
+
+        // 生成 token
+//        ApplicationLevelAuthorizationToken levelAuthorizationToken = ApplicationLevelAuthorizationToken.of(
+//                // access token must be exist ...
+//                token.getAccessToken().getTokenValue(),
+//                // can be null
+//                Optional.ofNullable(token.getRefreshToken())
+//                        .map(AbstractOAuth2Token::getTokenValue)
+//                        .orElse(null)
+//        );
 
         // 成功之后颁发 ApplicationLevelAuthorizationToken
         AuthHttpResponseUtil.commence(
@@ -92,7 +106,7 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
                               200,
                                 loginSuccessMessage
                               ,
-                                oAuth2AuthenticationToken
+                                ""
                         )
                 )
         );

@@ -9,7 +9,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
@@ -32,10 +34,21 @@ public class ApplicationAuthServerConfig {
         return httpSecurity
                 .apply(configurer)
                 .and()
-                .authorizeHttpRequests()
-                .anyRequest()
-                .authenticated()
+                .apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
+                    @Override
+                    public void configure(HttpSecurity builder) throws Exception {
+                        // 最后添加这个
+                      builder
+                              .authorizeHttpRequests()
+                              .anyRequest()
+                              .authenticated()
+                              .and()
+                              .csrf()
+                              .disable();
+                    }
+                })
                 .and()
                 .build();
     }
+
 }

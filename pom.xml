@@ -7,6 +7,7 @@
         <module>lightning-application-authorization-security</module>
         <module>lightning-central-authorization-security</module>
         <module>lightning-security-tests</module>
+        <module>lightning-authorization-server-security</module>
     </modules>
 
     <groupId>com.generatera</groupId>

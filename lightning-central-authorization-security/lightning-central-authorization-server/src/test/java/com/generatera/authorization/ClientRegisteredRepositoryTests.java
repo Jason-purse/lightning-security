@@ -1,7 +1,7 @@
 package com.generatera.authorization;
 
 
-import com.generatera.authorization.server.configure.client.LightningRegisteredClientRepository;
+import com.generatera.central.authorization.server.configuration.client.LightningRegisteredClientRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
