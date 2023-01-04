@@ -94,10 +94,12 @@ public class AuthorizationServerCommonComponentsConfiguration {
 
         return new TokenSettingsProvider(
                 builder
+                        .audience(properties.getTokenSettings().getAudiences())
                         .accessTokenFormat(properties.getTokenSettings().getTokenFormat())
                         .accessTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getAccessTokenTimeToLive()))
                         .refreshTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getRefreshTokenTimeToLive()))
                         .reuseRefreshTokens(properties.getTokenSettings().getReuseRefreshToken())
+
                         .build()
         );
     }

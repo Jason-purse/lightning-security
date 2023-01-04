@@ -15,7 +15,7 @@ import com.generatera.authorization.application.server.oauth2.login.config.clien
 import com.generatera.authorization.application.server.oauth2.login.config.token.DefaultOAuth2LoginAuthenticationTokenGenerator;
 import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginAuthenticationTokenGenerator;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenGenerator;
+import com.generatera.authorization.application.server.oauth2.login.config.user.OidcUserPrincipal;
 import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenParser;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
@@ -30,7 +30,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
@@ -72,6 +76,17 @@ public class ApplicationOAuth2LoginConfiguration {
 
 
         private final JWKSource<SecurityContext> jwkSource;
+
+        @Bean
+        public LightningOidcUserService oidcUserService() {
+            return new LightningOidcUserService() {
+                private final OidcUserService oidcUserService = new OidcUserService();
+                @Override
+                public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
+                    return new OidcUserPrincipal(oidcUserService.loadUser(userRequest));
+                }
+            };
+        }
 
         @Bean
         @Qualifier("oauth2")

@@ -32,17 +32,17 @@ public class OAuth2ServerCommonComponentsConfigurationImportSelector extends Pro
                     properties.getAuthorizationStore().getKind();
             if (storeKind == AuthorizationServerOAuth2CommonComponentsProperties.StoreKind.REDIS) {
                 candidates.add(
-                        AuthorizationStoreComponentConfiguration.OAuth2AuthorizationStoreConfig.RedisOAuth2AuthorizationStoreConfig.class.getName()
+                        AuthorizationStoreComponentConfiguration.RedisOAuth2AuthorizationStoreConfig.class.getName()
                 );
             }
             else if(storeKind == AuthorizationServerOAuth2CommonComponentsProperties.StoreKind.JPA) {
                 candidates.add(
-                        AuthorizationStoreComponentConfiguration.OAuth2AuthorizationStoreConfig.JpaOAuth2AuthorizationStoreConfig.class.getName()
+                        AuthorizationStoreComponentConfiguration.JpaOAuth2AuthorizationStoreConfig.class.getName()
                 );
             }
             else if(storeKind == AuthorizationServerOAuth2CommonComponentsProperties.StoreKind.MONGO) {
                 candidates.add(
-                        AuthorizationStoreComponentConfiguration.OAuth2AuthorizationStoreConfig.MongoOAuth2AuthorizationStoreConfig.class.getName()
+                        AuthorizationStoreComponentConfiguration.MongoOAuth2AuthorizationStoreConfig.class.getName()
                 );
             }
         }

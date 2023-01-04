@@ -33,3 +33,4 @@ lightning:
               backend-separation:
                 login-success-message: "登陆成功了,亲!!!"
                 login-failure-message: "登陆失败了,亲!!!"
+                enable-auth-error-detail: true

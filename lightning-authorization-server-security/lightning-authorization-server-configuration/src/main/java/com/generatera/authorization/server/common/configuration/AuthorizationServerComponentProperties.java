@@ -19,6 +19,8 @@ public class AuthorizationServerComponentProperties {
         public static Long DEFAULT_ACCESS_TOKEN_TIME_TO_LIVE = 30 * 60 * 1000L;
         public static Long DEFAULT_REFRESH_TOKEN_TIME_TO_LIVE = 7 * 24 * 60 * 60 * 1000L;
 
+        public static String[] DEFAULT_AUDIENCES = new String[]{"*"};
+
         private Long accessTokenTimeToLive = DEFAULT_ACCESS_TOKEN_TIME_TO_LIVE;
 
         private OAuthTokenFormat tokenFormat = OAuthTokenFormat.SELF_CONTAINED;
@@ -26,6 +28,8 @@ public class AuthorizationServerComponentProperties {
         private Boolean reuseRefreshToken = Boolean.TRUE;
 
         private Long refreshTokenTimeToLive = DEFAULT_REFRESH_TOKEN_TIME_TO_LIVE;
+
+        private String[] audiences = DEFAULT_AUDIENCES;
 
         /**
          * 默认自省Token

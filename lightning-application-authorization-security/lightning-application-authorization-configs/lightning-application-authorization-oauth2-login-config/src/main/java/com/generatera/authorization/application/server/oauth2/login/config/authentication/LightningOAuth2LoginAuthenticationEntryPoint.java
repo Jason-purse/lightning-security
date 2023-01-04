@@ -7,6 +7,7 @@ import com.generatera.authorization.server.common.configuration.ext.oauth2.provi
 import com.generatera.authorization.server.common.configuration.token.*;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -56,6 +57,7 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
         this.authErrorMessage = authErrorMessage;
     }
 
+    @Autowired
     public void setTokenSettingsProvider(TokenSettingsProvider tokenSettingsProvider) {
         Assert.notNull(tokenSettingsProvider,"tokenSettingsProvider must not be null !!!");
         this.tokenSettingsProvider = tokenSettingsProvider;

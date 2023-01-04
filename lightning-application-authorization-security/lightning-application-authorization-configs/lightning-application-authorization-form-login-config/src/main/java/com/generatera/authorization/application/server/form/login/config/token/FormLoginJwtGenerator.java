@@ -51,14 +51,14 @@ public final class FormLoginJwtGenerator implements LightningJwtGenerator<FormLo
             LightningUserPrincipal principal = (LightningUserPrincipal) context.getAuthentication().getPrincipal();
             claimsBuilder
                     .subject(principal.getName())
-                    .audience(context.getTokenSettings().getAudience())
+                    .audience(context.getTokenSettings().getAudiences())
                     .issuedAt(issuedAt)
                     .expiresAt(expiresAt);
             // 访问Token
             if (context.getTokenType() == LightningToken.TokenType.ACCESS_TOKEN_TYPE) {
                 claimsBuilder.notBefore(issuedAt);
-                if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
-                    claimsBuilder.claim("scope", principal.getAuthorities());
+                if (!CollectionUtils.isEmpty(principal.getAuthoritiesForString())) {
+                    claimsBuilder.claim("scope", principal.getAuthoritiesForString());
                 }
             }
             else {

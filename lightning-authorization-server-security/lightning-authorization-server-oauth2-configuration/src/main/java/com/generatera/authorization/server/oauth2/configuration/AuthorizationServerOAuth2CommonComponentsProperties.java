@@ -14,7 +14,8 @@ public class AuthorizationServerOAuth2CommonComponentsProperties {
     public enum StoreKind {
         REDIS,
         JPA,
-        MONGO
+        MONGO,
+        MEMORY
     }
 
     @Data
@@ -57,7 +58,7 @@ public class AuthorizationServerOAuth2CommonComponentsProperties {
         /**
          * 默认使用redis
          */
-        private StoreKind kind = StoreKind.REDIS;
+        private StoreKind kind = StoreKind.MEMORY;
 
 
         private final Redis redis = new Redis("lightning-auth-server-authorization-");

@@ -1,7 +1,7 @@
 package com.generatera.authorization.server.common.configuration.token;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import lombok.AllArgsConstructor;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -50,15 +50,18 @@ class DefaultLightningAuthenticationToken implements LightningAuthenticationToke
     private LightningToken otherToken;
 
     @Override
+    @JsonGetter
     public LightningToken accessToken() {
         return accessToken;
     }
 
     @Override
+    @JsonGetter
     public LightningToken refreshToken() {
         return refreshToken;
     }
 
+    @JsonGetter
     public LightningToken otherToken() {
         return otherToken;
     }

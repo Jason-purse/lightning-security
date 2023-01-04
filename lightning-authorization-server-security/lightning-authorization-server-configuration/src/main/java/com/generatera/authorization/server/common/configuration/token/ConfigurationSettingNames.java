@@ -13,6 +13,7 @@ public final class ConfigurationSettingNames {
         public static final String REUSE_REFRESH_TOKENS;
         public static final String REFRESH_TOKEN_TIME_TO_LIVE;
         public static final String ID_TOKEN_SIGNATURE_ALGORITHM;
+        public static final String AUDIENCE;
 
         private Token() {
         }
@@ -23,6 +24,7 @@ public final class ConfigurationSettingNames {
             REUSE_REFRESH_TOKENS = TOKEN_SETTINGS_NAMESPACE.concat("reuse-refresh-tokens");
             REFRESH_TOKEN_TIME_TO_LIVE = TOKEN_SETTINGS_NAMESPACE.concat("refresh-token-time-to-live");
             ID_TOKEN_SIGNATURE_ALGORITHM = TOKEN_SETTINGS_NAMESPACE.concat("id-token-signature-algorithm");
+            AUDIENCE = TOKEN_SETTINGS_NAMESPACE.concat("token-audience");
         }
     }
 

@@ -37,15 +37,15 @@ public class ApplicationAuthServerConfig {
                 .and()
                 .apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
                     @Override
-                    public void configure(HttpSecurity builder) throws Exception {
+                    public void init(HttpSecurity builder) throws Exception {
                         // 最后添加这个
-                      builder
-                              .authorizeHttpRequests()
-                              .anyRequest()
-                              .authenticated()
-                              .and()
-                              .csrf()
-                              .disable();
+                        builder
+                                .authorizeHttpRequests()
+                                .anyRequest()
+                                .authenticated()
+                                .and()
+                                .csrf()
+                                .disable();
                     }
                 })
                 .and()

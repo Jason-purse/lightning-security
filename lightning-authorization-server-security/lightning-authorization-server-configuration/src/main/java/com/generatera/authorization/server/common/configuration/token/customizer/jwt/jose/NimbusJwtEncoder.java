@@ -83,7 +83,7 @@ public final class NimbusJwtEncoder implements LightningJwtEncoder {
     @Nullable
     private static JWKMatcher createJwkMatcher(JwsHeader headers) {
         JWSAlgorithm jwsAlgorithm = JWSAlgorithm.parse(headers.getAlgorithm().getName());
-        if (!JWEAlgorithm.Family.RSA.contains(jwsAlgorithm) && !JWSAlgorithm.Family.EC.contains(jwsAlgorithm)) {
+        if (!JWSAlgorithm.Family.RSA.contains(jwsAlgorithm) && !JWSAlgorithm.Family.EC.contains(jwsAlgorithm)) {
             return JWSAlgorithm.Family.HMAC_SHA.contains(jwsAlgorithm) ? (new JWKMatcher.Builder()).keyType(KeyType.forAlgorithm(jwsAlgorithm)).keyID(headers.getKeyId()).privateOnly(true).algorithms(new Algorithm[]{jwsAlgorithm, null}).build() : null;
         } else {
             return (new JWKMatcher.Builder()).keyType(KeyType.forAlgorithm(jwsAlgorithm)).keyID(headers.getKeyId()).keyUses(KeyUse.SIGNATURE, null).algorithms(jwsAlgorithm, null).x509CertSHA256Thumbprint(Base64URL.from(headers.getX509SHA256Thumbprint())).build();

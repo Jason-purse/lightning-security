@@ -4,6 +4,7 @@ import com.generatera.authorization.server.common.configuration.token.customizer
 import org.springframework.util.Assert;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -33,8 +34,8 @@ public final class TokenSettings extends AbstractSettings {
         return (SignatureAlgorithm)this.getSetting(ConfigurationSettingNames.Token.ID_TOKEN_SIGNATURE_ALGORITHM);
     }
 
-    public List<String> getAudience() {
-        return null;
+    public List<String> getAudiences() {
+        return this.getSetting(ConfigurationSettingNames.Token.AUDIENCE);
     }
 
     public static TokenSettings.Builder builder() {
@@ -76,6 +77,11 @@ public final class TokenSettings extends AbstractSettings {
         public TokenSettings.Builder idTokenSignatureAlgorithm(SignatureAlgorithm idTokenSignatureAlgorithm) {
             Assert.notNull(idTokenSignatureAlgorithm, "idTokenSignatureAlgorithm cannot be null");
             return (TokenSettings.Builder)this.setting(ConfigurationSettingNames.Token.ID_TOKEN_SIGNATURE_ALGORITHM, idTokenSignatureAlgorithm);
+        }
+
+        public TokenSettings.Builder audience(String... audiences) {
+            Assert.notNull(audiences,"audience must not be null !!!");
+            return this.setting(ConfigurationSettingNames.Token.AUDIENCE, Arrays.asList(audiences));
         }
 
         public TokenSettings build() {
