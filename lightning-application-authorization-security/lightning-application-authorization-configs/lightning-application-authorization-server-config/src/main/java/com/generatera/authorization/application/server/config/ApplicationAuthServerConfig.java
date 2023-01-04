@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
@@ -19,6 +20,7 @@ import java.util.List;
 @Configuration
 @AutoConfigureBefore(SecurityAutoConfiguration.class)
 @EnableConfigurationProperties(ApplicationAuthServerProperties.class)
+@Import({ApplicationAuthServerSpecificationComponentImportSelector.class})
 public class ApplicationAuthServerConfig {
 
     @Bean

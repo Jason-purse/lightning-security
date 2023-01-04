@@ -7,6 +7,7 @@ import com.generatera.authorization.server.oauth2.configuration.client.Registere
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
 import java.util.LinkedList;
@@ -17,8 +18,8 @@ import java.util.List;
  */
 @Slf4j
 public class OAuth2ServerCommonComponentsConfigurationImportSelector extends PropertiesBindImportSelector<AuthorizationServerOAuth2CommonComponentsProperties> {
-    public OAuth2ServerCommonComponentsConfigurationImportSelector(BeanFactory beanFactory) {
-        super(beanFactory, AuthorizationServerOAuth2CommonComponentsProperties.class);
+    public OAuth2ServerCommonComponentsConfigurationImportSelector(BeanFactory beanFactory, Environment environment) {
+        super(beanFactory, environment,AuthorizationServerOAuth2CommonComponentsProperties.class);
     }
 
     @NotNull

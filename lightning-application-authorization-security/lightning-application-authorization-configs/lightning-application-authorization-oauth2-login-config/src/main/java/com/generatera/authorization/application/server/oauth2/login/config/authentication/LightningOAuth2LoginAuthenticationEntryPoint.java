@@ -2,6 +2,7 @@ package com.generatera.authorization.application.server.oauth2.login.config.auth
 
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.AuthHttpResponseUtil;
+import com.generatera.authorization.application.server.config.specification.LightningAuthenticationTokenService;
 import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginAuthenticationTokenGenerator;
 import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderContextHolder;
 import com.generatera.authorization.server.common.configuration.token.*;
@@ -36,6 +37,10 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
 
     private TokenSettingsProvider tokenSettingsProvider;
 
+    private LightningAuthenticationTokenService authenticationTokenService;
+
+
+
 
     public void setTokenGenerator(LightningOAuth2LoginAuthenticationTokenGenerator tokenGenerator) {
         Assert.notNull(tokenGenerator, "tokenGenerator must not be null !!!");
@@ -61,6 +66,11 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
     public void setTokenSettingsProvider(TokenSettingsProvider tokenSettingsProvider) {
         Assert.notNull(tokenSettingsProvider,"tokenSettingsProvider must not be null !!!");
         this.tokenSettingsProvider = tokenSettingsProvider;
+    }
+
+    public void setAuthenticationTokenService(LightningAuthenticationTokenService authenticationTokenService) {
+        Assert.notNull(authenticationTokenService,"authenticationTokenService must not be null !!!");
+        this.authenticationTokenService = authenticationTokenService;
     }
 
     public LightningOAuth2LoginAuthenticationEntryPoint() {
@@ -115,6 +125,9 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
                         tokenSettingsProvider.getTokenSettings()
                 )
         );
+
+        // 保存 token 信息
+        authenticationTokenService.save(token);
 
         AuthHttpResponseUtil.commence(
                 response,

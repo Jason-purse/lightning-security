@@ -1,7 +1,9 @@
 package com.generatera.central.authorization.server.configuration;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -176,10 +178,19 @@ import org.springframework.context.annotation.Configuration;
  *       例如: providerSettings / TokenSettings .. / JwkSource .. / TokenGenerator / TokenDecoder ..
  */
 @AutoConfigureAfter(AuthorizationServerCommonComponentsConfiguration.class)
+@AutoConfigureBefore(ApplicationAuthServerConfig.class)
 @Configuration
 public class CentralOAuthServerComponentConfiguration {
 
-
+    ///**
+    // * 中央授权服务器,不需要 authentication token的派发 ...
+    // * @return authentication token service
+    // */
+    //@Bean
+    //public LightningAuthenticationTokenService lightningAuthenticationTokenService() {
+    //    // 丢一个默认的即可
+    //    return new DefaultAuthenticationTokenService();
+    //}
 
 
 }

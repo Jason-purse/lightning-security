@@ -6,6 +6,7 @@ import com.generatera.authorization.server.oauth2.configuration.token.OAuth2Toke
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
@@ -13,8 +14,8 @@ import org.springframework.core.type.AnnotationMetadata;
  */
 @Slf4j
 public class OAuth2ServerSwitchImportSelector extends PropertiesBindImportSelector<ApplicationAuthServerProperties> {
-    public OAuth2ServerSwitchImportSelector(BeanFactory beanFactory) {
-        super(beanFactory, ApplicationAuthServerProperties.class);
+    public OAuth2ServerSwitchImportSelector(BeanFactory beanFactory, Environment environment) {
+        super(beanFactory, environment,ApplicationAuthServerProperties.class);
     }
 
     @NotNull

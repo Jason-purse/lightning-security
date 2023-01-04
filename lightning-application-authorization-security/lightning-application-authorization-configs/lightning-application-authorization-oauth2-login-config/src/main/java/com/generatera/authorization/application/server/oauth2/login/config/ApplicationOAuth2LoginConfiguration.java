@@ -3,6 +3,7 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.LightningOAuth2LoginConfigurer;
 import com.generatera.authorization.application.server.config.RedirectAuthenticationSuccessOrFailureHandler;
+import com.generatera.authorization.application.server.config.specification.LightningAuthenticationTokenService;
 import com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningGrantedAuthoritiesMapper;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2UserService;
@@ -64,6 +65,12 @@ public class ApplicationOAuth2LoginConfiguration {
         private final AuthorizationExtEndpointConfig authorizationExtEndpointConfig = new AuthorizationExtEndpointConfig();
         private final OAuth2LoginProperties oAuth2LoginProperties;
 
+        /**
+         * 当前后端不分离的时候,不需要它 ..
+         */
+        @Autowired(required = false)
+        private  LightningAuthenticationTokenService authenticationTokenService;
+
 
         @Autowired(required = false)
         private LightningOAuth2LoginAuthenticationTokenGenerator tokenGenerator;
@@ -114,7 +121,8 @@ public class ApplicationOAuth2LoginConfiguration {
             if (StringUtils.hasText(backendSeparation.getLoginFailureMessage())) {
                 point.setAuthErrorMessage(backendSeparation.getLoginFailureMessage());
             }
-
+            Assert.notNull(authenticationTokenService,"authenticationTokenService must not be null !!!");
+            point.setAuthenticationTokenService(authenticationTokenService);
             // 必须存在
             point.setTokenGenerator(Objects.requireNonNullElseGet(tokenGenerator, () -> new DefaultOAuth2LoginAuthenticationTokenGenerator(jwkSource)));
 

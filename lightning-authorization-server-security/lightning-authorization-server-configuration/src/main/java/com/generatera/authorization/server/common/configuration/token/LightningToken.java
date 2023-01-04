@@ -2,6 +2,7 @@ package com.generatera.authorization.server.common.configuration.token;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.util.Assert;
 
 import java.time.Instant;
 
@@ -79,10 +80,13 @@ public interface LightningToken {
         public static TokenType ACCESS_TOKEN_TYPE = new TokenType(ACCESS_TOKEN);
 
         public static TokenType REFRESH_TOKEN_TYPE = new TokenType(REFRESH_TOKEN);
+
+        public static TokenType of(String tokenTypeString) {
+            return new TokenType(tokenTypeString);
+        }
     }
 }
 
-@AllArgsConstructor
 class DefaultLightningToken implements LightningToken {
 
     private String tokenValue;
@@ -92,6 +96,20 @@ class DefaultLightningToken implements LightningToken {
     private Instant expiredAt;
 
     private TokenType tokenType;
+
+    public DefaultLightningToken(String tokenValue, Instant issuedAt, Instant expiredAt,TokenType tokenType) {
+
+        Assert.notNull(tokenType,"tokenType must not be null !!!!");
+        Assert.notNull(issuedAt,"issuedAt must not be null !!!!");
+        Assert.notNull(expiredAt,"expiredAt must not be null !!!!");
+        Assert.notNull(tokenValue,"tokenValue must not be null !!!!");
+
+
+        this.tokenType = tokenType;
+        this.issuedAt = issuedAt;
+        this.expiredAt = expiredAt;
+        this.tokenValue = tokenValue;
+    }
 
     @Override
     public String getTokenValue() {

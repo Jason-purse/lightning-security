@@ -1,7 +1,8 @@
-package com.generatera.authorization.application.server.form.login.config;
+package com.generatera.authorization.application.server.form.login.config.authentication;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.AuthHttpResponseUtil;
+import com.generatera.authorization.application.server.config.specification.LightningAuthenticationTokenService;
 import com.generatera.authorization.application.server.form.login.config.token.FormLoginAuthenticationTokenGenerator;
 import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderContextHolder;
 import com.generatera.authorization.server.common.configuration.token.*;
@@ -52,16 +53,23 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
 
     private TokenSettingsProvider tokenSettingsProvider;
 
+    private LightningAuthenticationTokenService authenticationTokenService;
+
     public LightningFormLoginAuthenticationEntryPoint(FormLoginAuthenticationTokenGenerator tokenGenerator,
-                                                      TokenSettingsProvider tokenSettingsProvider) {
+                                                      TokenSettingsProvider tokenSettingsProvider,
+                                                      LightningAuthenticationTokenService authenticationTokenService) {
         Assert.notNull(
                 tokenGenerator,
                 "Form login tokenGenerator must not be null !!!"
         );
         Assert.notNull(tokenSettingsProvider,
                 "token settings must not be null !!!");
+
+        Assert.notNull(authenticationTokenService,
+                "authentication token service must not be null !!!");
         this.tokenGenerator = tokenGenerator;
         this.tokenSettingsProvider = tokenSettingsProvider;
+        this.authenticationTokenService = authenticationTokenService;
     }
 
 

@@ -17,6 +17,10 @@ spring:
         provider:
           default:
             issuer-uri: http://localhost:9000
+  redis:
+    host: 192.168.0.210
+    port: 16379
+    database: 3
 lightning:
   auth:
     app:
@@ -34,3 +38,8 @@ lightning:
                 login-success-message: "登陆成功了,亲!!!"
                 login-failure-message: "登陆失败了,亲!!!"
                 enable-auth-error-detail: true
+
+        config:
+          specification:
+            authentication-token-setting:
+              authentication-token-store-kind: redis

@@ -22,19 +22,22 @@
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-authorization-server</artifactId>
         </dependency>
+
+<!--        // 授权服务器的通用配置-->
         <dependency>
             <groupId>com.generatera</groupId>
             <artifactId>lightning-authorization-server-configuration</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-oauth2-client</artifactId>
-        </dependency>
+<!--       //  授权服务器启用开关-->
         <dependency>
             <groupId>com.generatera</groupId>
             <artifactId>lightning-application-authorization-server-config</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-oauth2-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>

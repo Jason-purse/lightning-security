@@ -5,7 +5,7 @@ import com.generatera.authorization.server.common.configuration.token.customizer
 import java.net.URL;
 import java.util.List;
 
-public interface OAuth2AuthorizationServerMetadataClaimAccessor extends ClaimAccessor {
+public interface BasedOAuth2AuthorizationServerMetadataClaimAccessor extends ClaimAccessor {
     default URL getIssuer() {
         return this.getClaimAsURL("issuer");
     }

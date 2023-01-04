@@ -11,7 +11,12 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-
+/**
+ * @author FLJ
+ * @date 2023/1/4
+ * @time 13:52
+ * @Description 颁发的token 存储组件配置 ..
+ */
 public class AuthorizationStoreComponentConfiguration {
 
 

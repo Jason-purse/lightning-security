@@ -3,13 +3,14 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
 import java.util.LinkedList;
 
 public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBindImportSelector<OAuth2LoginProperties> {
-    public ApplicationOAuth2LoginComponentsImportSelector(BeanFactory beanFactory) {
-        super(beanFactory, OAuth2LoginProperties.class);
+    public ApplicationOAuth2LoginComponentsImportSelector(BeanFactory beanFactory, Environment environment) {
+        super(beanFactory, environment,OAuth2LoginProperties.class);
     }
 
     @NotNull

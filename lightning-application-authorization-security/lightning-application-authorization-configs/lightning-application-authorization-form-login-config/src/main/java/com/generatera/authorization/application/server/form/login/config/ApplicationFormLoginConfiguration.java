@@ -3,16 +3,9 @@ package com.generatera.authorization.application.server.form.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.LightningFormLoginConfigurer;
 import com.generatera.authorization.application.server.config.RedirectAuthenticationSuccessOrFailureHandler;
-import com.generatera.authorization.application.server.form.login.config.token.DefaultFormLoginAuthenticationTokenGenerator;
-import com.generatera.authorization.application.server.form.login.config.token.FormLoginAuthenticationTokenGenerator;
-import com.generatera.authorization.server.common.configuration.token.TokenSettingsProvider;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
@@ -32,7 +26,7 @@ import java.util.Objects;
  */
 @Configuration
 @AutoConfigureAfter(ApplicationAuthServerConfig.class)
-@Import(FormLoginConfigurationImportSelector.class)
+@Import({FormLoginConfigurationImportSelector.class,FormLoginConfigurationImportSelector.class})
 public class ApplicationFormLoginConfiguration {
 
     /**
@@ -45,74 +39,11 @@ public class ApplicationFormLoginConfiguration {
 
         private final FormLoginProperties formLoginProperties;
 
-        private final TokenSettingsProvider tokenSettingsProvider;
-
-        private final JWKSource<SecurityContext> jwkSource;
-
-        @Autowired(required = false)
-        private FormLoginAuthenticationTokenGenerator tokenGenerator;
-
-
-        @Bean
-        @ConditionalOnMissingBean({AuthenticationSuccessHandler.class})
-        public AuthenticationSuccessHandler authenticationSuccessHandler() {
-            return lightningFormLoginAuthenticationEntryPoint();
-        }
-
-        @Bean
-        @ConditionalOnMissingBean({AuthenticationFailureHandler.class})
-        public AuthenticationFailureHandler authenticationFailureHandler() {
-            return lightningFormLoginAuthenticationEntryPoint();
-        }
-
-
-        /**
-         * 代理此方法 ..
-         *
-         * @return authentication success / failure 都是同一个对象
-         */
-        private LightningFormLoginAuthenticationEntryPoint lightningFormLoginAuthenticationEntryPoint() {
-
-            FormLoginAuthenticationTokenGenerator formLoginAuthenticationTokenGenerator = Objects.requireNonNullElseGet(tokenGenerator,
-                    () -> new DefaultFormLoginAuthenticationTokenGenerator(jwkSource));
-
-            LightningFormLoginAuthenticationEntryPoint point = new LightningFormLoginAuthenticationEntryPoint(formLoginAuthenticationTokenGenerator, tokenSettingsProvider);
-            FormLoginProperties.BackendSeparation backendSeparation = formLoginProperties.getBackendSeparation();
-
-            if (StringUtils.hasText(backendSeparation.getLoginSuccessMessage())) {
-                point.setLoginSuccessMessage(backendSeparation.getLoginSuccessMessage());
-            }
-
-            point.setEnableAccountStatusInform(backendSeparation.getEnableAccountStatusInform());
-
-            if (ObjectUtils.isNotEmpty(backendSeparation.getEnableAccountStatusInform()) && backendSeparation.getEnableAccountStatusInform()) {
-                if (StringUtils.hasText(backendSeparation.getAccountLockedMessage())) {
-                    point.setAccountStatusLockedMessage(backendSeparation.getAccountLockedMessage());
-                }
-                if (StringUtils.hasText(backendSeparation.getAccountExpiredMessage())) {
-                    point.setAccountStatusExpiredMessage(backendSeparation.getAccountExpiredMessage());
-                }
-            }
-
-            if (StringUtils.hasText(backendSeparation.getAccountStatusMessage())) {
-                point.setAccountStatusMessage(backendSeparation.getAccountStatusMessage());
-            }
-
-            if (StringUtils.hasText(backendSeparation.getBadCredentialMessage())) {
-                point.setBadCredentialsMessage(backendSeparation.getBadCredentialMessage());
-            }
-
-            if (StringUtils.hasText(backendSeparation.getLoginFailureMessage())) {
-                point.setLoginFailureMessage(backendSeparation.getLoginFailureMessage());
-            }
-
-            return point;
-        }
-
-
         @Bean
         public LightningFormLoginConfigurer lightningFormLoginConfigurer(
+                @Autowired(required = false)
                 AuthenticationSuccessHandler authenticationSuccessHandler,
+                @Autowired(required = false)
                 AuthenticationFailureHandler authenticationFailureHandler) {
             return new LightningFormLoginConfigurer() {
                 @Override
@@ -120,7 +51,9 @@ public class ApplicationFormLoginConfiguration {
 
                     List<String> patterns = new LinkedList<>();
                     // 如果是前后端分离的 ..
-                    if (Objects.requireNonNullElse(formLoginProperties.getIsSeparation(),Boolean.FALSE)) {
+                    if (Objects.requireNonNullElse(formLoginProperties.getIsSeparation(), Boolean.FALSE)) {
+                        Assert.notNull(authenticationSuccessHandler,"authenticationSuccessHandler must not be null !!!");
+                        Assert.notNull(authenticationFailureHandler,"authenticationFailureHandler must not be null !!!");
                         // 前后端分离的 handler 配置 ..
                         formLoginConfigurer.successHandler(authenticationSuccessHandler);
                         formLoginConfigurer.failureHandler(authenticationFailureHandler);
@@ -196,7 +129,7 @@ public class ApplicationFormLoginConfiguration {
                                 .authorizeHttpRequests()
                                 .antMatchers(patterns.toArray(String[]::new))
                                 .permitAll();
-                    }catch (Exception e) {
+                    } catch (Exception e) {
                         throw new IllegalArgumentException(e);
                     }
 

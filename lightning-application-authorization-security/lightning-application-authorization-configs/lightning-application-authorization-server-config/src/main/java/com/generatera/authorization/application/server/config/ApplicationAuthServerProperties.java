@@ -27,6 +27,7 @@ public class ApplicationAuthServerProperties {
 
     public final Permission permission = new Permission();
 
+    public final Specification specification = new Specification();
 
 
     /**
@@ -57,7 +58,6 @@ public class ApplicationAuthServerProperties {
     }
 
 
-
     @Data
     public static class Permission {
 
@@ -65,6 +65,71 @@ public class ApplicationAuthServerProperties {
          * url 白名单 - 放行,不需要token 校验
          */
         private List<String> urlWhiteList = Collections.emptyList();
+    }
+
+    @Data
+    public static class Specification {
+
+        private AuthenticationTokenSetting authenticationTokenSetting = new AuthenticationTokenSetting();
+
+
+        @Data
+        public static class AuthenticationTokenSetting {
+
+            private Boolean enable = Boolean.TRUE;
+
+            private StoreKind authenticationTokenStoreKind = StoreKind.MEMORY;
+
+            private final Redis redis = new Redis("lightning.app.auth.server.authentication.token.");
+
+            public Boolean getEnable() {
+                return enable != null ? enable : Boolean.FALSE;
+            }
+        }
+
+    }
+
+
+    @Data
+    public static class Redis {
+
+        /**
+         * key 前缀
+         */
+        private String keyPrefix;
+
+        /**
+         * value 保留 30分钟(但是不能够使用恰好30分钟,需要比正常时间少10 - 30秒)
+         */
+        private final Long DEFAULT_EXPIRED_TIME = 30 * 1000 * 60L;
+
+
+        private Long expiredTimeDuration = DEFAULT_EXPIRED_TIME;
+
+        public Redis(String keyPrefix) {
+            this.keyPrefix = keyPrefix;
+        }
+
+        /**
+         * 需要比正常时间少10 - 30秒
+         *
+         * @return expired_time
+         */
+        public Long getExpiredTimeDuration() {
+            return expiredTimeDuration != null ? expiredTimeDuration : DEFAULT_EXPIRED_TIME - 10 * 1000L;
+        }
+
+        public static Redis of(String keyPrefix) {
+            return new Redis(keyPrefix);
+        }
+    }
+
+
+    public enum StoreKind {
+        REDIS,
+        JPA,
+        MONGO,
+        MEMORY
     }
 
 }

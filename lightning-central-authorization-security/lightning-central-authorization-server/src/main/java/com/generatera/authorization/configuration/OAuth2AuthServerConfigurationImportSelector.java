@@ -4,6 +4,7 @@ import com.generatera.authorization.application.server.config.ApplicationAuthSer
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
@@ -11,8 +12,8 @@ import org.springframework.core.type.AnnotationMetadata;
  * // TODO: 2023/1/2 应该让OAuth2 Auth Server 变得更加优雅 ...
  */
 public class OAuth2AuthServerConfigurationImportSelector extends PropertiesBindImportSelector<ApplicationAuthServerProperties> {
-    public OAuth2AuthServerConfigurationImportSelector(BeanFactory beanFactory) {
-        super(beanFactory, ApplicationAuthServerProperties.class);
+    public OAuth2AuthServerConfigurationImportSelector(BeanFactory beanFactory, Environment environment) {
+        super(beanFactory, environment,ApplicationAuthServerProperties.class);
     }
 
     @NotNull

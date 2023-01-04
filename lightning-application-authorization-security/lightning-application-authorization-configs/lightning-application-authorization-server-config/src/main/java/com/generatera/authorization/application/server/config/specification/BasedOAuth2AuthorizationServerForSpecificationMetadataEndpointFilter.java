@@ -32,7 +32,7 @@ public final class BasedOAuth2AuthorizationServerForSpecificationMetadataEndpoin
     private static final String DEFAULT_AUTH_AUTHORIZATION_SERVER_METADATA_ENDPOINT_URI = "/.well-known/oauth-authorization-server";
     private final ProviderSettings providerSettings;
     private final RequestMatcher requestMatcher;
-    private final OAuth2AuthorizationServerMetadataHttpMessageConverter authorizationServerMetadataHttpMessageConverter = new OAuth2AuthorizationServerMetadataHttpMessageConverter();
+    private final BasedOAuth2AuthorizationServerMetadataHttpMessageConverter authorizationServerMetadataHttpMessageConverter = new BasedOAuth2AuthorizationServerMetadataHttpMessageConverter();
 
     public BasedOAuth2AuthorizationServerForSpecificationMetadataEndpointFilter(ProviderSettings providerSettings) {
         Assert.notNull(providerSettings, "providerSettings cannot be null");
@@ -45,8 +45,8 @@ public final class BasedOAuth2AuthorizationServerForSpecificationMetadataEndpoin
             filterChain.doFilter(request, response);
         } else {
             String issuer = ProviderContextHolder.getProviderContext().getIssuer();
-            OAuth2AuthorizationServerMetadata authorizationServerMetadata =
-                    OAuth2AuthorizationServerMetadata.builder()
+            BasedOAuth2AuthorizationServerMetadata authorizationServerMetadata =
+                    BasedOAuth2AuthorizationServerMetadata.builder()
                             .issuer(issuer)
                             .authorizationEndpoint(asUrl(issuer, this.providerSettings.getAuthorizationEndpoint()))
             .jwkSetUrl(asUrl(issuer, this.providerSettings.getJwkSetEndpoint()))

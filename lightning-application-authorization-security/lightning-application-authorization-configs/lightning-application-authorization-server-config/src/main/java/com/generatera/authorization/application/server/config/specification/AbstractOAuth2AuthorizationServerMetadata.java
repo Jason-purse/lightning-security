@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
 
-public abstract class AbstractOAuth2AuthorizationServerMetadata implements OAuth2AuthorizationServerMetadataClaimAccessor, Serializable {
+public abstract class AbstractOAuth2AuthorizationServerMetadata implements BasedOAuth2AuthorizationServerMetadataClaimAccessor, Serializable {
     private static final long serialVersionUID;
     private final Map<String, Object> claims;
 
