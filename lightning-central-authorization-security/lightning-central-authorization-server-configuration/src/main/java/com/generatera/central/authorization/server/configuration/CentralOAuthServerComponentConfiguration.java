@@ -1,11 +1,14 @@
 package com.generatera.central.authorization.server.configuration;
 
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
+import com.generatera.authorization.server.oauth2.configuration.authorization.consent.JpaOAuth2AuthorizationConsentService;
+import com.generatera.authorization.server.oauth2.configuration.repository.OAuth2AuthorizationConsentRepository;
 import com.generatera.central.authorization.server.configuration.client.*;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 
 /**
@@ -190,9 +193,17 @@ public class CentralOAuthServerComponentConfiguration {
     @Configuration
     @ConditionalOnMissingBean(RegisteredClientRepository.class)
     public static class ClientRepositoryConfig {
+
+
+
         @Bean
         public RegisteredClientRepository registeredClientRepository(AppService appService) {
             return new LightningRegisteredClientRepository(appService);
+        }
+
+        @Bean
+        public OAuth2AuthorizationConsentService oAuth2AuthorizationConsentService(OAuth2AuthorizationConsentRepository oAuth2AuthorizationConsentRepository, RegisteredClientRepository registeredClientRepository) {
+            return new JpaOAuth2AuthorizationConsentService(oAuth2AuthorizationConsentRepository,registeredClientRepository);
         }
 
         @Bean

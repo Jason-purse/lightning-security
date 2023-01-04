@@ -1,7 +1,10 @@
 package com.generatera.authorization.server.oauth2.configuration;
 
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
 @Data
+@ConfigurationProperties(prefix = "lightning.auth.server.oauth2.component")
 public class AuthorizationServerOAuth2CommonComponentsProperties {
 
     private final AuthorizationStoreComponentConfig authorizationStore = new AuthorizationStoreComponentConfig();

@@ -9,7 +9,7 @@ public class FormLoginProperties {
     /**
      * 与后端分离
      */
-    private Boolean isSeparation;
+    private Boolean isSeparation = Boolean.FALSE;
 
     private String loginPageUrl;
 

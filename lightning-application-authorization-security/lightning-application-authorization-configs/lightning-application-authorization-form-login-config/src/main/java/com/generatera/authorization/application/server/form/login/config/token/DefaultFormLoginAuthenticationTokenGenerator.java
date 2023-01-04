@@ -21,69 +21,76 @@ import java.time.Instant;
  * 2. 将用户信息放入token ..
  */
 public class DefaultFormLoginAuthenticationTokenGenerator implements FormLoginAuthenticationTokenGenerator {
+
+
+    public DefaultFormLoginAuthenticationTokenGenerator(JWKSource<SecurityContext> jwkSource) {
+        this(Boolean.FALSE,jwkSource);
+    }
+
+    public DefaultFormLoginAuthenticationTokenGenerator(Boolean isPlain, JWKSource<SecurityContext> jwkSource) {
+        this.isPlain = isPlain;
+        this.jwkSource = jwkSource;
+        accessTokenGenerator = new LightningFormLoginAccessTokenGenerator() {
+
+            private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+
+            private final FormLoginJwtGenerator jwtEncoder = new FormLoginJwtGenerator(
+                    new NimbusJwtEncoder(jwkSource)
+            );
+
+            @Override
+            public LightningToken.AccessToken generate(LightningSecurityContext context) {
+                TokenSettings tokenSettings = context.getTokenSettings();
+                if (isPlain) {
+                    Instant now = Instant.now();
+                    return LightningToken.accessToken(
+                            snowflakeIdWorker.nextId(),
+                            now,
+                            Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
+                    );
+                } else {
+                    LightningJwt token = jwtEncoder.generate(((FormLoginSecurityContext) context));
+                    Assert.notNull(token,"cannot generate jwt token !!!!");
+                    String tokenValue = token.getTokenValue();
+                    assert tokenValue != null;
+                    return LightningToken.accessToken(tokenValue,
+                            token.getIssuedAt(), token.getExpiresAt());
+                }
+            }
+        };
+        refreshTokenGenerator = new LightningFormLoginRefreshTokenGenerator() {
+
+            private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+
+
+            @Override
+            public LightningToken.RefreshToken generate(LightningSecurityContext context) {
+                TokenSettings tokenSettings = context.getTokenSettings();
+                Instant now = Instant.now();
+                return LightningToken.refreshToken(
+                        snowflakeIdWorker.nextId(),
+                        now,
+                        Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
+                );
+            }
+        };
+    }
+
     /**
      * 代表是否自省Token
      */
     private Boolean isPlain = Boolean.TRUE;
 
-    private JWKSource<SecurityContext> jwkSource;
+    private final JWKSource<SecurityContext> jwkSource;
 
 
-    private LightningFormLoginAccessTokenGenerator accessTokenGenerator = new LightningFormLoginAccessTokenGenerator() {
 
-        private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+    private LightningFormLoginAccessTokenGenerator accessTokenGenerator;
 
-        private final FormLoginJwtGenerator jwtEncoder = new FormLoginJwtGenerator(
-                new NimbusJwtEncoder(jwkSource)
-        );
-
-        @Override
-        public LightningToken.AccessToken generate(LightningSecurityContext context) {
-            TokenSettings tokenSettings = context.getTokenSettings();
-            if (isPlain) {
-                Instant now = Instant.now();
-                return LightningToken.accessToken(
-                        snowflakeIdWorker.nextId(),
-                        now,
-                        Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
-                );
-            } else {
-                LightningJwt token = jwtEncoder.generate(((FormLoginSecurityContext) context));
-                Assert.notNull(token,"cannot generate jwt token !!!!");
-                String tokenValue = token.getTokenValue();
-                assert tokenValue != null;
-                return LightningToken.accessToken(tokenValue,
-                        token.getIssuedAt(), token.getExpiresAt());
-            }
-        }
-    };
-
-    private LightningFormLoginRefreshTokenGenerator refreshTokenGenerator = new LightningFormLoginRefreshTokenGenerator() {
-
-        private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+    private LightningFormLoginRefreshTokenGenerator refreshTokenGenerator;
 
 
-        @Override
-        public LightningToken.RefreshToken generate(LightningSecurityContext context) {
-            TokenSettings tokenSettings = context.getTokenSettings();
-            Instant now = Instant.now();
-            return LightningToken.refreshToken(
-                    snowflakeIdWorker.nextId(),
-                    now,
-                    Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
-            );
-        }
-    };
 
-
-    public DefaultFormLoginAuthenticationTokenGenerator(Boolean isPlain, JWKSource<SecurityContext> jwkSource) {
-        this.isPlain = isPlain;
-        this.jwkSource = jwkSource;
-    }
-
-    public DefaultFormLoginAuthenticationTokenGenerator(JWKSource<SecurityContext> jwkSource) {
-        this.jwkSource = jwkSource;
-    }
 
     public void setAccessTokenGenerator(LightningFormLoginAccessTokenGenerator accessTokenGenerator) {
         Assert.notNull(accessTokenGenerator,"accessTokenGenerator must not be null !!!");

@@ -39,6 +39,7 @@ public class OAuth2ExtSecurityConfigurer extends SecurityConfigurerAdapter<Defau
             if(configurers.size() > 0) {
                 OAuth2AuthorizationServerConfigurer<HttpSecurity> oAuth2AuthorizationServerConfigurer
                         = new OAuth2AuthorizationServerConfigurer<>();
+                    builder.apply(oAuth2AuthorizationServerConfigurer);
                 for (LightningAppAuthServerConfigurer serverConfigurer : serverConfigurers) {
                     serverConfigurer.configure(oAuth2AuthorizationServerConfigurer);
                 }

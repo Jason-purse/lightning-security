@@ -26,64 +26,67 @@ public class DefaultAuthenticationTokenGenerator implements LightningAuthenticat
     /**
      * 代表是否自省Token
      */
-    private Boolean isPlain = Boolean.TRUE;
+    private Boolean isPlain = Boolean.FALSE;
 
-    private JWKSource<SecurityContext> jwkSource;
-
-
-    private LightningTokenGenerator<LightningToken.AccessToken> accessTokenGenerator = new LightningTokenGenerator<>() {
-
-        private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
-
-        private final LightningJwtGenerator<LightningSecurityContext> jwtEncoder =
-                new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSource));
-
-        @Override
-        public LightningToken.AccessToken generate(LightningSecurityContext context) {
-            TokenSettings tokenSettings = context.getTokenSettings();
-            if (isPlain) {
-                Instant now = Instant.now();
-                return LightningToken.accessToken(
-                        snowflakeIdWorker.nextId(),
-                        now,
-                        Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
-                );
-            } else {
-                LightningJwt token = jwtEncoder.generate(context);
-                Assert.notNull(token, "cannot generate jwt token !!!!");
-                String tokenValue = token.getTokenValue();
-                assert tokenValue != null;
-                return LightningToken.accessToken(tokenValue,
-                        token.getIssuedAt(), token.getExpiresAt());
-            }
-        }
-    };
-
-    private LightningTokenGenerator<LightningToken.RefreshToken> refreshTokenGenerator = new LightningTokenGenerator<>() {
-
-        private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+    private final JWKSource<SecurityContext> jwkSource;
 
 
-        @Override
-        public LightningToken.RefreshToken generate(LightningSecurityContext context) {
-            TokenSettings tokenSettings = context.getTokenSettings();
-            Instant now = Instant.now();
-            return LightningToken.refreshToken(
-                    snowflakeIdWorker.nextId(),
-                    now,
-                    Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
-            );
-        }
-    };
+    private LightningTokenGenerator<LightningToken.AccessToken> accessTokenGenerator;
+
+    private LightningTokenGenerator<LightningToken.RefreshToken> refreshTokenGenerator;
 
 
     public DefaultAuthenticationTokenGenerator(Boolean isPlain, JWKSource<SecurityContext> jwkSource) {
         this.isPlain = isPlain;
         this.jwkSource = jwkSource;
+        this.refreshTokenGenerator = new LightningTokenGenerator<>() {
+
+            private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+
+
+            @Override
+            public LightningToken.RefreshToken generate(LightningSecurityContext context) {
+                TokenSettings tokenSettings = context.getTokenSettings();
+                Instant now = Instant.now();
+                return LightningToken.refreshToken(
+                        snowflakeIdWorker.nextId(),
+                        now,
+                        Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
+                );
+            }
+        };
+
+        this.accessTokenGenerator = new LightningTokenGenerator<>() {
+
+            private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
+
+            private final LightningJwtGenerator<LightningSecurityContext> jwtEncoder =
+                    new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSource));
+
+            @Override
+            public LightningToken.AccessToken generate(LightningSecurityContext context) {
+                TokenSettings tokenSettings = context.getTokenSettings();
+                if (isPlain) {
+                    Instant now = Instant.now();
+                    return LightningToken.accessToken(
+                            snowflakeIdWorker.nextId(),
+                            now,
+                            Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
+                    );
+                } else {
+                    LightningJwt token = jwtEncoder.generate(context);
+                    Assert.notNull(token, "cannot generate jwt token !!!!");
+                    String tokenValue = token.getTokenValue();
+                    assert tokenValue != null;
+                    return LightningToken.accessToken(tokenValue,
+                            token.getIssuedAt(), token.getExpiresAt());
+                }
+            }
+        };
     }
 
     public DefaultAuthenticationTokenGenerator(JWKSource<SecurityContext> jwkSource) {
-        this.jwkSource = jwkSource;
+        this(Boolean.FALSE,jwkSource);
     }
 
     public void setAccessTokenGenerator(LightningTokenGenerator<LightningToken.AccessToken> accessTokenGenerator) {

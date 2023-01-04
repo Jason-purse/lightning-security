@@ -42,7 +42,7 @@ public class OAuth2AuthServerConfiguration {
     /**
      * 中央认证服务中心配置 ..
      */
-    @Bean
+    @Bean("lightning.oauth2.auth.server.configurer")
     public LightningOAuth2ServerConfigurer oAuth2ServerConfigurer() {
         return new LightningOAuth2ServerConfigurer() {
             @Override

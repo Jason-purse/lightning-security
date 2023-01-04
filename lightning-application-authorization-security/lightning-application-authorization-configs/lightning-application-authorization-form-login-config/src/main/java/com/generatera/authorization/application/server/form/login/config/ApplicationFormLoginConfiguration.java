@@ -5,7 +5,6 @@ import com.generatera.authorization.application.server.config.LightningFormLogin
 import com.generatera.authorization.application.server.config.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.application.server.form.login.config.token.DefaultFormLoginAuthenticationTokenGenerator;
 import com.generatera.authorization.application.server.form.login.config.token.FormLoginAuthenticationTokenGenerator;
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenGenerator;
 import com.generatera.authorization.server.common.configuration.token.TokenSettingsProvider;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
@@ -121,7 +120,7 @@ public class ApplicationFormLoginConfiguration {
 
                     List<String> patterns = new LinkedList<>();
                     // 如果是前后端分离的 ..
-                    if (formLoginProperties.getIsSeparation()) {
+                    if (Objects.requireNonNullElse(formLoginProperties.getIsSeparation(),Boolean.FALSE)) {
                         // 前后端分离的 handler 配置 ..
                         formLoginConfigurer.successHandler(authenticationSuccessHandler);
                         formLoginConfigurer.failureHandler(authenticationFailureHandler);
@@ -188,6 +187,17 @@ public class ApplicationFormLoginConfiguration {
 
                     if (StringUtils.hasText(formLoginProperties.getLoginProcessUrl())) {
                         formLoginConfigurer.loginProcessingUrl(formLoginProperties.getLoginProcessUrl());
+                    }
+
+
+                    // 资源放行
+                    try {
+                        formLoginConfigurer.and()
+                                .authorizeHttpRequests()
+                                .antMatchers(patterns.toArray(String[]::new))
+                                .permitAll();
+                    }catch (Exception e) {
+                        throw new IllegalArgumentException(e);
                     }
 
                 }
