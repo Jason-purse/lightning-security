@@ -1,5 +1,6 @@
 package com.generatera.authorization.server.common.configuration.token;
 
+import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderContext;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 

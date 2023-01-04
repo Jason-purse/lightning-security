@@ -3,6 +3,7 @@ package com.generatera.authorization.application.server.oauth2.login.config.auth
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.AuthHttpResponseUtil;
 import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginAuthenticationTokenGenerator;
+import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderContextHolder;
 import com.generatera.authorization.server.common.configuration.token.*;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;

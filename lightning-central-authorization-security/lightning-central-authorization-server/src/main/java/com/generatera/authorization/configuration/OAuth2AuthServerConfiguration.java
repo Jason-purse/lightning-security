@@ -1,8 +1,10 @@
 package com.generatera.authorization.configuration;
 
+import com.generatera.authorization.LightningAuthorizationApplication;
 import com.generatera.authorization.application.server.config.LightningOAuth2ServerConfigurer;
 import com.generatera.authorization.ext.oauth2.authentication.OAuth2ResourceOwnerPasswordAuthenticationConverter;
 import com.generatera.authorization.ext.oauth2.authentication.OAuth2ResourceOwnerPasswordAuthenticationProvider;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,10 +21,12 @@ import org.springframework.security.oauth2.server.authorization.web.authenticati
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2ClientCredentialsAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2RefreshTokenAuthenticationConverter;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 
 import java.util.Arrays;
 
 @Configuration
+@EntityScan(basePackageClasses = LightningAuthorizationApplication.class)
 public class OAuth2AuthServerConfiguration {
     /**
      * 自定义授权同意页面
@@ -46,7 +50,9 @@ public class OAuth2AuthServerConfiguration {
     public LightningOAuth2ServerConfigurer oAuth2ServerConfigurer() {
         return new LightningOAuth2ServerConfigurer() {
             @Override
-            public void configure(OAuth2AuthorizationServerConfigurer<HttpSecurity> oAuth2AuthorizationServerConfigurer) {
+            public void configure(SecurityConfigurerAdapter<DefaultSecurityFilterChain,HttpSecurity> configurerAdapter) {
+                OAuth2AuthorizationServerConfigurer<HttpSecurity> oAuth2AuthorizationServerConfigurer
+                        = ((OAuth2AuthorizationServerConfigurer<HttpSecurity>) configurerAdapter);
                 // oauth2 server configuration
                 oAuth2AuthorizationServerConfigurer.tokenEndpoint(
                         new Customizer<OAuth2TokenEndpointConfigurer>() {

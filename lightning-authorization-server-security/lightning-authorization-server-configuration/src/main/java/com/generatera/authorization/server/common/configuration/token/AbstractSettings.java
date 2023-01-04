@@ -1,6 +1,5 @@
 package com.generatera.authorization.server.common.configuration.token;
 
-import org.springframework.security.oauth2.core.Version;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
@@ -13,7 +12,6 @@ import java.util.function.Consumer;
  * 抽象配置 .. 类似于map
  */
 public abstract class AbstractSettings implements Serializable {
-    private static final long serialVersionUID;
     private final Map<String, Object> settings;
 
     protected AbstractSettings(Map<String, Object> settings) {
@@ -49,9 +47,7 @@ public abstract class AbstractSettings implements Serializable {
         return "AbstractSettings {settings=" + this.settings + "}";
     }
 
-    static {
-        serialVersionUID = Version.SERIAL_VERSION_UID;
-    }
+
 
     protected abstract static class AbstractBuilder<T extends AbstractSettings, B extends AbstractSettings.AbstractBuilder<T, B>> {
         private final Map<String, Object> settings = new HashMap<>();

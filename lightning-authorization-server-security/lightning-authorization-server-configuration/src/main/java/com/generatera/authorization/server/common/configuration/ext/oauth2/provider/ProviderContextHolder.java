@@ -1,4 +1,5 @@
-package com.generatera.authorization.server.common.configuration.token;
+package com.generatera.authorization.server.common.configuration.ext.oauth2.provider;
+
 /**
  * @author FLJ
  * @date 2023/1/3
@@ -12,7 +13,7 @@ public final class ProviderContextHolder {
     }
 
     public static ProviderContext getProviderContext() {
-        return (ProviderContext)holder.get();
+        return holder.get();
     }
 
     public static void setProviderContext(ProviderContext providerContext) {

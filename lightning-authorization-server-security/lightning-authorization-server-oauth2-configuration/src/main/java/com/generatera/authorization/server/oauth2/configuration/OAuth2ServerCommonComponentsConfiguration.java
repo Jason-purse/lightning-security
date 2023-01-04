@@ -4,16 +4,20 @@ import com.generatera.authorization.application.server.config.ApplicationAuthSer
 import com.generatera.authorization.application.server.config.LightningOAuth2ServerConfigurer;
 import com.generatera.authorization.application.server.config.token.LightningOAuth2ServerTokenGenerator;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
+import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderSettingsProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.core.OAuth2Token;
+import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 
 /**
  * oauth2 server configuration
@@ -46,6 +50,18 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 public class OAuth2ServerCommonComponentsConfiguration {
 
     public static class DefaultOAuth2ServerCommonComponentsConfiguration {
+
+
+        @Bean
+        public ProviderSettings providerSettings(ProviderSettingsProvider provider) {
+            com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderSettings
+                    providerSettings = provider.getProviderSettings();
+
+            // 转交给 oauth2 ..
+            return ProviderSettings.withSettings(providerSettings.getSettings()).build();
+        }
+
+
         // 它需要解码器 ..
         @Bean
         public LightningOAuth2ServerConfigurer oAuth2ServerConfigurer(
@@ -55,8 +71,9 @@ public class OAuth2ServerCommonComponentsConfiguration {
         ) {
             return new LightningOAuth2ServerConfigurer() {
                 @Override
-                public void configure(OAuth2AuthorizationServerConfigurer<HttpSecurity> authorizationServerConfigurer) {
-
+                public void configure(SecurityConfigurerAdapter<DefaultSecurityFilterChain,HttpSecurity> configurerAdapter) {
+                    OAuth2AuthorizationServerConfigurer<HttpSecurity> authorizationServerConfigurer
+                            = ((OAuth2AuthorizationServerConfigurer<HttpSecurity>) configurerAdapter);
                     // 配置 token 生成器
                     if(serverTokenGenerator != null) {
                         authorizationServerConfigurer.tokenGenerator(serverTokenGenerator);

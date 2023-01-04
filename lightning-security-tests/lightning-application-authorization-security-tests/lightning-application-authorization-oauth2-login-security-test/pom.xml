@@ -27,6 +27,10 @@
             <groupId>com.jianyue</groupId>
             <artifactId>lightning-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.jianyue</groupId>
+            <artifactId>lightning-boot-starter-redis</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

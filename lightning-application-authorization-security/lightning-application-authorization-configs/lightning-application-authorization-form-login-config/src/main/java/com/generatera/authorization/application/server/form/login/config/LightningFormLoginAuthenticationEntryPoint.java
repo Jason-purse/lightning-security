@@ -3,6 +3,7 @@ package com.generatera.authorization.application.server.form.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.AuthHttpResponseUtil;
 import com.generatera.authorization.application.server.form.login.config.token.FormLoginAuthenticationTokenGenerator;
+import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderContextHolder;
 import com.generatera.authorization.server.common.configuration.token.*;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;

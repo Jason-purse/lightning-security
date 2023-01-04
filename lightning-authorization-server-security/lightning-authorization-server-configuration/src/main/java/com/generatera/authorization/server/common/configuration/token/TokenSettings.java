@@ -1,7 +1,6 @@
 package com.generatera.authorization.server.common.configuration.token;
 
-import org.springframework.security.oauth2.core.OAuth2TokenFormat;
-import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import com.generatera.authorization.server.common.configuration.token.customizer.jwt.SignatureAlgorithm;
 import org.springframework.util.Assert;
 
 import java.time.Duration;

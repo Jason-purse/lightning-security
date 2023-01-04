@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.jianyue.lightning.boot.starter.generic.crud.service.entity.JpaBaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,6 +20,7 @@ import java.util.Collection;
  * @author Sun.
  * @Description oauth2 授权用户实体
  */
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "uaa_users")
 @AllArgsConstructor

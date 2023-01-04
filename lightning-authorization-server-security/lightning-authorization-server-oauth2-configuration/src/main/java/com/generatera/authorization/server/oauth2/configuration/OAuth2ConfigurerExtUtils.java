@@ -1,7 +1,7 @@
 package com.generatera.authorization.server.oauth2.configuration;
 
-import com.generatera.authorization.server.oauth2.configuration.token.DefaultLightningOAuth2ServerTokenGenerator;
 import com.generatera.authorization.application.server.config.token.LightningOAuth2ServerTokenGenerator;
+import com.generatera.authorization.server.oauth2.configuration.token.DefaultLightningOAuth2ServerTokenGenerator;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -14,58 +14,19 @@ import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.InMemoryOAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
-import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
-import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.oauth2.server.authorization.token.*;
 import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
-
+/**
+ * @author FLJ
+ * @date 2023/1/4
+ * @time 10:32
+ * @Description 主要是处理 token 生成器 ..
+ */
 final class OAuth2ConfigurerExtUtils {
         private OAuth2ConfigurerExtUtils() {
-        }
-
-        static <B extends HttpSecurityBuilder<B>> RegisteredClientRepository getRegisteredClientRepository(B builder) {
-            RegisteredClientRepository registeredClientRepository = (RegisteredClientRepository)builder.getSharedObject(RegisteredClientRepository.class);
-            if (registeredClientRepository == null) {
-                registeredClientRepository = (RegisteredClientRepository)getBean(builder, RegisteredClientRepository.class);
-                builder.setSharedObject(RegisteredClientRepository.class, registeredClientRepository);
-            }
-
-            return registeredClientRepository;
-        }
-
-        static <B extends HttpSecurityBuilder<B>> OAuth2AuthorizationService getAuthorizationService(B builder) {
-            OAuth2AuthorizationService authorizationService = (OAuth2AuthorizationService)builder.getSharedObject(OAuth2AuthorizationService.class);
-            if (authorizationService == null) {
-                authorizationService = (OAuth2AuthorizationService)getOptionalBean(builder, OAuth2AuthorizationService.class);
-                if (authorizationService == null) {
-                    authorizationService = new InMemoryOAuth2AuthorizationService();
-                }
-
-                builder.setSharedObject(OAuth2AuthorizationService.class, authorizationService);
-            }
-
-            return (OAuth2AuthorizationService)authorizationService;
-        }
-
-        static <B extends HttpSecurityBuilder<B>> OAuth2AuthorizationConsentService getAuthorizationConsentService(B builder) {
-            OAuth2AuthorizationConsentService authorizationConsentService = (OAuth2AuthorizationConsentService)builder.getSharedObject(OAuth2AuthorizationConsentService.class);
-            if (authorizationConsentService == null) {
-                authorizationConsentService = (OAuth2AuthorizationConsentService)getOptionalBean(builder, OAuth2AuthorizationConsentService.class);
-                if (authorizationConsentService == null) {
-                    authorizationConsentService = new InMemoryOAuth2AuthorizationConsentService();
-                }
-
-                builder.setSharedObject(OAuth2AuthorizationConsentService.class, authorizationConsentService);
-            }
-
-            return (OAuth2AuthorizationConsentService)authorizationConsentService;
         }
 
         static <B extends HttpSecurityBuilder<B>> OAuth2TokenGenerator<? extends OAuth2Token> getTokenGenerator(B builder) {
@@ -156,15 +117,6 @@ final class OAuth2ConfigurerExtUtils {
             return (OAuth2TokenCustomizer)getOptionalBean(builder, type);
         }
 
-        static <B extends HttpSecurityBuilder<B>> ProviderSettings getProviderSettings(B builder) {
-            ProviderSettings providerSettings = (ProviderSettings)builder.getSharedObject(ProviderSettings.class);
-            if (providerSettings == null) {
-                providerSettings = (ProviderSettings)getBean(builder, ProviderSettings.class);
-                builder.setSharedObject(ProviderSettings.class, providerSettings);
-            }
-
-            return providerSettings;
-        }
 
         static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, Class<T> type) {
             return ((ApplicationContext)builder.getSharedObject(ApplicationContext.class)).getBean(type);

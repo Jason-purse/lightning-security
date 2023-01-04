@@ -1,6 +1,5 @@
 package com.generatera.authorization.server.oauth2.configuration.authorization.store;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.oauth2.configuration.AuthorizationServerOAuth2CommonComponentsProperties;
 import com.generatera.authorization.server.oauth2.configuration.authorization.store.repository.OAuth2AuthorizationRepository;
 import com.generatera.authorization.server.oauth2.configuration.authorization.store.service.JpaOAuth2AuthorizationService;
@@ -29,7 +28,7 @@ public class AuthorizationStoreComponentConfiguration {
         }
 
 
-        @EnableJpaRepositories(basePackages = "com.generatera.authorization.server.common.configuration.authorization.store.repository")
+        @EnableJpaRepositories(basePackages = "com.generatera.authorization.server.oauth2.configuration.repository")
         public static class JpaOAuth2AuthorizationStoreConfig {
 
             @Bean

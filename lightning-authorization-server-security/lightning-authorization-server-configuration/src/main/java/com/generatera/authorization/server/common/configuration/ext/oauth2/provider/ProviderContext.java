@@ -1,15 +1,12 @@
-package com.generatera.authorization.server.common.configuration.token;
+package com.generatera.authorization.server.common.configuration.ext.oauth2.provider;
 
 import org.jetbrains.annotations.Nullable;
-import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.util.Assert;
 
 import java.util.function.Supplier;
 
 public final class ProviderContext {
-
     private final ProviderSettings providerSettings;
-
     private final Supplier<String> issuerSupplier;
 
     public ProviderContext(ProviderSettings providerSettings, @Nullable Supplier<String> issuerSupplier) {

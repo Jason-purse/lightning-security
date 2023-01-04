@@ -1,6 +1,6 @@
-package com.generatera.central.authorization.server.configuration.client;
+package com.generatera.authorization.server.oauth2.configuration.client;
 
-import com.generatera.central.authorization.server.configuration.model.param.AppParam;
+import com.generatera.authorization.server.oauth2.configuration.model.param.AppParam;
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.service.CrudService;
 
 /**

@@ -1,8 +1,8 @@
 package com.generatera.authorization.application.server.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +22,7 @@ import java.util.List;
 public class ApplicationAuthServerConfig {
 
     @Bean
+    @ConditionalOnMissingBean(OAuth2ExtSecurityConfigurer.class)
     public OAuth2ExtSecurityConfigurer oAuth2ExtSecurityConfigurer(ApplicationAuthServerProperties appAuthProperties,
                                                                    @Autowired(required = false) List<LightningAppAuthServerConfigurer> configurers) {
         return new OAuth2ExtSecurityConfigurer(appAuthProperties,configurers);

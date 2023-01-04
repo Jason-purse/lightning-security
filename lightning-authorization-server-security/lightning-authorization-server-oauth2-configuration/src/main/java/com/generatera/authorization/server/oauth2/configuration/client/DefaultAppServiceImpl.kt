@@ -1,7 +1,7 @@
-package com.generatera.central.authorization.server.configuration.client
+package com.generatera.authorization.server.oauth2.configuration.client
 
-import com.generatera.central.authorization.server.configuration.model.entity.OAuth2ClientEntity
-import com.generatera.central.authorization.server.configuration.model.param.AppParam
+import com.generatera.authorization.server.oauth2.configuration.model.entity.OAuth2ClientEntity
+import com.generatera.authorization.server.oauth2.configuration.model.param.AppParam
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.DefaultJpaValidationSupportForQueryAdapter
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.converters.EntityConverter
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.query.QuerySupport

@@ -1,9 +1,9 @@
 package com.generatera.authorization.server.oauth2.configuration;
 
-import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import com.generatera.authorization.server.oauth2.configuration.authorization.consent.AuthorizationConsentComponentConfiguration;
 import com.generatera.authorization.server.oauth2.configuration.authorization.store.AuthorizationStoreComponentConfiguration;
+import com.generatera.authorization.server.oauth2.configuration.client.RegisteredClientConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
@@ -57,6 +57,8 @@ public class OAuth2ServerCommonComponentsConfigurationImportSelector extends Pro
                 log.info("current only support JPA authorization Server Consent Component !!!!");
             }
         }
+
+        candidates.add(RegisteredClientConfiguration.class.getName());
 
 
 

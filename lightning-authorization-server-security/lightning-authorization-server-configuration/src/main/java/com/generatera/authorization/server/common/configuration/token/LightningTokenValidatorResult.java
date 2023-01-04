@@ -1,6 +1,5 @@
 package com.generatera.authorization.server.common.configuration.token;
 
-import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;

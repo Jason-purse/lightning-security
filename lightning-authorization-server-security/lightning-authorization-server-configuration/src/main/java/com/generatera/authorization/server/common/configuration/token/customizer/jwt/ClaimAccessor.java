@@ -1,7 +1,7 @@
 package com.generatera.authorization.server.common.configuration.token.customizer.jwt;
 
+import com.generatera.authorization.server.common.configuration.token.customizer.jwt.converter.ClaimConversionService;
 import org.springframework.core.convert.TypeDescriptor;
-import org.springframework.security.oauth2.core.converter.ClaimConversionService;
 import org.springframework.util.Assert;
 
 import java.net.URL;
@@ -38,7 +38,7 @@ public interface ClaimAccessor {
             return null;
         } else {
             Object claimValue = this.getClaims().get(claim);
-            Boolean convertedValue = (Boolean)ClaimConversionService.getSharedInstance().convert(claimValue, Boolean.class);
+            Boolean convertedValue = (Boolean) ClaimConversionService.getSharedInstance().convert(claimValue, Boolean.class);
             Assert.notNull(convertedValue, () -> {
                 return "Unable to convert claim '" + claim + "' of type '" + claimValue.getClass() + "' to Boolean.";
             });

@@ -11,7 +11,6 @@ import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.security.oauth2.jwt.JwtEncodingException;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;

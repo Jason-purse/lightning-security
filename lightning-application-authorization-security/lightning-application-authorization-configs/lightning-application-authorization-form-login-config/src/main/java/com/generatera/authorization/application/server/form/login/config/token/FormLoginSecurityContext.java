@@ -1,8 +1,8 @@
 package com.generatera.authorization.application.server.form.login.config.token;
 
+import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderContext;
 import com.generatera.authorization.server.common.configuration.token.LightningSecurityContext;
 import com.generatera.authorization.server.common.configuration.token.LightningToken;
-import com.generatera.authorization.server.common.configuration.token.ProviderContext;
 import com.generatera.authorization.server.common.configuration.token.TokenSettings;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
