@@ -12,6 +12,11 @@ import org.jetbrains.annotations.Nullable;
  */
 public interface LightningAuthenticationToken  {
 
+    /**
+     * 用于存储在请求中,由 LightningSecurityContextRepository 对上下文进行存储 ..
+     */
+    public static final String TOKEN_REQUEST_ATTRIBUTE = "lightning.authentication.token";
+
     @Nullable
     LightningToken accessToken();
 

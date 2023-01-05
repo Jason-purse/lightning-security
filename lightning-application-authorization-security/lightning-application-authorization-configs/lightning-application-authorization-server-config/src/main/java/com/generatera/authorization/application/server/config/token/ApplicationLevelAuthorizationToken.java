@@ -10,6 +10,7 @@ import java.io.Serializable;
  * @time 15:50
  * @Description 应用级别的 授权token 派发
  */
+@Deprecated
 public interface ApplicationLevelAuthorizationToken extends Serializable {
 
     /**

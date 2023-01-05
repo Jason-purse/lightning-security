@@ -128,7 +128,7 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
 
         // 保存 token 信息
         authenticationTokenService.save(token);
-
+        request.setAttribute(LightningAuthenticationToken.TOKEN_REQUEST_ATTRIBUTE,token);
         AuthHttpResponseUtil.commence(
                 response,
                 JsonUtil.getDefaultJsonUtil().asJSON(

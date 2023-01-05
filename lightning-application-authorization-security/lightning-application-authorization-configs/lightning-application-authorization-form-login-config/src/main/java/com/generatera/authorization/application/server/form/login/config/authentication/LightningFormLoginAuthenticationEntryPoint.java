@@ -153,6 +153,9 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
                         tokenSettingsProvider.getTokenSettings()
                 )
         );
+
+        // 在请求上设置一个Token 属性,用于保存 Token ..
+        request.setAttribute(LightningAuthenticationToken.TOKEN_REQUEST_ATTRIBUTE, token);
         AuthHttpResponseUtil.commence(
                 response,
                 JsonUtil.of().asJSON(

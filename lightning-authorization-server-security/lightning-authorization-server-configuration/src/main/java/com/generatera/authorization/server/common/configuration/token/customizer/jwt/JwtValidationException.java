@@ -12,7 +12,7 @@ public class JwtValidationException extends BadJwtException {
     public JwtValidationException(String message, Collection<LightningAuthError> errors) {
         super(message);
         Assert.notEmpty(errors, "errors cannot be empty");
-        this.errors = new ArrayList(errors);
+        this.errors = new ArrayList<>(errors);
     }
 
     public Collection<LightningAuthError> getErrors() {

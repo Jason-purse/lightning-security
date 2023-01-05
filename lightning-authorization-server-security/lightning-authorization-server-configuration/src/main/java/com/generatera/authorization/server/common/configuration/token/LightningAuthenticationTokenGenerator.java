@@ -8,5 +8,5 @@ package com.generatera.authorization.server.common.configuration.token;
  */
 public interface LightningAuthenticationTokenGenerator {
 
-    public LightningAuthenticationToken generate(LightningAuthenticationSecurityContext securityContext);
+    LightningAuthenticationToken  generate(LightningAuthenticationSecurityContext securityContext);
 }

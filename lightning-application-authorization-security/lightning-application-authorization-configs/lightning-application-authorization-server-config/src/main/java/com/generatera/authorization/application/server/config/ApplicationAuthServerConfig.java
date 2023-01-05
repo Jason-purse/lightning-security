@@ -1,5 +1,7 @@
 package com.generatera.authorization.application.server.config;
 
+import com.generatera.authorization.application.server.config.securityContext.DefaultSecurityContextRepository;
+import com.generatera.authorization.server.common.configuration.token.LightningSecurityContextRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -31,11 +33,23 @@ public class ApplicationAuthServerConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean(LightningSecurityContextRepository.class)
+    public LightningSecurityContextRepository securityContextRepository() {
+        return new DefaultSecurityContextRepository();
+    }
+
+    @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain httpSecurity(HttpSecurity httpSecurity,
+                                            LightningSecurityContextRepository repository,
                                             OAuth2ExtSecurityConfigurer configurer) throws Exception {
         return httpSecurity
                 .apply(configurer)
+                .and()
+                .sessionManagement()
+                .disable()
+                .securityContext()
+                .securityContextRepository(repository)
                 .and()
                 .apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
                     @Override

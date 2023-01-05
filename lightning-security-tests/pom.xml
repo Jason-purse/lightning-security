@@ -14,6 +14,8 @@
     <modules>
         <module>lightning-application-authorization-security-tests</module>
         <module>lightning-central-authorization-security-tests</module>
+        <module>lightning-resource-server-tests</module>
+
     </modules>
 
     <properties>
