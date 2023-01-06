@@ -2,6 +2,8 @@ package com.generatera.resource.server.config;
 
 import com.generatera.resource.server.config.bootstrap.DefaultResourceServerConfigurer;
 import com.generatera.resource.server.config.token.LightningTokenAuthenticationFilter;
+import com.generatera.resource.server.config.token.entrypoint.DefaultForbiddenAuthenticationEntryPoint;
+import com.generatera.resource.server.config.token.entrypoint.LightningAuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +14,17 @@ import java.util.List;
 
 @Configuration
 public class ResourceServerConfiguration {
+
+
+    /**
+     * 兜底策略
+     */
+    @Bean
+    @ConditionalOnMissingBean(LightningAuthenticationEntryPoint.class)
+    public LightningAuthenticationEntryPoint authenticationEntryPoint() {
+        return new DefaultForbiddenAuthenticationEntryPoint();
+    }
+
 
     /**
      * resource server的配置器

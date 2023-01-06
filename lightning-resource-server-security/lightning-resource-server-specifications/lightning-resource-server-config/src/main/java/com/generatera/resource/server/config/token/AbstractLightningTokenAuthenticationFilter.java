@@ -1,5 +1,6 @@
 package com.generatera.resource.server.config.token;
 
+import com.generatera.resource.server.config.token.entrypoint.LightningAuthenticationEntryPoint;
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;

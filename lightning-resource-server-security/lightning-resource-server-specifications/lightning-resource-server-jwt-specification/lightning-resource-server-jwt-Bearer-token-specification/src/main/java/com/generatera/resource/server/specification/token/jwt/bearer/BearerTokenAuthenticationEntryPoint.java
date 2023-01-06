@@ -2,7 +2,7 @@ package com.generatera.resource.server.specification.token.jwt.bearer;
 
 
 import com.generatera.resource.server.config.token.LightningAuthError;
-import com.generatera.resource.server.config.token.LightningAuthenticationEntryPoint;
+import com.generatera.resource.server.config.token.entrypoint.LightningAuthenticationEntryPoint;
 import com.generatera.resource.server.config.token.LightningAuthenticationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;

@@ -1,4 +1,4 @@
-package com.generatera.resource.server.config.token;
+package com.generatera.resource.server.config.token.entrypoint;
 
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
