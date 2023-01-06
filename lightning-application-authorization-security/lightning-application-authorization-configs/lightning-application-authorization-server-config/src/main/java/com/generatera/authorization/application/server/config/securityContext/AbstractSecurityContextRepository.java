@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.securityContext;
 
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationToken;
-import com.generatera.authorization.server.common.configuration.token.LightningSecurityContextRepository;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationToken;
+import com.generatera.security.authorization.server.specification.authentication.LightningSecurityContextRepository;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.util.Assert;
@@ -21,8 +21,8 @@ public abstract class AbstractSecurityContextRepository implements LightningSecu
         return Optional.ofNullable(request.getHeader(TOKEN_HEADER));
     }
 
-    protected Optional<LightningAuthenticationToken> acquireAuthenticationToken(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
-        return Optional.ofNullable(request.getAttribute(LightningAuthenticationToken.TOKEN_REQUEST_ATTRIBUTE)).map(ele -> ((LightningAuthenticationToken) ele));
+    protected Optional<LightningApplicationLevelAuthenticationToken> acquireAuthenticationToken(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
+        return Optional.ofNullable(request.getAttribute(LightningApplicationLevelAuthenticationToken.TOKEN_REQUEST_ATTRIBUTE)).map(ele -> ((LightningApplicationLevelAuthenticationToken) ele));
     }
 
     @Override
@@ -35,12 +35,12 @@ public abstract class AbstractSecurityContextRepository implements LightningSecu
 
     @Override
     public void saveContext(SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
-        Optional<LightningAuthenticationToken> lightningAuthenticationToken = acquireAuthenticationToken(context, request, response);
+        Optional<LightningApplicationLevelAuthenticationToken> lightningAuthenticationToken = acquireAuthenticationToken(context, request, response);
         Assert.isTrue(lightningAuthenticationToken.isPresent(),"lightning authentication token must not be null !!!");
         doSaveContext(context,lightningAuthenticationToken.get());
     }
 
-    protected abstract void doSaveContext(SecurityContext securityContext,LightningAuthenticationToken authenticationToken);
+    protected abstract void doSaveContext(SecurityContext securityContext,LightningApplicationLevelAuthenticationToken authenticationToken);
 
     @Override
     public boolean containsContext(HttpServletRequest request) {

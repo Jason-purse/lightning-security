@@ -20,7 +20,6 @@
     <modules>
         <module>lightning-resource-server-oauth2-jwt-Bear-token-specification</module>
         <module>lightning-resource-server-jwt-Bearer-token-specification</module>
-        <module>lightning-resource-server-jwt-config</module>
 
     </modules>
 </project>

@@ -1,7 +1,6 @@
 package com.generatera.authorization.application.server.config;
 
-import com.generatera.authorization.application.server.config.securityContext.DefaultSecurityContextRepository;
-import com.generatera.authorization.server.common.configuration.token.LightningSecurityContextRepository;
+import com.generatera.security.authorization.server.specification.authentication.LightningSecurityContextRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,30 +25,31 @@ import java.util.List;
 public class ApplicationAuthServerConfig {
 
     @Bean
-    @ConditionalOnMissingBean(OAuth2ExtSecurityConfigurer.class)
-    public OAuth2ExtSecurityConfigurer oAuth2ExtSecurityConfigurer(ApplicationAuthServerProperties appAuthProperties,
-                                                                   @Autowired(required = false) List<LightningAppAuthServerConfigurer> configurers) {
-        return new OAuth2ExtSecurityConfigurer(appAuthProperties,configurers);
+    @ConditionalOnMissingBean(AuthExtSecurityConfigurer.class)
+    public AuthExtSecurityConfigurer oAuth2ExtSecurityConfigurer(ApplicationAuthServerProperties appAuthProperties,
+                                                                 @Autowired(required = false) List<LightningAppAuthServerConfigurer> configurers) {
+        return new AuthExtSecurityConfigurer(appAuthProperties,configurers);
     }
 
-    @Bean
-    @ConditionalOnMissingBean(LightningSecurityContextRepository.class)
-    public LightningSecurityContextRepository securityContextRepository() {
-        return new DefaultSecurityContextRepository();
-    }
+    //@Bean
+    //@ConditionalOnMissingBean(LightningSecurityContextRepository.class)
+    //public LightningSecurityContextRepository securityContextRepository() {
+    //    return new DefaultSecurityContextRepository();
+    //}
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain httpSecurity(HttpSecurity httpSecurity,
+                                            @Autowired(required = false)
                                             LightningSecurityContextRepository repository,
-                                            OAuth2ExtSecurityConfigurer configurer) throws Exception {
+                                            AuthExtSecurityConfigurer configurer) throws Exception {
         return httpSecurity
                 .apply(configurer)
                 .and()
                 .sessionManagement()
                 .disable()
                 .securityContext()
-                .securityContextRepository(repository)
+                //.securityContextRepository(repository)
                 .and()
                 .apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
                     @Override

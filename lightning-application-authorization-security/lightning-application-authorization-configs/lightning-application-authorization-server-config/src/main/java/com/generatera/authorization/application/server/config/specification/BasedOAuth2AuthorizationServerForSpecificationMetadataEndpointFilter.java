@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.specification;
 
-import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderContextHolder;
-import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderSettings;
+import com.generatera.authorization.server.common.configuration.provider.ProviderContextHolder;
+import com.generatera.authorization.server.common.configuration.provider.ProviderSettings;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;

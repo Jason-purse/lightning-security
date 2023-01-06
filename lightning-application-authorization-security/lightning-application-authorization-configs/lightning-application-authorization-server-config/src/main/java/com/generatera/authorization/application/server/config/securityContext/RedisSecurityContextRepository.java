@@ -1,8 +1,8 @@
 package com.generatera.authorization.application.server.config.securityContext;
 
 import com.generatera.authorization.application.server.config.model.entity.LightningSecurityContextEntity;
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationToken;
-import com.generatera.authorization.server.common.configuration.token.LightningToken;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationToken;
+import com.generatera.security.server.token.specification.LightningToken;
 import com.jianyue.lightning.util.JsonUtil;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
@@ -81,7 +81,7 @@ public class RedisSecurityContextRepository extends AbstractSecurityContextRepos
 
 
     @Override
-    protected void doSaveContext(SecurityContext securityContext, LightningAuthenticationToken authenticationToken) {
+    protected void doSaveContext(SecurityContext securityContext, LightningApplicationLevelAuthenticationToken authenticationToken) {
         Assert.notNull(authenticationToken.accessToken(), "accessToken must not be null !!!");
         assert authenticationToken.accessToken() != null;
         LightningToken lightningToken = authenticationToken.accessToken();

@@ -15,6 +15,14 @@ import java.util.List;
  * @date 2023/1/4
  * @time 14:52
  * @Description 遵循 oauth2 部分通用规范的组件的配置选择器 ..
+ *
+ * 这里支持的公共通用组件包括:
+ * 1. 认证token (一般来说 中央授权中心和 应用授权中心都需要它 ..)存储方式
+ *      1. jpa
+ *      2. mongo
+ *      3. memory
+ *      4. redis
+ *
  */
 public class ApplicationAuthServerSpecificationComponentImportSelector extends PropertiesBindImportSelector<ApplicationAuthServerProperties> {
     public ApplicationAuthServerSpecificationComponentImportSelector(BeanFactory beanFactory, Environment environment) {

@@ -18,10 +18,17 @@
     </properties>
 
     <dependencies>
-<!--        // 目前 遵循 jwt方式 token 生成-->
+
         <dependency>
-            <groupId>com.nimbusds</groupId>
-            <artifactId>nimbus-jose-jwt</artifactId>
+            <groupId>com.generatera</groupId>
+            <artifactId>lightning-security-authorization-server-specification</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.generatera</groupId>
+            <artifactId>lightning-security-server-token-specification</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -33,11 +40,6 @@
             <artifactId>lightning-boot-core</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-config</artifactId>
-            <scope>compile</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework.security</groupId>

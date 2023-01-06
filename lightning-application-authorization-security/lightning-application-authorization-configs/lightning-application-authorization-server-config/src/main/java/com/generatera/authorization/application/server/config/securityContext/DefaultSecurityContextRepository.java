@@ -1,7 +1,8 @@
 package com.generatera.authorization.application.server.config.securityContext;
 
-import com.generatera.authorization.server.common.configuration.token.LightningSecurityContextRepository;
+import com.generatera.security.authorization.server.specification.authentication.LightningSecurityContextRepository;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +27,7 @@ public class DefaultSecurityContextRepository implements LightningSecurityContex
 
     @Override
     public SecurityContext internalLoadContext(HttpServletRequest request) {
-        return parseToken(request).map(cache::get).orElse(null);
+        return parseToken(request).map(cache::get).orElse(SecurityContextHolder.createEmptyContext());
     }
 
     private Optional<String> parseToken(HttpServletRequest request) {

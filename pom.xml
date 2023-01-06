@@ -9,6 +9,7 @@
         <module>lightning-security-tests</module>
         <module>lightning-authorization-server-security</module>
         <module>lightning-resource-server-security</module>
+        <module>lightning-security-specifications</module>
     </modules>
 
     <groupId>com.generatera</groupId>

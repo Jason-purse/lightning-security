@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.config.specification;
 
-import com.generatera.authorization.server.common.configuration.token.customizer.jwt.ClaimAccessor;
+
+import com.generatera.security.server.token.specification.format.jwt.ClaimAccessor;
 
 import java.net.URL;
 import java.util.List;

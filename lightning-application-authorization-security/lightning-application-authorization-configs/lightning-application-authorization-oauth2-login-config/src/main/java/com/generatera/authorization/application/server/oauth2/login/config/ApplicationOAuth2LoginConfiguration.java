@@ -13,11 +13,9 @@ import com.generatera.authorization.application.server.oauth2.login.config.autho
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningAuthorizationRequestResolver;
 import com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized.LightningAnonymousOAuthorizedClientRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized.LightningOAuthorizedClientService;
-import com.generatera.authorization.application.server.oauth2.login.config.token.DefaultOAuth2LoginAuthenticationTokenGenerator;
 import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginAuthenticationTokenGenerator;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
 import com.generatera.authorization.application.server.oauth2.login.config.user.OidcUserPrincipal;
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationTokenParser;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
@@ -75,11 +73,11 @@ public class ApplicationOAuth2LoginConfiguration {
         @Autowired(required = false)
         private LightningOAuth2LoginAuthenticationTokenGenerator tokenGenerator;
 
-        /**
-         * TODO 分配token 解析任务
-         */
-        @Autowired(required = false)
-        private LightningAuthenticationTokenParser tokenParser;
+        ///**
+        // * TODO 分配token 解析任务
+        // */
+        //@Autowired(required = false)
+        //private LightningAuthenticationTokenParser tokenParser;
 
 
         private final JWKSource<SecurityContext> jwkSource;
@@ -124,7 +122,7 @@ public class ApplicationOAuth2LoginConfiguration {
             Assert.notNull(authenticationTokenService,"authenticationTokenService must not be null !!!");
             point.setAuthenticationTokenService(authenticationTokenService);
             // 必须存在
-            point.setTokenGenerator(Objects.requireNonNullElseGet(tokenGenerator, () -> new DefaultOAuth2LoginAuthenticationTokenGenerator(jwkSource)));
+            point.setTokenGenerator(Objects.requireNonNullElseGet(tokenGenerator, () -> null));
 
             return point;
         }

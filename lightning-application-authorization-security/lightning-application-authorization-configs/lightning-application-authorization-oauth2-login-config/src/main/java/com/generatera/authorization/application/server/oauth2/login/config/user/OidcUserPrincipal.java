@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config.user;
 
-import com.generatera.authorization.server.common.configuration.token.LightningUserPrincipal;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;

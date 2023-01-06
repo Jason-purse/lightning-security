@@ -76,7 +76,7 @@ public class ApplicationAuthServerProperties {
         @Data
         public static class AuthenticationTokenSetting {
 
-            private Boolean enable = Boolean.TRUE;
+            private Boolean enable = Boolean.FALSE;
 
             private StoreKind authenticationTokenStoreKind = StoreKind.MEMORY;
 

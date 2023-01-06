@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.specification.authorization.store;
 
 import com.generatera.authorization.application.server.config.model.entity.LightningAuthenticationTokenEntity;
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationToken;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationToken;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.core.convert.converter.Converter;
 
@@ -11,9 +11,9 @@ import org.springframework.core.convert.converter.Converter;
  * @time 14:10
  * @Description Authentication Token Entity converter
  */
-public class AuthenticationTokenEntityConverter implements Converter<LightningAuthenticationToken, LightningAuthenticationTokenEntity> {
+public class AuthenticationTokenEntityConverter implements Converter<LightningApplicationLevelAuthenticationToken, LightningAuthenticationTokenEntity> {
     @Override
-    public LightningAuthenticationTokenEntity convert(LightningAuthenticationToken source) {
+    public LightningAuthenticationTokenEntity convert(LightningApplicationLevelAuthenticationToken source) {
 
         LightningAuthenticationTokenEntity.LightningAuthenticationTokenEntityBuilder builder = LightningAuthenticationTokenEntity
                 .builder();
@@ -21,14 +21,15 @@ public class AuthenticationTokenEntityConverter implements Converter<LightningAu
             builder.accessTokenValue(token.getTokenValue());
             builder.accessExpiredAt(token.getExpiresAt().toEpochMilli());
             builder.accessIssuedAt(token.getIssuedAt().toEpochMilli());
-            builder.accessTokenType(token.getTokenType().getTokenTypeString());
+
+            //builder.accessTokenType(token.getTokenType().getTokenTypeString());
         });
 
         ElvisUtil.isNotEmptyConsumer(source.refreshToken(),token -> {
             builder.refreshTokenValue(token.getTokenValue());
             builder.refreshIssuedAt(token.getIssuedAt().toEpochMilli());
             builder.refreshExpiredAt(token.getExpiresAt().toEpochMilli());
-            builder.refreshTokenType(token.getTokenType().getTokenTypeString());
+            //builder.refreshTokenType(token.getTokenType().getTokenTypeString());
         });
 
         return builder.build();

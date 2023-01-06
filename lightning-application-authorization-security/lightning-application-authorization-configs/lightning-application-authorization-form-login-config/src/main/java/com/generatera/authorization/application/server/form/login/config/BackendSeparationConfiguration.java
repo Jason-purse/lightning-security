@@ -4,7 +4,7 @@ import com.generatera.authorization.application.server.config.specification.Ligh
 import com.generatera.authorization.application.server.form.login.config.authentication.LightningFormLoginAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.form.login.config.token.DefaultFormLoginAuthenticationTokenGenerator;
 import com.generatera.authorization.application.server.form.login.config.token.FormLoginAuthenticationTokenGenerator;
-import com.generatera.authorization.server.common.configuration.token.TokenSettingsProvider;
+import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;

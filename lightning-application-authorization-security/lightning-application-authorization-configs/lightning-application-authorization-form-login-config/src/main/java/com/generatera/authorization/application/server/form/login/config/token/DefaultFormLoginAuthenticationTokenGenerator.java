@@ -1,14 +1,11 @@
 package com.generatera.authorization.application.server.form.login.config.token;
 
-import com.generatera.authorization.server.common.configuration.token.*;
-import com.generatera.authorization.server.common.configuration.token.customizer.jwt.LightningJwt;
-import com.generatera.authorization.server.common.configuration.token.customizer.jwt.jose.NimbusJwtEncoder;
-import com.jianyue.lightning.boot.starter.util.SnowflakeIdWorker;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationSecurityContext;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationToken;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationTokenGenerator;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.util.Assert;
-
-import java.time.Instant;
 
 /**
  * @author FLJ
@@ -22,110 +19,28 @@ import java.time.Instant;
  */
 public class DefaultFormLoginAuthenticationTokenGenerator implements FormLoginAuthenticationTokenGenerator {
 
+    private FormLoginAuthenticationTokenGenerator tokenGenerator;
 
     public DefaultFormLoginAuthenticationTokenGenerator(JWKSource<SecurityContext> jwkSource) {
-        this(Boolean.FALSE,jwkSource);
-    }
-
-    public DefaultFormLoginAuthenticationTokenGenerator(Boolean isPlain, JWKSource<SecurityContext> jwkSource) {
-        this.isPlain = isPlain;
-        this.jwkSource = jwkSource;
-        accessTokenGenerator = new LightningFormLoginAccessTokenGenerator() {
-
-            private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
-
-            private final FormLoginJwtGenerator jwtEncoder = new FormLoginJwtGenerator(
-                    new NimbusJwtEncoder(jwkSource)
-            );
+        this.tokenGenerator = new FormLoginAuthenticationTokenGenerator() {
+            private final LightningApplicationLevelAuthenticationTokenGenerator tokenGenerator = new DefaultFormLoginAuthenticationTokenGenerator(jwkSource);
 
             @Override
-            public LightningToken.AccessToken generate(LightningSecurityContext context) {
-                TokenSettings tokenSettings = context.getTokenSettings();
-                if (isPlain) {
-                    Instant now = Instant.now();
-                    return LightningToken.accessToken(
-                            snowflakeIdWorker.nextId(),
-                            now,
-                            Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
-                    );
-                } else {
-                    LightningJwt token = jwtEncoder.generate(((FormLoginSecurityContext) context));
-                    Assert.notNull(token,"cannot generate jwt token !!!!");
-                    String tokenValue = token.getTokenValue();
-                    assert tokenValue != null;
-                    return LightningToken.accessToken(tokenValue,
-                            token.getIssuedAt(), token.getExpiresAt());
-                }
-            }
-        };
-        refreshTokenGenerator = new LightningFormLoginRefreshTokenGenerator() {
-
-            private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
-
-
-            @Override
-            public LightningToken.RefreshToken generate(LightningSecurityContext context) {
-                TokenSettings tokenSettings = context.getTokenSettings();
-                Instant now = Instant.now();
-                return LightningToken.refreshToken(
-                        snowflakeIdWorker.nextId(),
-                        now,
-                        Instant.ofEpochMilli(now.toEpochMilli() + tokenSettings.getAccessTokenTimeToLive().toMillis())
-                );
+            public LightningApplicationLevelAuthenticationToken generate(LightningApplicationLevelAuthenticationSecurityContext securityContext) {
+                return tokenGenerator.generate(securityContext);
             }
         };
     }
 
-    /**
-     * 代表是否自省Token
-     */
-    private Boolean isPlain = Boolean.TRUE;
 
-    private final JWKSource<SecurityContext> jwkSource;
-
-
-
-    private LightningFormLoginAccessTokenGenerator accessTokenGenerator;
-
-    private LightningFormLoginRefreshTokenGenerator refreshTokenGenerator;
-
-
-
-
-    public void setAccessTokenGenerator(LightningFormLoginAccessTokenGenerator accessTokenGenerator) {
-        Assert.notNull(accessTokenGenerator,"accessTokenGenerator must not be null !!!");
-        this.accessTokenGenerator = accessTokenGenerator;
+    public void setTokenGenerator(FormLoginAuthenticationTokenGenerator tokenGenerator) {
+        Assert.notNull(tokenGenerator, "tokenGenerator must not be null !!!");
+        this.tokenGenerator = tokenGenerator;
     }
 
-    public void setRefreshTokenGenerator(LightningFormLoginRefreshTokenGenerator refreshTokenGenerator) {
-        Assert.notNull(accessTokenGenerator,"refreshTokenGenerator must not be null !!!");
-        this.refreshTokenGenerator = refreshTokenGenerator;
-    }
-
-    public void setIsPlain(Boolean isPlain) {
-        Assert.notNull(isPlain,"isPlain must not be null !!!");
-        this.isPlain  = isPlain;
-    }
 
     @Override
-    public LightningAuthenticationToken generate(LightningAuthenticationSecurityContext securityContext) {
-        return LightningAuthenticationToken.of(
-                accessTokenGenerator.generate(
-                        FormLoginSecurityContext.of(
-                                LightningToken.TokenType.ACCESS_TOKEN_TYPE,
-                                securityContext.getAuthentication(),
-                                securityContext.getProviderContext(),
-                                securityContext.getTokenSettings()
-                        )
-                ),
-                refreshTokenGenerator.generate(
-                        FormLoginSecurityContext.of(
-                                LightningToken.TokenType.REFRESH_TOKEN_TYPE,
-                                securityContext.getAuthentication(),
-                                securityContext.getProviderContext(),
-                                securityContext.getTokenSettings()
-                        )
-                )
-        );
+    public LightningApplicationLevelAuthenticationToken generate(LightningApplicationLevelAuthenticationSecurityContext securityContext) {
+        return tokenGenerator.generate(securityContext);
     }
 }

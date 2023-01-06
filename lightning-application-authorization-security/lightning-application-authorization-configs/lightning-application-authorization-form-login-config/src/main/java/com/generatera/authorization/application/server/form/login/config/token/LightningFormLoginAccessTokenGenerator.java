@@ -1,8 +1,8 @@
-package com.generatera.authorization.application.server.form.login.config.token;
-
-import com.generatera.authorization.server.common.configuration.token.LightningToken;
-import com.generatera.authorization.server.common.configuration.token.LightningTokenGenerator;
-
-public interface LightningFormLoginAccessTokenGenerator extends LightningTokenGenerator<LightningToken.AccessToken> {
-
-}
+//package com.generatera.authorization.application.server.form.login.config.token;
+//
+//import com.generatera.authorization.server.common.configuration.token.LightningToken;
+//import com.generatera.authorization.server.common.configuration.token.LightningTokenGenerator;
+//
+//public interface LightningFormLoginAccessTokenGenerator extends LightningTokenGenerator<LightningToken.AccessToken> {
+//
+//}

@@ -14,6 +14,8 @@ lightning:
               no-separation:
                 enable-saved-request-forward: true
                 enable-forward: false
+                default-success-url: /index.html
+                success-forward-or-redirect-url: /login.html
 #              no-separation:
 #                success-forward-url: /login.html
 #                failure-forward-url: /failure.html

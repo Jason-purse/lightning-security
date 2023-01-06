@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.specification.authorization.store;
 
 import com.generatera.authorization.application.server.config.model.entity.LightningAuthenticationTokenEntity;
-import com.generatera.authorization.server.common.configuration.token.LightningToken;
+import com.generatera.security.server.token.specification.LightningTokenType.LightningAuthenticationTokenType;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.jianyue.lightning.boot.starter.util.SnowflakeIdWorker;
 
@@ -26,14 +26,14 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
         cache.put(snowflakeIdWorker.nextId(), entity);
 
         ElvisUtil.isNotEmptyConsumer(entity.getAccessTokenValue(), token -> {
-            fastTokenCache.computeIfAbsent(LightningToken.TokenType.ACCESS_TOKEN_TYPE.getTokenTypeString(),
+            fastTokenCache.computeIfAbsent(LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE.value(),
                             key -> new ConcurrentHashMap<>())
                     .put(token, entity);
         });
 
         ElvisUtil.isNotEmptyConsumer(entity.getRefreshTokenValue(), token -> {
             fastTokenCache.computeIfAbsent(
-                    LightningToken.TokenType.REFRESH_TOKEN_TYPE.getTokenTypeString(),
+                    LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE.value(),
                     key -> new ConcurrentHashMap<>()
             ).put(token, entity);
         });
@@ -55,16 +55,16 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
         return getTokenByAccessOrRefresh(token,null);
     }
 
-    private LightningAuthenticationTokenEntity getTokenByAccessOrRefresh(String token, LightningToken.TokenType tokenType) {
+    private LightningAuthenticationTokenEntity getTokenByAccessOrRefresh(String token, LightningAuthenticationTokenType tokenType) {
         if(tokenType == null) {
             LightningAuthenticationTokenEntity entity = fastTokenCache
                     .computeIfAbsent(
-                            LightningToken.TokenType.ACCESS_TOKEN_TYPE.getTokenTypeString(),
+                            LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE.value(),
                             key -> new ConcurrentHashMap<>())
                     .getOrDefault(token, null);
             if (entity == null) {
                 return fastTokenCache.computeIfAbsent(
-                                LightningToken.TokenType.ACCESS_TOKEN_TYPE.getTokenTypeString(),
+                                LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE.value(),
                                 key -> new ConcurrentHashMap<>())
                         .getOrDefault(token, null);
             }
@@ -73,7 +73,7 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
         else {
             return fastTokenCache
                     .computeIfAbsent(
-                            tokenType.getTokenTypeString(),
+                            tokenType.value(),
                             key -> new ConcurrentHashMap<>())
                     .getOrDefault(token, null);
         }
@@ -83,11 +83,11 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
     public LightningAuthenticationTokenEntity doFindByToken(LightningAuthenticationTokenEntity entity) {
 
         if(entity.getAccessTokenValue() != null) {
-            return getTokenByAccessOrRefresh(entity.getAccessTokenValue(), LightningToken.TokenType.of(entity.getAccessTokenType()));
+            return getTokenByAccessOrRefresh(entity.getAccessTokenValue(), LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE);
         }
 
         if(entity.getRefreshTokenValue() != null) {
-            return getTokenByAccessOrRefresh(entity.getRefreshTokenValue(), LightningToken.TokenType.of(entity.getRefreshTokenType()));
+            return getTokenByAccessOrRefresh(entity.getRefreshTokenValue(), LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE);
         }
 
         return null;

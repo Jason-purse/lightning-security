@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.specification;
 
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationToken;
-import com.generatera.authorization.server.common.configuration.token.LightningToken;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationToken;
+import com.generatera.security.server.token.specification.LightningTokenType;
 import org.springframework.lang.Nullable;
 
 /**
@@ -14,13 +14,13 @@ import org.springframework.lang.Nullable;
  */
 public interface BasedOAuth2AuthorizationService {
 
-    void save(LightningAuthenticationToken authorization);
+    void save(LightningApplicationLevelAuthenticationToken authorization);
 
-    void remove(LightningAuthenticationToken authorization);
-
-    @Nullable
-    LightningAuthenticationToken findById(String id);
+    void remove(LightningApplicationLevelAuthenticationToken authorization);
 
     @Nullable
-    LightningAuthenticationToken findByToken(String token, @Nullable LightningToken.TokenType tokenType);
+    LightningApplicationLevelAuthenticationToken findById(String id);
+
+    @Nullable
+    LightningApplicationLevelAuthenticationToken findByToken(String token, @Nullable LightningTokenType.LightningAuthenticationTokenType tokenType);
 }

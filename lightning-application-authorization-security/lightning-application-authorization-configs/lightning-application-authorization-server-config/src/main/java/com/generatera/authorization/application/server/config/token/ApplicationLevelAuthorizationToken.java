@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import lombok.AllArgsConstructor;
 
 import java.io.Serializable;
@@ -10,18 +11,18 @@ import java.io.Serializable;
  * @time 15:50
  * @Description 应用级别的 授权token 派发
  */
-@Deprecated
 public interface ApplicationLevelAuthorizationToken extends Serializable {
 
     /**
      * 获取OAuth2 访问 token
       */
-    Object getOAuth2AccessToken();
+
+    Object accessToken();
 
     /**
      * 获取OAuth2 刷新Token
      */
-    Object getOAuth2RefreshToken();
+    Object refreshToken();
 
 
     public static ApplicationLevelAuthorizationToken of(Object oAuth2AccessToken,Object oAuth2RefreshToken) {
@@ -37,12 +38,14 @@ class DefaultApplicationLevelAuthorizationToken implements ApplicationLevelAutho
     private final Object auth2RefreshToken;
 
     @Override
-    public Object getOAuth2AccessToken() {
+    @JsonGetter
+    public Object accessToken() {
         return auth2AccessToken;
     }
 
     @Override
-    public Object getOAuth2RefreshToken() {
+    @JsonGetter
+    public Object refreshToken() {
         return auth2RefreshToken;
     }
 }

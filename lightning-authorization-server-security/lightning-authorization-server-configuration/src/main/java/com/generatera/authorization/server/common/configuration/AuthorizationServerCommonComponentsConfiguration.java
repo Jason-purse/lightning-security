@@ -1,9 +1,10 @@
 package com.generatera.authorization.server.common.configuration;
 
-import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderSettings;
-import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderSettingsProvider;
-import com.generatera.authorization.server.common.configuration.token.*;
+import com.generatera.authorization.server.common.configuration.provider.ProviderSettings;
+import com.generatera.authorization.server.common.configuration.provider.ProviderSettingsProvider;
 import com.generatera.authorization.server.common.configuration.util.jose.Jwks;
+import com.generatera.security.authorization.server.specification.TokenSettings;
+import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
@@ -19,8 +20,6 @@ import org.springframework.context.annotation.Import;
 
 import java.time.Duration;
 
-import static com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.TOKEN_GENERATOR_NAME;
-
 /**
  * 授权服务器的 通用组件配置
  * <p>
@@ -28,6 +27,13 @@ import static com.generatera.authorization.server.common.configuration.Authoriza
  * 例如: 1. token 自解析
  * 2. token 撤销
  * 3. token 自省
+ *
+ *
+ * 当前授权服务器遵循的规范是,都有统一的jwk set
+ * 都有统一的 providerSettings
+ * 都有统一的 token settings...
+ *
+ * 但是对于 oauth2 来说(token settings 以 client registration 注册信息为准,如果没有才考虑这个同一个的token settings配置)
  */
 @Configuration
 @AutoConfigureBefore(SecurityAutoConfiguration.class)
@@ -46,40 +52,8 @@ public class AuthorizationServerCommonComponentsConfiguration {
         return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
     }
 
-    /**
-     * 解码器 ... 必要 ...
-     *
-     * @param jwkSource jwtSource ....
-     * @return
-     */
-
-    @Bean
-    @ConditionalOnMissingBean(LightningAuthenticationTokenParser.class)
-    public LightningAuthenticationTokenParser jwtDecoder(JWKSource<SecurityContext> jwkSource) {
-        return new DefaultLightningAuthenticationTokenParser(jwkSource);
-    }
 
 
-    /**
-     * token 生成器
-     *
-     * @param properties component properties
-     * @param jwkSource  jwtSource
-     * @return tokenGenerator ..
-     * <p>
-     * 用户有机会提供自己的认证Token 生成器  ..
-     * 包括 oauth2 / 或者 form-login 配置 ..
-     * <p>
-     * 如果最后没有提供,则提供默认的 ..
-     */
-    @Bean(TOKEN_GENERATOR_NAME)
-    @ConditionalOnMissingBean(LightningAuthenticationTokenGenerator.class)
-    public LightningAuthenticationTokenGenerator lightningAuthenticationTokenGenerator(
-            AuthorizationServerComponentProperties properties,
-            JWKSource<SecurityContext> jwkSource) {
-        Boolean isPlain = properties.getTokenSettings().getIsPlain();
-        return new DefaultAuthenticationTokenGenerator(isPlain, jwkSource);
-    }
 
 
     /**
@@ -95,7 +69,7 @@ public class AuthorizationServerCommonComponentsConfiguration {
         return new TokenSettingsProvider(
                 builder
                         .audience(properties.getTokenSettings().getAudiences())
-                        .accessTokenFormat(properties.getTokenSettings().getTokenFormat())
+                        .accessTokenIssueFormat(properties.getTokenSettings().getTokenFormat())
                         .accessTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getAccessTokenTimeToLive()))
                         .refreshTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getRefreshTokenTimeToLive()))
                         .reuseRefreshTokens(properties.getTokenSettings().getReuseRefreshToken())

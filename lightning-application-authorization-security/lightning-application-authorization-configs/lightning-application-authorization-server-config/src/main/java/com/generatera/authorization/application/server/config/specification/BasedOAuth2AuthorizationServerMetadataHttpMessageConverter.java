@@ -1,7 +1,6 @@
 package com.generatera.authorization.application.server.config.specification;
 
-import com.generatera.authorization.server.common.configuration.token.customizer.jwt.converter.ClaimConversionService;
-import com.generatera.authorization.server.common.configuration.token.customizer.jwt.converter.ClaimTypeConverter;
+import com.generatera.security.server.token.specification.format.jwt.converter.ClaimConversionService;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.converter.Converter;

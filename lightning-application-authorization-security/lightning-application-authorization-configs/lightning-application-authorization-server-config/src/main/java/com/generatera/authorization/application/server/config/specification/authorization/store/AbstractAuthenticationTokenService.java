@@ -2,8 +2,8 @@ package com.generatera.authorization.application.server.config.specification.aut
 
 import com.generatera.authorization.application.server.config.model.entity.LightningAuthenticationTokenEntity;
 import com.generatera.authorization.application.server.config.specification.LightningAuthenticationTokenService;
-import com.generatera.authorization.server.common.configuration.token.LightningAuthenticationToken;
-import com.generatera.authorization.server.common.configuration.token.LightningToken;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationToken;
+import com.generatera.security.server.token.specification.LightningTokenType.LightningAuthenticationTokenType;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
@@ -15,22 +15,22 @@ import org.springframework.util.Assert;
  */
 public abstract class AbstractAuthenticationTokenService implements LightningAuthenticationTokenService {
 
-    private Converter<LightningAuthenticationToken, LightningAuthenticationTokenEntity> entityConverter = new AuthenticationTokenEntityConverter();
+    private Converter<LightningApplicationLevelAuthenticationToken, LightningAuthenticationTokenEntity> entityConverter = new AuthenticationTokenEntityConverter();
 
-    private Converter<LightningAuthenticationTokenEntity,LightningAuthenticationToken> tokenConverter = new AuthenticationTokenConverter();
+    private Converter<LightningAuthenticationTokenEntity,LightningApplicationLevelAuthenticationToken> tokenConverter = new AuthenticationTokenConverter();
 
-    public void setEntityConverter(Converter<LightningAuthenticationToken, LightningAuthenticationTokenEntity> entityConverter) {
+    public void setEntityConverter(Converter<LightningApplicationLevelAuthenticationToken, LightningAuthenticationTokenEntity> entityConverter) {
         Assert.notNull(entityConverter,"entityConverter must not be null !!!");
         this.entityConverter = entityConverter;
     }
 
-    public void setTokenConverter(Converter<LightningAuthenticationTokenEntity, LightningAuthenticationToken> tokenConverter) {
+    public void setTokenConverter(Converter<LightningAuthenticationTokenEntity, LightningApplicationLevelAuthenticationToken> tokenConverter) {
         Assert.notNull(entityConverter,"tokenConverter must not be null !!!");
         this.tokenConverter = tokenConverter;
     }
 
     @Override
-    public void save(LightningAuthenticationToken authorization) {
+    public void save(LightningApplicationLevelAuthenticationToken authorization) {
         LightningAuthenticationTokenEntity entity = entityConverter.convert(authorization);
         doSave(entity);
     }
@@ -38,7 +38,7 @@ public abstract class AbstractAuthenticationTokenService implements LightningAut
     protected abstract void doSave(LightningAuthenticationTokenEntity entity);
 
     @Override
-    public void remove(LightningAuthenticationToken authorization) {
+    public void remove(LightningApplicationLevelAuthenticationToken authorization) {
         LightningAuthenticationTokenEntity entity = entityConverter.convert(authorization);
         doRemove(entity);
     }
@@ -46,7 +46,7 @@ public abstract class AbstractAuthenticationTokenService implements LightningAut
     protected abstract void doRemove(LightningAuthenticationTokenEntity entity);
 
     @Override
-    public LightningAuthenticationToken findById(String id) {
+    public LightningApplicationLevelAuthenticationToken findById(String id) {
         LightningAuthenticationTokenEntity entity = LightningAuthenticationTokenEntity.builder()
                 .id(id)
                 .build();
@@ -58,7 +58,7 @@ public abstract class AbstractAuthenticationTokenService implements LightningAut
     public abstract LightningAuthenticationTokenEntity doFindById(LightningAuthenticationTokenEntity entity);
 
     @Override
-    public LightningAuthenticationToken findByToken(String token, LightningToken.TokenType tokenType) {
+    public LightningApplicationLevelAuthenticationToken findByToken(String token, LightningAuthenticationTokenType tokenType) {
         LightningAuthenticationTokenEntity.LightningAuthenticationTokenEntityBuilder builder
                 = LightningAuthenticationTokenEntity.builder();
 
@@ -67,9 +67,9 @@ public abstract class AbstractAuthenticationTokenService implements LightningAut
             return ElvisUtil.isNotEmptyFunction(doFindAccessOrRefreshTokenByToken(token),tokenConverter::convert);
         }
 
-        if (tokenType == LightningToken.TokenType.ACCESS_TOKEN_TYPE) {
+        if (tokenType == LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE) {
             return ElvisUtil.isNotEmptyFunction(doFindByToken(
-                    builder.accessTokenType(LightningToken.TokenType.ACCESS_TOKEN_TYPE.getTokenTypeString())
+                    builder.accessTokenType(LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE.value())
                             .accessTokenValue(token)
                             .build()
                     ),
@@ -77,10 +77,10 @@ public abstract class AbstractAuthenticationTokenService implements LightningAut
             );
         }
 
-        if(tokenType == LightningToken.TokenType.REFRESH_TOKEN_TYPE) {
+        if(tokenType == LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE) {
             return ElvisUtil.isNotEmptyFunction(
                     doFindByToken(
-                            builder.refreshTokenType(LightningToken.TokenType.REFRESH_TOKEN_TYPE.getTokenTypeString())
+                            builder.refreshTokenType(LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE.value())
                                     .refreshTokenValue(token)
                                     .build()
                     ),

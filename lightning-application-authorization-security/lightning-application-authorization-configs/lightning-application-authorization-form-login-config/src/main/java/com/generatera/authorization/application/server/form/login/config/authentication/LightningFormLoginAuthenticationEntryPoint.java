@@ -3,9 +3,15 @@ package com.generatera.authorization.application.server.form.login.config.authen
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.AuthHttpResponseUtil;
 import com.generatera.authorization.application.server.config.specification.LightningAuthenticationTokenService;
+import com.generatera.authorization.application.server.config.token.ApplicationLevelAuthorizationToken;
 import com.generatera.authorization.application.server.form.login.config.token.FormLoginAuthenticationTokenGenerator;
-import com.generatera.authorization.server.common.configuration.ext.oauth2.provider.ProviderContextHolder;
-import com.generatera.authorization.server.common.configuration.token.*;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationSecurityContext;
+import com.generatera.security.application.authorization.server.token.specification.LightningApplicationLevelAuthenticationToken;
+import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
+import com.generatera.security.authorization.server.specification.endpoints.provider.ProviderContextHolder;
+import com.generatera.security.server.token.specification.LightningAuthorizationServerTokenSecurityContext;
+import com.generatera.security.server.token.specification.LightningTokenType;
+import com.generatera.security.server.token.specification.format.LightningTokenFormat;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
 import lombok.Data;
@@ -71,6 +77,7 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
         this.tokenSettingsProvider = tokenSettingsProvider;
         this.authenticationTokenService = authenticationTokenService;
     }
+
 
 
     @Override
@@ -145,21 +152,42 @@ public class LightningFormLoginAuthenticationEntryPoint implements Authenticatio
     @Override
     public void onAuthenticationSuccess(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        // 返回凭证信息
-        LightningAuthenticationToken token = tokenGenerator.generate(
-                LightningAuthenticationSecurityContext.of(
-                        authentication,
-                        ProviderContextHolder.getProviderContext(),
-                        tokenSettingsProvider.getTokenSettings()
-                )
-        );
+        LightningApplicationLevelAuthenticationToken token = tokenGenerator.
+                generate(
+                        LightningApplicationLevelAuthenticationSecurityContext.of(
+                                LightningAuthorizationServerTokenSecurityContext.of(
+                                        LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE,
+                                        LightningTokenFormat.JWT,
+                                        LightningTokenType.LightningTokenValueType.BEARER_TOKEN_TYPE,
+                                        authentication,
+                                        ProviderContextHolder.getProviderContext(),
+                                        tokenSettingsProvider.getTokenSettings()
+                                )
+                        )
+                );
+        LightningApplicationLevelAuthenticationToken refreshToken = tokenGenerator.
+                generate(
+                        LightningApplicationLevelAuthenticationSecurityContext.of(
+                                LightningAuthorizationServerTokenSecurityContext.of(
+                                        LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE,
+                                        LightningTokenFormat.JWT,
+                                        LightningTokenType.LightningTokenValueType.BEARER_TOKEN_TYPE,
+                                        authentication,
+                                        ProviderContextHolder.getProviderContext(),
+                                        tokenSettingsProvider.getTokenSettings()
+                                )
+                        )
+                );
 
-        // 在请求上设置一个Token 属性,用于保存 Token ..
-        request.setAttribute(LightningAuthenticationToken.TOKEN_REQUEST_ATTRIBUTE, token);
+
         AuthHttpResponseUtil.commence(
                 response,
                 JsonUtil.of().asJSON(
-                        Result.success(200, loginSuccessMessage, token)
+                        Result.success(200, loginSuccessMessage,
+                                ApplicationLevelAuthorizationToken.of(
+                                        token,
+                                        refreshToken)
+                        )
                 )
         );
     }

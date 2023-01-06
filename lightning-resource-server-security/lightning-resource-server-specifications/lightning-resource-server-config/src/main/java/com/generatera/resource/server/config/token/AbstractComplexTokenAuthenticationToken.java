@@ -6,7 +6,7 @@ import org.springframework.util.Assert;
 import java.util.Collection;
 import java.util.Map;
 
-public abstract class AbstractComplexTokenAuthenticationToken <T extends LightningToken.ComplexToken> extends LightningAuthenticationToken {
+public abstract class AbstractComplexTokenAuthenticationToken <T extends LightningToken.ComplexToken> implements LightningAuthenticationToken {
 
     private static final long serialVersionUID = 570L;
     private final Object principal;
@@ -23,7 +23,7 @@ public abstract class AbstractComplexTokenAuthenticationToken <T extends Lightni
     }
 
     protected AbstractComplexTokenAuthenticationToken(T token, Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
-        super(authorities);
+        //super(authorities);
         Assert.notNull(token, "token cannot be null");
         Assert.notNull(principal, "principal cannot be null");
         this.principal = principal;

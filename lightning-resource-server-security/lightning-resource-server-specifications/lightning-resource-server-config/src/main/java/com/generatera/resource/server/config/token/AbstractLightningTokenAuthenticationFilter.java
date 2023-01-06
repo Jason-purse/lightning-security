@@ -2,10 +2,7 @@ package com.generatera.resource.server.config.token;
 
 import com.generatera.resource.server.config.token.entrypoint.LightningAuthenticationEntryPoint;
 import org.springframework.core.log.LogMessage;
-import org.springframework.security.authentication.AuthenticationDetailsSource;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationManagerResolver;
-import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
@@ -80,7 +77,7 @@ public abstract class AbstractLightningTokenAuthenticationFilter extends OncePer
             filterChain.doFilter(request, response);
         } else {
 
-            LightningAuthenticationToken authenticationRequest = generateToken(token);
+            AbstractAuthenticationToken authenticationRequest = generateToken(token);
             authenticationRequest.setDetails(this.authenticationDetailsSource.buildDetails(request));
 
             // 认证Token 是否有效 ...
@@ -105,7 +102,7 @@ public abstract class AbstractLightningTokenAuthenticationFilter extends OncePer
         }
     }
 
-    protected  abstract LightningAuthenticationToken generateToken(String token);
+    protected  abstract AbstractAuthenticationToken generateToken(String token);
 
     public void setSecurityContextRepository(SecurityContextRepository securityContextRepository) {
         Assert.notNull(securityContextRepository, "securityContextRepository cannot be null");

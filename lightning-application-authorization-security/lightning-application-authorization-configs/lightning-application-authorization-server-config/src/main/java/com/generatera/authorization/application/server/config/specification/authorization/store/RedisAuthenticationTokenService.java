@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.specification.authorization.store;
 
 import com.generatera.authorization.application.server.config.model.entity.LightningAuthenticationTokenEntity;
-import com.generatera.authorization.server.common.configuration.token.LightningToken;
+import com.generatera.security.server.token.specification.LightningTokenType.LightningAuthenticationTokenType;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.jianyue.lightning.boot.starter.util.SnowflakeIdWorker;
 import com.jianyue.lightning.util.JsonUtil;
@@ -46,13 +46,13 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
 
         ElvisUtil.isNotEmptyConsumer(entity.getAccessTokenValue(), token ->
                 redisTemplate.opsForValue()
-                        .set(constructTokenKey(token, LightningToken.TokenType.ACCESS_TOKEN_TYPE),
+                        .set(constructTokenKey(token, LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE),
                                 id, expiredTimeDuration, TimeUnit.MILLISECONDS)
         );
 
         ElvisUtil.isNotEmptyConsumer(entity.getRefreshTokenValue(), token ->
                 redisTemplate.opsForValue()
-                        .set(constructTokenKey(token, LightningToken.TokenType.REFRESH_TOKEN_TYPE),
+                        .set(constructTokenKey(token, LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE),
                                 id, expiredTimeDuration, TimeUnit.MILLISECONDS)
         );
 
@@ -66,8 +66,8 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
                 .orElse("lightning.app.auth.server.authentication.store." + id);
     }
 
-    private String constructTokenKey(String token, LightningToken.TokenType tokenType) {
-        return constructKey(tokenType.getTokenTypeString() + "." + token);
+    private String constructTokenKey(String token, LightningAuthenticationTokenType tokenType) {
+        return constructKey(tokenType.value() + "." + token);
     }
 
     @Override
@@ -91,14 +91,14 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
     }
 
     @Nullable
-    private LightningAuthenticationTokenEntity getTokenForAccessOrRefresh(String token, LightningToken.TokenType tokenType) {
+    private LightningAuthenticationTokenEntity getTokenForAccessOrRefresh(String token, LightningAuthenticationTokenType tokenType) {
 
         if (tokenType == null) {
 
-            String tokenId = redisTemplate.opsForValue().get(constructTokenKey(token, LightningToken.TokenType.ACCESS_TOKEN_TYPE));
+            String tokenId = redisTemplate.opsForValue().get(constructTokenKey(token, LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE));
 
             if (!StringUtils.hasText(tokenId)) {
-                tokenId = redisTemplate.opsForValue().get(constructTokenKey(token, LightningToken.TokenType.REFRESH_TOKEN_TYPE));
+                tokenId = redisTemplate.opsForValue().get(constructTokenKey(token, LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE));
 
             }
 
@@ -128,11 +128,11 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
     public LightningAuthenticationTokenEntity doFindByToken(LightningAuthenticationTokenEntity entity) {
 
         if(entity.getAccessTokenType() != null) {
-            return getTokenForAccessOrRefresh(entity.getAccessTokenValue(), LightningToken.TokenType.ACCESS_TOKEN_TYPE);
+            return getTokenForAccessOrRefresh(entity.getAccessTokenValue(), LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE);
         }
 
         if(entity.getRefreshTokenType() != null) {
-            return  getTokenForAccessOrRefresh(entity.getRefreshTokenValue(), LightningToken.TokenType.REFRESH_TOKEN_TYPE);
+            return  getTokenForAccessOrRefresh(entity.getRefreshTokenValue(), LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE);
         }
 
         return null;

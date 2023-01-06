@@ -1,6 +1,6 @@
 package com.generatera.authorization.server.common.configuration;
 
-import com.generatera.authorization.server.common.configuration.token.OAuthTokenFormat;
+import com.generatera.security.authorization.server.specification.TokenIssueFormat;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -23,7 +23,7 @@ public class AuthorizationServerComponentProperties {
 
         private Long accessTokenTimeToLive = DEFAULT_ACCESS_TOKEN_TIME_TO_LIVE;
 
-        private OAuthTokenFormat tokenFormat = OAuthTokenFormat.SELF_CONTAINED;
+        private TokenIssueFormat tokenFormat = TokenIssueFormat.SELF_CONTAINED;
 
         private Boolean reuseRefreshToken = Boolean.TRUE;
 
