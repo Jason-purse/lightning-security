@@ -18,13 +18,26 @@ public final class Jwks {
 	}
 
 	/**
-	 * 随机生成一个 ...JWKSource
+	 * 随机生成一个  rsa ...JWKSource
 	 */
-	public static JWKSource<SecurityContext> defaultRandomJwkSource() {
+	public static JWKSource<SecurityContext> defaultRsaRandomJwkSource() {
 		RSAKey rsaKey = Jwks.generateRsa();
 		JWKSet jwkSet = new JWKSet(rsaKey);
 		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
 	}
+
+	public static JWKSource<SecurityContext> defaultSecretRandomJwkSource() {
+		OctetSequenceKey octetSequenceKey = Jwks.generateSecret();
+		JWKSet jwkSet = new JWKSet(octetSequenceKey);
+		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+	}
+
+	public static JWKSource<SecurityContext> defaultEcRandomJwkSource() {
+		ECKey ecKey = Jwks.generateEc();
+		JWKSet jwkSet = new JWKSet(ecKey);
+		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+	}
+
 
 	public static RSAKey generateRsa() {
 		KeyPair keyPair = KeyGeneratorUtils.generateRsaKey();

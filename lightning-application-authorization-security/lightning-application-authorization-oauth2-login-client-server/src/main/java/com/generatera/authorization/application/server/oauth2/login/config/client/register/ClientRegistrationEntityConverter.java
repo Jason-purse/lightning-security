@@ -1,4 +1,4 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client;
+package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.ClientRegistrationEntity;
 import com.jianyue.lightning.util.JsonUtil;

@@ -1,24 +1,48 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
 import com.generatera.authorization.server.common.configuration.repository.JpaAuthenticationTokenRepository;
-import com.jianyue.lightning.boot.starter.util.SnowflakeIdWorker;
+import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
+import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
-import org.springframework.util.Assert;
 
 public class JpaAuthenticationTokenService extends AbstractAuthenticationTokenService {
-    // TODO: 2023/1/4  分布式环境中,id 冲突
-    private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
-    private final JpaAuthenticationTokenRepository repository;
 
-    public JpaAuthenticationTokenService(JpaAuthenticationTokenRepository tokenRepository) {
-        Assert.notNull(tokenRepository,"tokenRepository must not be null !!!");
-        this.repository = tokenRepository;
+    @Autowired
+    private  JpaAuthenticationTokenRepository repository;
+
+
+    static {
+        HandlerFactory.registerHandler(
+                new AbstractAuthenticationTokenServiceHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return predicate == AuthorizationServerComponentProperties.StoreKind.JPA;
+                    }
+
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return new LightningAuthenticationTokenServiceHandler() {
+                            @Override
+                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
+                                return AuthorizationServerComponentProperties.StoreKind.JPA;
+                            }
+
+                            @Override
+                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
+                                return new JpaAuthenticationTokenService();
+                            }
+                        };
+                    }
+                });
     }
+
 
     @Override
     protected void doSave(LightningAuthenticationTokenEntity entity) {
-        entity.setId(snowflakeIdWorker.nextId());
+        entity.setId(UuidUtil.nextId());
         repository.save(entity);
     }
 

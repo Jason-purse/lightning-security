@@ -1,16 +1,15 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized.*;
+import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.*;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.client.authorized.JpaOAuthorizedClientRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 public class ApplicationAuthorizedClientConfiguration {
 
-    @EnableJpaRepositories(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.client")
+    @EnableJpaRepositories(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.repository.authorization.request")
     public static class JpaAuthorizedClientConfiguration {
 
         @Bean

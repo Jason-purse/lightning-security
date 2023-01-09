@@ -3,8 +3,10 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 import com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.consent.OAuth2AuthorizationConsentRepository;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationConsentService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 
@@ -15,6 +17,8 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 @AutoConfiguration
 public class AuthorizationConsentConfiguration {
 
+    @EnableJpaRepositories("com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.consent")
+    @EntityScan("com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization")
     public static class JpaAuthorizationConsentComponentConfiguration {
         @Bean
         @ConditionalOnMissingBean(OAuth2AuthorizationConsentService.class)

@@ -7,7 +7,7 @@ import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMap
  *
  * 和{@link  LightningOidcUserService} 以及 {@link LightningOidcUserService} 任选
  */
-public interface LightningGrantedAuthoritiesMapper extends GrantedAuthoritiesMapper {
+public interface LightningOAuth2GrantedAuthoritiesMapper extends GrantedAuthoritiesMapper {
 
 
 }

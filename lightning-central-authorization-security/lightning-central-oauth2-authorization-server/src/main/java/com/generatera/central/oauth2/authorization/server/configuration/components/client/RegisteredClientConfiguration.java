@@ -11,6 +11,10 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 public class RegisteredClientConfiguration {
     /**
      * 也可以自己 实现 client repository ..
+     *
+     * 由于基于 generic-crud-service, AppService
+     *
+     * 使用的底层数据库是什么,那么就自动切换 ...
      */
     @ConditionalOnMissingBean(RegisteredClientRepository.class)
     public static class ClientRepositoryConfig {

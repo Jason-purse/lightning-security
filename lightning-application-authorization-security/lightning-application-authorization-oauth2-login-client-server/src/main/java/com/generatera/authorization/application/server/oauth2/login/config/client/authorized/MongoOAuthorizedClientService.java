@@ -1,6 +1,7 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized;
+package com.generatera.authorization.application.server.oauth2.login.config.client.authorized;
 
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuthorizedClientEntity;
+import com.jianyue.lightning.boot.starter.util.lambda.LambdaUtils;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -18,9 +19,9 @@ public class MongoOAuthorizedClientService extends AbstractOAuth2OAuthorizedClie
     protected OAuthorizedClientEntity internalLoadAuthorizedClient(String clientRegistrationId, String principalName) {
         return mongoTemplate.findOne(
                 Query.query(
-                        Criteria.where("clientRegistrationId")
+                        Criteria.where(LambdaUtils.getPropertyNameForLambda(OAuthorizedClientEntity::getClientRegistrationId))
                                 .is(clientRegistrationId)
-                                .and("principalName")
+                                .and(LambdaUtils.getPropertyNameForLambda(OAuthorizedClientEntity::getPrincipalName))
                                 .is(principalName)
                 ),
                 OAuthorizedClientEntity.class

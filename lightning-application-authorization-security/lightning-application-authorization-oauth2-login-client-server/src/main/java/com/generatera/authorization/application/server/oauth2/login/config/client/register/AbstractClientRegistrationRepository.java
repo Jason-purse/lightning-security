@@ -1,10 +1,15 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client;
+package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.ClientRegistrationEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-
-public abstract class AbstractClientRegistrationRepository implements LightningClientRegistrationRepository {
+/**
+ * @author FLJ
+ * @date 2023/1/9
+ * @time 10:01
+ * @Description 抽象模板实现..
+ */
+public abstract class AbstractClientRegistrationRepository implements LightningOAuth2ClientRegistrationRepository {
 
     private final Converter<ClientRegistrationEntity,ClientRegistration> clientRegistrationConverter = new ClientRegistrationConverter();
     @Override

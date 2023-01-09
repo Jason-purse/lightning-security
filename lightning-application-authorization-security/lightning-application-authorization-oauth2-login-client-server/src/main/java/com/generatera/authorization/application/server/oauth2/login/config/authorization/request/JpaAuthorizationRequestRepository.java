@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config.authorization.request;
 
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.AuthorizationRequestEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.authorization.request.JpaInternalAuthorizationRequestRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.util.Assert;
 

@@ -23,7 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * oauth2 central authorization server 部分组件注册
+ * oauth2 central authorization server 部分组件策略注册
  *
  * 1. client registration
  * 2. authorization consent

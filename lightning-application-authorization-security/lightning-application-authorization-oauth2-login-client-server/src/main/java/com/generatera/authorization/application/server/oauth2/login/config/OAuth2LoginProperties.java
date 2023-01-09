@@ -1,9 +1,10 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
-import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 
 @Data
 @ConfigurationProperties(prefix = "lightning.auth.app.server.oauth2.login.config")
@@ -18,14 +19,32 @@ public class OAuth2LoginProperties {
 
     private NoSeparation noSeparation = new NoSeparation();
 
+    /**
+     * 客户端身份仓库存储方式,不同的存储方式,对clientRegistration 的要求也不同 ..
+     */
+    private StoreKind clientRegistrationStoreKind = StoreKind.MEMORY;
 
-    private StoreKind clientRegistrationStoreKind = StoreKind.IN_MEMORY;
-
+    /**
+     * 授权请求端点,主要是保存授权请求的方式配置 ..
+     */
     private OAuthorizationRequestEndpoint authorizationRequestEndpoint = new OAuthorizationRequestEndpoint();
 
+    /**
+     * 重定向端点,主要是配置重定向 到 授权请求开始的url上的配置 ..
+     *
+     * 用户或者应用发起认证请求 -> 根据重定向 过滤器的处理器 -> 重定向到真正的 授权请求开始处理的过滤器上 ...
+     *
+     * 也就是说重定向 端点会根据你请求(作为那种oauth2 客户端)来形成有效的 授权请求,从而开始授权请求flow ..
+     */
     private RedirectionEndpoint redirectionEndpoint = new RedirectionEndpoint();
 
-    private StoreKind authorizedClientStoreKind = StoreKind.IN_MEMORY;
+    /**
+     * 授权的客户端存储方式
+     * 也就是当客户端代表用户进行 oauth2 授权之后,那么这个客户端可以看作是认证过后的客户端 ..
+     * 我们可以存储用作后续代表用户进行 oauth2 授权中心资源的获取 ...(例如通过访问token 获取一定量的资源,或者通过刷新token 去重新获取
+     * 一个访问 token) ...
+     */
+    private StoreKind authorizedClientStoreKind = StoreKind.MEMORY;
 
     @Data
     public static class OAuthorizationRequestEndpoint {
@@ -109,11 +128,6 @@ public class OAuth2LoginProperties {
 
     }
 
-    public enum StoreKind {
-        JPA,
-        MONGO,
-        IN_MEMORY
-    }
 
 
 }

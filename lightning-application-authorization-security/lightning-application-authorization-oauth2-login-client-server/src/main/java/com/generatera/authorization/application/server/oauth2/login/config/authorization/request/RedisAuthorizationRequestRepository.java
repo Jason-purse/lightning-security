@@ -9,9 +9,15 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
-
+/**
+ * @author FLJ
+ * @date 2023/1/9
+ * @time 10:15
+ * @Description Redis oauth2 authorization Request repository
+ */
 public class RedisAuthorizationRequestRepository extends AbstractLightningAuthorizationRequestRepository {
 
+    private final static String KEY_FILL_INFO = "lightning.security.oauth2.auth.request.";
 
     private final StringRedisTemplate redisTemplate;
 
@@ -69,8 +75,8 @@ public class RedisAuthorizationRequestRepository extends AbstractLightningAuthor
     private String constructKey(String stateParameter) {
         return Optional.ofNullable(keyPrefix)
                 .filter(StringUtils::hasText)
-                .map(ele -> ele + stateParameter)
-                .orElse(stateParameter);
+                .map(ele -> ele + KEY_FILL_INFO +  stateParameter)
+                .orElse(KEY_FILL_INFO + stateParameter);
     }
 
 }

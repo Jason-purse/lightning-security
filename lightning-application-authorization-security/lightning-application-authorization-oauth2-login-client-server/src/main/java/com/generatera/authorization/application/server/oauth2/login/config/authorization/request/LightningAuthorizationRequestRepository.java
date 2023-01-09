@@ -5,9 +5,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 
 /**
  * 授权请求仓库
- * @param <T> 授权请求
  *
- * 目前只支持 授权码
+ * 目前只支持 授权码,但是应该也支持其他授权授予类型 ...
  */
 public interface LightningAuthorizationRequestRepository extends AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 

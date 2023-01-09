@@ -1,8 +1,8 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.*;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.authorization.request.JpaInternalAuthorizationRequestRepository;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;

@@ -12,12 +12,34 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
-
+/**
+ * @author FLJ
+ * @date 2023/1/9
+ * @time 11:34
+ * @Description 默认的LightningAuthorization
+ *
+ * 主要是 非OAuth2的 普通授权服务器授权成功之后的 authorization 保留的实体
+ *
+ * 但是是 oauth2 copy ...
+ *
+ * 这一部分其实算是 JWT兼容的部分
+ *
+ * 这主要保留 accessToken / Refresh Token ..
+ */
 public class DefaultLightningAuthorization implements LightningAuthorization, Serializable {
-    public static final String AUTHORIZED_SCOPE_ATTRIBUTE_NAME;
+
     private String id;
+    /**
+     * 主体名称
+     */
     private String principalName;
+    /**
+     * tokens
+     */
     private Map<Class<? extends LightningToken>, Token<?>> tokens;
+    /**
+     * 属性
+     */
     private Map<String, Object> attributes;
 
     protected DefaultLightningAuthorization() {
@@ -43,12 +65,14 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public <T extends LightningToken> Token<T> getToken(Class<T> tokenType) {
         Assert.notNull(tokenType, "tokenType cannot be null");
         return (Token<T>) this.tokens.get(tokenType);
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public <T extends LightningToken> Token<T> getToken(String tokenValue) {
         Assert.hasText(tokenValue, "tokenValue cannot be empty");
         Iterator<Token<? extends LightningToken>> var2 = this.tokens.values().iterator();
@@ -70,6 +94,7 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
     }
 
     @Nullable
+    @SuppressWarnings("unchecked")
     public <T> T getAttribute(String name) {
         Assert.hasText(name, "name cannot be empty");
         return (T)this.attributes.get(name);
@@ -87,9 +112,7 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
                 .attributes((attrs) -> attrs.putAll(authorization.getAttributes()));
     }
 
-    static {
-        AUTHORIZED_SCOPE_ATTRIBUTE_NAME = DefaultLightningAuthorization.class.getName().concat(".AUTHORIZED_SCOPE");
-    }
+
 
     public static class Builder implements Serializable {
         private String id;
@@ -124,19 +147,19 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
         public <T extends LightningToken> Builder token(T token, Consumer<Map<String, Object>> metadataConsumer) {
             Assert.notNull(token, "token cannot be null");
             Map<String, Object> metadata = DefaultLightningAuthorization.Token.defaultMetadata();
-            Token<?> existingToken = (Token)this.tokens.get(token.getClass());
+            Token<?> existingToken = this.tokens.get(token.getClass());
             if (existingToken != null) {
                 metadata.putAll(existingToken.getMetadata());
             }
 
             metadataConsumer.accept(metadata);
             Class<? extends LightningToken> tokenClass = token.getClass();
-            this.tokens.put(tokenClass, new Token(token, metadata));
+            this.tokens.put(tokenClass, new Token<>(token, metadata));
             return this;
         }
 
         protected final Builder tokens(Map<Class<? extends LightningToken>, Token<?>> tokens) {
-            this.tokens = new HashMap(tokens);
+            this.tokens = new HashMap<>(tokens);
             return this;
         }
 
@@ -168,6 +191,14 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
 
     }
 
+    /**
+     * token 可能存在元数据信息 ...
+     *
+     * JWT 兼容
+     *
+     * 也就是可以修改元数据信息
+     * @param <T> LightningToken
+     */
     public static class Token<T extends LightningToken> implements Serializable {
         protected static final String TOKEN_METADATA_NAMESPACE = "metadata.token.";
         public static final String INVALIDATED_METADATA_NAME;
@@ -211,10 +242,11 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
 
         @Nullable
         public Map<String, Object> getClaims() {
-            return (Map)this.getMetadata(CLAIMS_METADATA_NAME);
+            return this.getMetadata(CLAIMS_METADATA_NAME);
         }
 
         @Nullable
+        @SuppressWarnings("unchecked")
         public <V> V getMetadata(String name) {
             Assert.hasText(name, "name cannot be empty");
             return (V)this.metadata.get(name);
@@ -246,8 +278,8 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
         }
 
         static {
-            INVALIDATED_METADATA_NAME = "metadata.token.".concat("invalidated");
-            CLAIMS_METADATA_NAME = "metadata.token.".concat("claims");
+            INVALIDATED_METADATA_NAME = TOKEN_METADATA_NAMESPACE.concat("invalidated");
+            CLAIMS_METADATA_NAME = TOKEN_METADATA_NAMESPACE.concat("claims");
         }
     }
 }

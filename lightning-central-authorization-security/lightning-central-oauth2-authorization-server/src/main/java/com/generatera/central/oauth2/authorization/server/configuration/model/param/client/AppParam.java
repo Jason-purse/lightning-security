@@ -13,7 +13,12 @@ import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * @author FLJ
+ * @date 2023/1/9
+ * @time 11:44
+ * @Description oauth2 客户端(也可以称为应用 信息实体)
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

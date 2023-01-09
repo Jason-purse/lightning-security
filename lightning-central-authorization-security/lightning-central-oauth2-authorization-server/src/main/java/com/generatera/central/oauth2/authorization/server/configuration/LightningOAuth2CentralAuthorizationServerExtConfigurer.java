@@ -176,6 +176,8 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.ser
  *       因为希望所有的授权中心遵守oauth2的token 生成和解析规范,所以, 一般来说,只要是授权中心都会拥有
  *       oauth2 规范的一部分组件 ...
  *       例如: providerSettings / TokenSettings .. / JwkSource .. / TokenGenerator / TokenDecoder ..
+ *
+ * 使用示例可参考 lightning-central-oauth2-authorization-password-grant-support-server
  */
 public interface LightningOAuth2CentralAuthorizationServerExtConfigurer {
 

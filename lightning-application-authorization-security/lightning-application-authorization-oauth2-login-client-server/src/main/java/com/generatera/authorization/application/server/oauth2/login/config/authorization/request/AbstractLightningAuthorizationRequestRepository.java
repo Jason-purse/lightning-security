@@ -8,7 +8,12 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+/**
+ * @author FLJ
+ * @date 2023/1/9
+ * @time 10:11
+ * @Description 记录授权请求 ... 用作授权结果对比 ..
+ */
 public abstract class AbstractLightningAuthorizationRequestRepository implements LightningAuthorizationRequestRepository {
 
     private final Converter<AuthorizationRequestEntity, OAuth2AuthorizationRequest> converter =

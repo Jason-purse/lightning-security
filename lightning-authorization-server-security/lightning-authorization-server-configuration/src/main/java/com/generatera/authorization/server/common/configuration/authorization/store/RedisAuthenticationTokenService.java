@@ -1,11 +1,14 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
+import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
+import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
-import com.jianyue.lightning.boot.starter.util.SnowflakeIdWorker;
 import com.jianyue.lightning.util.JsonUtil;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -15,29 +18,52 @@ import java.util.concurrent.TimeUnit;
 
 public class RedisAuthenticationTokenService extends AbstractAuthenticationTokenService {
 
-    private final StringRedisTemplate redisTemplate;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     private final String keyPrefix;
 
     private final Long expiredTimeDuration;
 
-    // TODO 分布式集群 id 重复问题
-    private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
 
-    public RedisAuthenticationTokenService(StringRedisTemplate redisTemplate
-            , String keyPrefix
+    static {
+        HandlerFactory.registerHandler(
+                new AbstractAuthenticationTokenServiceHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return predicate == AuthorizationServerComponentProperties.StoreKind.REDIS;
+                    }
+
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return new LightningAuthenticationTokenServiceHandler() {
+                            @Override
+                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
+                                return AuthorizationServerComponentProperties.StoreKind.REDIS;
+                            }
+
+                            @Override
+                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
+                                AuthorizationServerComponentProperties.Redis redis = properties.getAuthorizationStoreConfig().getRedis();
+                                return new RedisAuthenticationTokenService(redis.getKeyPrefix(), redis.getExpiredTimeDuration());
+                            }
+                        };
+                    }
+                });
+    }
+
+    public RedisAuthenticationTokenService(
+            String keyPrefix
             , Long expiredTimeDuration) {
-        Assert.notNull(redisTemplate, "redisTemplate must not be null !!!");
         Assert.isTrue(expiredTimeDuration != null && expiredTimeDuration > 0, "expiredTimeDuration must not be null and must gte 0 !!!");
 
-        this.redisTemplate = redisTemplate;
         this.keyPrefix = keyPrefix;
         this.expiredTimeDuration = expiredTimeDuration;
     }
 
     @Override
     protected void doSave(LightningAuthenticationTokenEntity entity) {
-        entity.setId(snowflakeIdWorker.nextId());
+        entity.setId(UuidUtil.nextId());
         String id = constructKey(entity.getId());
         redisTemplate.opsForValue()
                 .set(id, JsonUtil.getDefaultJsonUtil().asJSON(entity),
@@ -127,12 +153,12 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
     @Override
     public LightningAuthenticationTokenEntity doFindByToken(LightningAuthenticationTokenEntity entity) {
 
-        if(entity.getAccessTokenType() != null) {
+        if (entity.getAccessTokenType() != null) {
             return getTokenForAccessOrRefresh(entity.getAccessTokenValue(), LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE);
         }
 
-        if(entity.getRefreshTokenType() != null) {
-            return  getTokenForAccessOrRefresh(entity.getRefreshTokenValue(), LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE);
+        if (entity.getRefreshTokenType() != null) {
+            return getTokenForAccessOrRefresh(entity.getRefreshTokenValue(), LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE);
         }
 
         return null;

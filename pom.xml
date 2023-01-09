@@ -23,6 +23,10 @@
         <lombok.version>1.18.22</lombok.version>
         <kotlin.version>1.6.21</kotlin.version>
         <jose-jwt.version>9.22</jose-jwt.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.version>3.8.1</maven.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencyManagement>
@@ -113,4 +117,22 @@
             <url>http://nexus.safone.ltd:8081/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.version}</version>
+                <configuration>
+                    <fork>true</fork>
+                    <compilerArgs>
+                        <arg>-J--add-opens java.base/java.lang=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens java.base/java.lang.reflect=ALL-UNNAMED</arg>
+                        <arg>-J--add-modules java.base</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

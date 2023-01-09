@@ -4,6 +4,7 @@ import com.generatera.authorization.server.common.configuration.authorization.Li
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties;
 import com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.store.OAuth2AuthorizationRepository;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -30,6 +31,7 @@ public class AuthorizationStoreConfiguration {
     }
 
     @EnableJpaRepositories(basePackages = "com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.store")
+    @EntityScan(basePackages = "com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization")
     public static class JpaOAuth2AuthorizationStoreConfig {
 
         @Bean

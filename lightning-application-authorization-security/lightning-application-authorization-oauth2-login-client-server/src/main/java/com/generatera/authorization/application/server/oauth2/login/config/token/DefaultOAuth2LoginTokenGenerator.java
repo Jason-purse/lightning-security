@@ -4,7 +4,12 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenGenerator;
 import org.springframework.util.Assert;
-
+/**
+ * @author FLJ
+ * @date 2023/1/9
+ * @time 10:27
+ * @Description 默认实现,代理Token生成工作到目标的Token生成器上 ..
+ */
 public class DefaultOAuth2LoginTokenGenerator implements LightningOAuth2LoginTokenGenerator {
 
     private final LightningTokenGenerator<LightningToken> delegate;

@@ -1,9 +1,8 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized;
+package com.generatera.authorization.application.server.oauth2.login.config.client.authorized;
 
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuthorizedClientEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 
 public abstract class AbstractOAuth2OAuthorizedClientService implements LightningOAuthorizedClientService {
 

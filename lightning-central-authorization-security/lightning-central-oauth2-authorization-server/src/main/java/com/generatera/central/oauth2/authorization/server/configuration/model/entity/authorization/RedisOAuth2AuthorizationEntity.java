@@ -21,6 +21,9 @@ import java.util.Map;
  * @date 2022/12/29
  * @time 16:07
  * @Description OAuth2AuthorizationEntity
+ *
+ * 由于这种OAuth2Authorization  本身是临时性的,所以不需要进行模板设置 ..
+ * 对于Redis,我们可以通过这种Entity 进行 OAuth2Authorization 信息存储 ..
  */
 @Data
 @AllArgsConstructor

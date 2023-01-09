@@ -1,7 +1,10 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
+import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.core.convert.converter.Converter;
@@ -17,6 +20,20 @@ public abstract class AbstractAuthenticationTokenService implements LightningAut
     private Converter<DefaultLightningAuthorization, LightningAuthenticationTokenEntity> entityConverter = new AuthenticationTokenEntityConverter();
 
     private Converter<LightningAuthenticationTokenEntity, DefaultLightningAuthorization> tokenConverter = new AuthenticationTokenConverter();
+
+    public static abstract class AbstractAuthenticationTokenServiceHandlerProvider implements HandlerFactory.HandlerProvider {
+        @Override
+        public Object key() {
+            return LightningAuthenticationTokenService.class;
+        }
+
+        public interface LightningAuthenticationTokenServiceHandler extends HandlerFactory.Handler {
+
+            StoreKind getStoreKind();
+
+            LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties);
+        }
+    }
 
     public void setEntityConverter(Converter<DefaultLightningAuthorization, LightningAuthenticationTokenEntity> entityConverter) {
         Assert.notNull(entityConverter,"entityConverter must not be null !!!");

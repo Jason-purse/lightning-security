@@ -1,4 +1,4 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client;
+package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.ClientRegistrationEntity;
@@ -42,7 +42,6 @@ public class ClientRegistrationConverter implements Converter<ClientRegistration
                 .redirectUri(source.getRedirectUri())
 
                 // provider Details 必须提供 ..
-                // todo()
                 .issuerUri(source.getIssuerUri())
                 .jwkSetUri(source.getJwkSetUri())
                 .authorizationUri(source.getAuthorizationUri())

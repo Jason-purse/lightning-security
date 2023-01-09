@@ -1,6 +1,6 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized;
+package com.generatera.authorization.application.server.oauth2.login.config.client.authorized;
 
-import com.generatera.authorization.application.server.oauth2.login.config.client.ClientRegistrationConverter;
+import com.generatera.authorization.application.server.oauth2.login.config.client.register.ClientRegistrationConverter;
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.ClientRegistrationEntity;
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuth2AccessTokenEntity;
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuth2RefreshTokenEntity;
@@ -26,20 +26,27 @@ public class OAuth2AuthorizedClientConverter implements Converter<OAuthorizedCli
     @Override
     public OAuth2AuthorizedClient convert(@NonNull OAuthorizedClientEntity source) {
         OAuth2AccessTokenEntity entity =
-                JsonUtil.getDefaultJsonUtil().fromJson(source.getAccessToken(), OAuth2AccessTokenEntity.class);
+                JsonUtil.getDefaultJsonUtil()
+                        .fromJson(source.getAccessToken(), OAuth2AccessTokenEntity.class);
         OAuth2AccessToken accessToken = accessTokenConverter.convert(entity);
         assert accessToken != null;
         return new OAuth2AuthorizedClient(
                 // must not be null
-                Objects.requireNonNull(clientRegistrationConverter.convert(
-                        JsonUtil.getDefaultJsonUtil()
-                                .fromJson(source.getClientRegistration(),
-                                        ClientRegistrationEntity.class)
-                )),
+                Objects.requireNonNull(
+                        clientRegistrationConverter.convert(
+                                JsonUtil
+                                        .getDefaultJsonUtil()
+                                        .fromJson(
+                                                source.getClientRegistration(),
+                                                ClientRegistrationEntity.class
+                                        )
+                        )),
                 source.getPrincipalName(),
                 accessToken,
                 refreshTokenConverter.convert(
-                        JsonUtil.getDefaultJsonUtil().fromJson(source.getRefreshToken(), OAuth2RefreshTokenEntity.class)
+                        JsonUtil
+                                .getDefaultJsonUtil()
+                                .fromJson(source.getRefreshToken(), OAuth2RefreshTokenEntity.class)
                 )
         );
 

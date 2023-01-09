@@ -1,12 +1,12 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client;
+package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.ClientRegistrationEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.client.JpaInternalClientRegistrationRepository;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Example;
 
-/**
- * todo 可空性判断
- */
+
 @RequiredArgsConstructor
 public class JpaClientRegistrationRepository extends AbstractClientRegistrationRepository {
 
@@ -14,6 +14,7 @@ public class JpaClientRegistrationRepository extends AbstractClientRegistrationR
 
 
     @Override
+    @Nullable
     protected ClientRegistrationEntity internalFindByRegistrationId(String registrationId) {
         return repository
                 .findOne(Example.of(

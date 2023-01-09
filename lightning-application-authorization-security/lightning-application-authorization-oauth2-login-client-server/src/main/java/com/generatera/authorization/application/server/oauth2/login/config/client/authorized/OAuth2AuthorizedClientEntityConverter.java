@@ -1,6 +1,6 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized;
+package com.generatera.authorization.application.server.oauth2.login.config.client.authorized;
 
-import com.generatera.authorization.application.server.oauth2.login.config.client.ClientRegistrationEntityConverter;
+import com.generatera.authorization.application.server.oauth2.login.config.client.register.ClientRegistrationEntityConverter;
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuthorizedClientEntity;
 import com.generatera.authorization.application.server.oauth2.login.config.token.AccessTokenEntityForTokenConverter;
 import com.generatera.authorization.application.server.oauth2.login.config.token.RefreshTokenEntityForTokenConverter;
@@ -11,6 +11,12 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 
 import java.util.Optional;
 
+/**
+ * @author FLJ
+ * @date 2023/1/9
+ * @time 10:05
+ * @Description 已经被授权的 OAuth2 Client 存储仓库 ..
+ */
 public class OAuth2AuthorizedClientEntityConverter implements Converter<OAuth2AuthorizedClient, OAuthorizedClientEntity> {
 
     private final ClientRegistrationEntityConverter clientRegistrationEntityConverter
@@ -27,14 +33,23 @@ public class OAuth2AuthorizedClientEntityConverter implements Converter<OAuth2Au
                 .builder()
                 .clientRegistrationId(source.getClientRegistration().getRegistrationId())
                 .clientRegistration(
-                        JsonUtil.getDefaultJsonUtil()
-                                .asJSON(clientRegistrationEntityConverter.convert(source.getClientRegistration()))
+                        Optional.ofNullable(
+                                        source.getClientRegistration()
+                                )
+                                .map(ele ->
+                                        JsonUtil.getDefaultJsonUtil()
+                                                .asJSON(
+                                                        clientRegistrationEntityConverter.convert(ele)
+                                                ))
+                                .orElse(null)
                 )
                 .accessToken(
-                        JsonUtil.getDefaultJsonUtil()
-                                .asJSON(
-                                        accessTokenEntityConverter.convert(source.getAccessToken())
-                                )
+                        Optional.ofNullable(source.getAccessToken())
+                                .map(ele -> JsonUtil.getDefaultJsonUtil()
+                                        .asJSON(
+                                                accessTokenEntityConverter.convert(ele)
+                                        ))
+                                .orElse(null)
                 )
                 .refreshToken(
                         Optional.ofNullable(

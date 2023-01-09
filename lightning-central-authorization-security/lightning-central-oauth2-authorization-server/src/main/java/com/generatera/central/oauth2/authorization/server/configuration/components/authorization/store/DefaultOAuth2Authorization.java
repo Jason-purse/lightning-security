@@ -1,6 +1,5 @@
 package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store;
 
-import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
@@ -9,7 +8,12 @@ import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 
 import java.util.Map;
-
+/**
+ * @author FLJ
+ * @date 2023/1/9
+ * @time 11:28
+ * @Description 基于 oauth2 authorization 兼容实现 ..
+ */
 public class DefaultOAuth2Authorization extends OAuth2Authorization implements LightningAuthorization {
     private final OAuth2Authorization authorization;
     public DefaultOAuth2Authorization(OAuth2Authorization oAuth2Authorization) {

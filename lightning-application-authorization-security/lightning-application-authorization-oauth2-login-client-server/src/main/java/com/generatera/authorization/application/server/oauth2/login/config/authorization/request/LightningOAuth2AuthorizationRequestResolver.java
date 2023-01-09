@@ -6,5 +6,5 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
  * 扩展点 ..
  * 扩展Oauth2 authorization request resolver
  */
-public interface LightningAuthorizationRequestResolver extends OAuth2AuthorizationRequestResolver {
+public interface LightningOAuth2AuthorizationRequestResolver extends OAuth2AuthorizationRequestResolver {
 }

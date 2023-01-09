@@ -21,6 +21,16 @@ import java.util.List;
 
 /**
  * 实现 授权服务器的启动 ...
+ *
+ * 1. 根据 {@link LightningAppAuthServerConfigurer} 进行授权服务器的配置自动配置 ...
+ *      对于资源服务器,在检测到 存在{@link LightningAppAuthServerConfigurer}的时候,将使用 {@link LightningAppAuthServerConfigurer}
+ *      进行资源服务器配置 ...
+ * 2. 当不存在oauth2 授权服务器的情况下,填充公共的约定(例如 Provider元数据提供, JWk公钥等获取方式配置) ..
+ *
+ * @see LightningAppAuthServerConfigurer
+ * @see OAuth2AuthorizationServer
+ * @see AuthorizationServerMetadataEndpointFilter
+ * @see AuthorizationServerNimbusJwkSetEndpointFilter
  */
 @Slf4j
 public class AuthExtSecurityConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>  {
@@ -55,24 +65,6 @@ public class AuthExtSecurityConfigurer extends SecurityConfigurerAdapter<Default
         validateProviderSettings(providerSettings.getProviderSettings());
     }
 
-    @Override
-    public void configure(HttpSecurity builder) throws Exception {
-        // 如果启用,则 providerSettings 已经被 authorization-server-oauth2-config 处理 ..(当 oauth2 server启用时)
-//        if(!oauth2ServerEnabled) {
-//            // 启用 oauth2 部分公共组件配置 ..
-//            oauth2CommonComponentFill(builder);
-//        }
-        /*String authorizationRequestBaseUri = this.authorizationExtEndpointConfig.authorizationExtRequestBaseUri;
-        if (authorizationRequestBaseUri == null) {
-            authorizationRequestBaseUri = "/oauth2/authorization";
-        }
-        OAuth2AuthorizationRequestAndExtRedirectFilter authorizationExtRequestFilter = new OAuth2AuthorizationRequestAndExtRedirectFilter(OAuth2ClientConfigurerExtUtils.getClientRegistrationRepository((HttpSecurityBuilder)this.getBuilder()), authorizationRequestBaseUri);
-        if(this.authorizationExtEndpointConfig.authorizationExtRequestResolver != null) {
-            authorizationExtRequestFilter.setAuth2AuthorizationExtRequestResolver(this.authorizationExtEndpointConfig.authorizationExtRequestResolver);
-        }
-
-        builder.addFilterBefore(authorizationExtRequestFilter, OAuth2AuthorizationRequestRedirectFilter.class);*/
-    }
 
     // oauth2 通用组件复用 ..
     private void oauth2CommonComponentFill(HttpSecurity builder) {

@@ -3,6 +3,13 @@ package com.generatera.central.oauth2.authorization.server.configuration;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+/**
+ * 主要是 OAuth2 中央授权服务器属性
+ * 包括以下部分:
+ * 1. 授权信息存储配置
+ * 2. 授权协商记录存储配置
+ * 3. 客户端信息存储配置(todo)
+ */
 @Data
 @ConfigurationProperties(prefix = "lightning.security.central.oauth2.auth.server")
 public class OAuth2CentralAuthorizationServerProperties {

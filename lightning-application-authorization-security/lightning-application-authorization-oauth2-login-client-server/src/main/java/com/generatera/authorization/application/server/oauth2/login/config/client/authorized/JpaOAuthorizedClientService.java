@@ -1,6 +1,7 @@
-package com.generatera.authorization.application.server.oauth2.login.config.client.oauthorized;
+package com.generatera.authorization.application.server.oauth2.login.config.client.authorized;
 
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuthorizedClientEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.client.authorized.JpaOAuthorizedClientRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.util.Assert;
 

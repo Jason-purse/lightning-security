@@ -2,7 +2,7 @@ package com.generatera.security.authorization.server.specification.components.to
 
 import org.springframework.util.AlternativeJdkIdGenerator;
 
-final class UuidUtil {
+public final class UuidUtil {
     private final static AlternativeJdkIdGenerator uuidGenerator = new AlternativeJdkIdGenerator();
 
     public static String nextId() {
