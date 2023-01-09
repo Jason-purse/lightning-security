@@ -21,19 +21,6 @@ public abstract class AbstractAuthenticationTokenService implements LightningAut
 
     private Converter<LightningAuthenticationTokenEntity, DefaultLightningAuthorization> tokenConverter = new AuthenticationTokenConverter();
 
-    public static abstract class AbstractAuthenticationTokenServiceHandlerProvider implements HandlerFactory.HandlerProvider {
-        @Override
-        public Object key() {
-            return LightningAuthenticationTokenService.class;
-        }
-
-        public interface LightningAuthenticationTokenServiceHandler extends HandlerFactory.Handler {
-
-            StoreKind getStoreKind();
-
-            LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties);
-        }
-    }
 
     public void setEntityConverter(Converter<DefaultLightningAuthorization, LightningAuthenticationTokenEntity> entityConverter) {
         Assert.notNull(entityConverter,"entityConverter must not be null !!!");

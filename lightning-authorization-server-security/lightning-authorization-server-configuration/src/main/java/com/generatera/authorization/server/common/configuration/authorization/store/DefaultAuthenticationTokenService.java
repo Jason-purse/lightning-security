@@ -1,8 +1,6 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
-import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
@@ -22,31 +20,6 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
 
     private final Map<String, Map<String, LightningAuthenticationTokenEntity>> fastTokenCache = new ConcurrentHashMap<>();
 
-    static {
-        HandlerFactory.registerHandler(
-                new AbstractAuthenticationTokenServiceHandlerProvider() {
-
-                    @Override
-                    public boolean support(Object predicate) {
-                        return predicate == AuthorizationServerComponentProperties.StoreKind.MEMORY;
-                    }
-
-                    @Override
-                    public HandlerFactory.Handler getHandler() {
-                        return new LightningAuthenticationTokenServiceHandler() {
-                            @Override
-                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
-                                return AuthorizationServerComponentProperties.StoreKind.MEMORY;
-                            }
-
-                            @Override
-                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
-                                return new DefaultAuthenticationTokenService();
-                            }
-                        };
-                    }
-                });
-    }
 
     @Override
     protected void doSave(LightningAuthenticationTokenEntity entity) {

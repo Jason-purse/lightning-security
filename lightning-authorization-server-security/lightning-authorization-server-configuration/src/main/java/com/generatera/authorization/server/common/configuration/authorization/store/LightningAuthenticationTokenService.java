@@ -1,7 +1,10 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
+import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
 
 /**
  * @author FLJ
@@ -15,4 +18,17 @@ import com.generatera.authorization.server.common.configuration.authorization.Li
  */
 public interface LightningAuthenticationTokenService extends LightningAuthorizationService<DefaultLightningAuthorization> {
 
+    abstract class AbstractAuthenticationTokenServiceHandlerProvider implements HandlerFactory.HandlerProvider {
+        @Override
+        public Object key() {
+            return LightningAuthenticationTokenService.class;
+        }
+
+        public interface LightningAuthenticationTokenServiceHandler extends HandlerFactory.Handler {
+
+            StoreKind getStoreKind();
+
+            LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties);
+        }
+    }
 }

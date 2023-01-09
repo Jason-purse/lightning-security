@@ -1,8 +1,6 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
-import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -12,31 +10,6 @@ public class MongoAuthenticationTokenService extends AbstractAuthenticationToken
 
     @Autowired
     private MongoTemplate mongoTemplate;
-
-    static {
-        HandlerFactory.registerHandler(
-                new AbstractAuthenticationTokenServiceHandlerProvider() {
-                    @Override
-                    public boolean support(Object predicate) {
-                        return predicate == AuthorizationServerComponentProperties.StoreKind.MONGO;
-                    }
-
-                    @Override
-                    public HandlerFactory.Handler getHandler() {
-                        return new LightningAuthenticationTokenServiceHandler() {
-                            @Override
-                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
-                                return AuthorizationServerComponentProperties.StoreKind.MONGO;
-                            }
-
-                            @Override
-                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
-                                return new MongoAuthenticationTokenService();
-                            }
-                        };
-                    }
-                });
-    }
 
 
     @Override

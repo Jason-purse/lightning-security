@@ -2,8 +2,8 @@ package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
-import com.generatera.authorization.server.common.configuration.authorization.store.AbstractAuthenticationTokenService.AbstractAuthenticationTokenServiceHandlerProvider;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.authorization.server.common.configuration.authorization.store.*;
+import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService.AbstractAuthenticationTokenServiceHandlerProvider;
 import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.generatera.security.authorization.server.specification.TokenSettings;
@@ -16,6 +16,7 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -57,6 +58,104 @@ import java.util.Optional;
 @EnableConfigurationProperties(AuthorizationServerComponentProperties.class)
 public class AuthorizationServerCommonComponentsConfiguration {
 
+    static {
+        HandlerFactory.registerHandler(
+                new AbstractAuthenticationTokenServiceHandlerProvider() {
+
+                    @Override
+                    public boolean support(Object predicate) {
+                        return predicate == StoreKind.MEMORY;
+                    }
+
+                    @NotNull
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return new LightningAuthenticationTokenServiceHandler() {
+                            @Override
+                            public StoreKind getStoreKind() {
+                                return StoreKind.MEMORY;
+                            }
+
+                            @Override
+                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
+                                return new DefaultAuthenticationTokenService();
+                            }
+                        };
+                    }
+                });
+
+        HandlerFactory.registerHandler(
+                new AbstractAuthenticationTokenServiceHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return predicate == AuthorizationServerComponentProperties.StoreKind.JPA;
+                    }
+
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return new LightningAuthenticationTokenServiceHandler() {
+                            @Override
+                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
+                                return AuthorizationServerComponentProperties.StoreKind.JPA;
+                            }
+
+                            @Override
+                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
+                                return new JpaAuthenticationTokenService();
+                            }
+                        };
+                    }
+                });
+
+        HandlerFactory.registerHandler(
+                new AbstractAuthenticationTokenServiceHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return predicate == AuthorizationServerComponentProperties.StoreKind.MONGO;
+                    }
+
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return new LightningAuthenticationTokenServiceHandler() {
+                            @Override
+                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
+                                return AuthorizationServerComponentProperties.StoreKind.MONGO;
+                            }
+
+                            @Override
+                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
+                                return new MongoAuthenticationTokenService();
+                            }
+                        };
+                    }
+                });
+
+        HandlerFactory.registerHandler(
+                new AbstractAuthenticationTokenServiceHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return predicate == AuthorizationServerComponentProperties.StoreKind.REDIS;
+                    }
+
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return new LightningAuthenticationTokenServiceHandler() {
+                            @Override
+                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
+                                return AuthorizationServerComponentProperties.StoreKind.REDIS;
+                            }
+
+                            @Override
+                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
+                                AuthorizationServerComponentProperties.Redis redis = properties.getAuthorizationStoreConfig().getRedis();
+                                return new RedisAuthenticationTokenService(redis.getKeyPrefix(), redis.getExpiredTimeDuration());
+                            }
+                        };
+                    }
+                });
+
+    }
+
     /**
      * jwk set(rsa source)
      */
@@ -77,6 +176,8 @@ public class AuthorizationServerCommonComponentsConfiguration {
     @Bean
     @ConditionalOnMissingBean(LightningAuthorizationService.class)
     public LightningAuthenticationTokenService authorizationService(AuthorizationServerComponentProperties properties) {
+
+
         HandlerFactory.HandlerProvider provider
                 = HandlerFactory.getHandler(LightningAuthenticationTokenService.class,
                 Optional.ofNullable(properties.getAuthorizationStoreConfig().getStoreKind()).orElse(StoreKind.MEMORY)

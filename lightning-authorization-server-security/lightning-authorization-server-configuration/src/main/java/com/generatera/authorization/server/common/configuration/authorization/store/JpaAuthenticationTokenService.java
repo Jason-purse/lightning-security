@@ -1,9 +1,7 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
 import com.generatera.authorization.server.common.configuration.repository.JpaAuthenticationTokenRepository;
-import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -13,31 +11,6 @@ public class JpaAuthenticationTokenService extends AbstractAuthenticationTokenSe
     @Autowired
     private  JpaAuthenticationTokenRepository repository;
 
-
-    static {
-        HandlerFactory.registerHandler(
-                new AbstractAuthenticationTokenServiceHandlerProvider() {
-                    @Override
-                    public boolean support(Object predicate) {
-                        return predicate == AuthorizationServerComponentProperties.StoreKind.JPA;
-                    }
-
-                    @Override
-                    public HandlerFactory.Handler getHandler() {
-                        return new LightningAuthenticationTokenServiceHandler() {
-                            @Override
-                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
-                                return AuthorizationServerComponentProperties.StoreKind.JPA;
-                            }
-
-                            @Override
-                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
-                                return new JpaAuthenticationTokenService();
-                            }
-                        };
-                    }
-                });
-    }
 
 
     @Override

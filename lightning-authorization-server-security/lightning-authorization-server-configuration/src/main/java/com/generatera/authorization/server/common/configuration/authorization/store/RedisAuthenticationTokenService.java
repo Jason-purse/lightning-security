@@ -1,8 +1,6 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
-import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
@@ -26,31 +24,6 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
     private final Long expiredTimeDuration;
 
 
-    static {
-        HandlerFactory.registerHandler(
-                new AbstractAuthenticationTokenServiceHandlerProvider() {
-                    @Override
-                    public boolean support(Object predicate) {
-                        return predicate == AuthorizationServerComponentProperties.StoreKind.REDIS;
-                    }
-
-                    @Override
-                    public HandlerFactory.Handler getHandler() {
-                        return new LightningAuthenticationTokenServiceHandler() {
-                            @Override
-                            public AuthorizationServerComponentProperties.StoreKind getStoreKind() {
-                                return AuthorizationServerComponentProperties.StoreKind.REDIS;
-                            }
-
-                            @Override
-                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
-                                AuthorizationServerComponentProperties.Redis redis = properties.getAuthorizationStoreConfig().getRedis();
-                                return new RedisAuthenticationTokenService(redis.getKeyPrefix(), redis.getExpiredTimeDuration());
-                            }
-                        };
-                    }
-                });
-    }
 
     public RedisAuthenticationTokenService(
             String keyPrefix
