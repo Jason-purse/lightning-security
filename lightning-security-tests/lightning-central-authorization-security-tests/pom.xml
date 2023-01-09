@@ -10,6 +10,11 @@
     </parent>
 
     <artifactId>lightning-central-authorization-security-tests</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>lightning-central-oauth2-authorization-server-test</module>
+        <module>lightning-central-authorization-pass-grant-support-server-test</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

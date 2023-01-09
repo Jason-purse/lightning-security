@@ -19,6 +19,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>lightning-application-authorization-configs</module>
+        <module>lightning-application-authorization-form-login-server</module>
+        <module>lightning-application-authorization-oauth2-login-client-server</module>
+        <module>lightning-application-authorization-server-config</module>
     </modules>
 </project>

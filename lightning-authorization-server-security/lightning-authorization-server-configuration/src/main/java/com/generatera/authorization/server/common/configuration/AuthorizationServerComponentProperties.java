@@ -1,6 +1,7 @@
 package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.security.authorization.server.specification.TokenIssueFormat;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -23,7 +24,9 @@ public class AuthorizationServerComponentProperties {
 
         private Long accessTokenTimeToLive = DEFAULT_ACCESS_TOKEN_TIME_TO_LIVE;
 
-        private TokenIssueFormat tokenFormat = TokenIssueFormat.SELF_CONTAINED;
+        private TokenIssueFormat tokenIssueFormat = TokenIssueFormat.SELF_CONTAINED;
+
+        private LightningTokenType.LightningTokenValueType tokenValueType = LightningTokenType.LightningTokenValueType.BEARER_TOKEN_TYPE;
 
         private Boolean reuseRefreshToken = Boolean.TRUE;
 

@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>com.generatera</groupId>
-            <artifactId>lightning-application-authorization-oauth2-login-config</artifactId>
+            <artifactId>lightning-application-authorization-oauth2-login-client-server</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>

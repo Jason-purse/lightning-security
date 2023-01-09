@@ -1,22 +1,28 @@
 package com.generatera.authorization.server.common.configuration;
 
-import com.generatera.authorization.server.common.configuration.provider.ProviderSettings;
-import com.generatera.authorization.server.common.configuration.provider.ProviderSettingsProvider;
-import com.generatera.authorization.server.common.configuration.util.jose.Jwks;
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
+import com.generatera.authorization.server.common.configuration.authorization.store.DefaultAuthenticationTokenService;
+import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.generatera.security.authorization.server.specification.TokenSettings;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
+import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
+import com.generatera.security.authorization.server.specification.components.token.*;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.DefaultLightningJwtGenerator;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwtEncoder;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwtGenerator;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 import java.time.Duration;
 
@@ -38,7 +44,6 @@ import java.time.Duration;
 @Configuration
 @AutoConfigureBefore(SecurityAutoConfiguration.class)
 @EnableConfigurationProperties(AuthorizationServerComponentProperties.class)
-@Import(AuthorizationServerComponentImportSelector.class)
 public class AuthorizationServerCommonComponentsConfiguration {
 
     /**
@@ -46,14 +51,19 @@ public class AuthorizationServerCommonComponentsConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(JWKSource.class)
-    public JWKSource<SecurityContext> jwkSource() {
-        RSAKey rsaKey = Jwks.generateRsa();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+    public JWKSourceProvider jwkSource() {
+        return new JWKSourceProvider();
     }
 
 
-
+    /**
+     * 需要 authorization service
+     */
+    @Bean
+    @ConditionalOnMissingBean(LightningAuthorizationService.class)
+    public LightningAuthenticationTokenService authorizationService() {
+        return new DefaultAuthenticationTokenService();
+    }
 
 
     /**
@@ -69,11 +79,13 @@ public class AuthorizationServerCommonComponentsConfiguration {
         return new TokenSettingsProvider(
                 builder
                         .audience(properties.getTokenSettings().getAudiences())
-                        .accessTokenIssueFormat(properties.getTokenSettings().getTokenFormat())
+                        .accessTokenIssueFormat(properties.getTokenSettings().getTokenIssueFormat())
+                        .accessTokenValueType(properties.getTokenSettings().getTokenValueType())
                         .accessTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getAccessTokenTimeToLive()))
+                        .refreshTokenIssueFormat(properties.getTokenSettings().getTokenIssueFormat())
+                        .refreshTokenValueType(properties.getTokenSettings().getTokenValueType())
                         .refreshTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getRefreshTokenTimeToLive()))
                         .reuseRefreshTokens(properties.getTokenSettings().getReuseRefreshToken())
-
                         .build()
         );
     }
@@ -108,4 +120,33 @@ public class AuthorizationServerCommonComponentsConfiguration {
 
         return new ProviderSettingsProvider(settings);
     }
+
+
+
+    // --------------------------- token 生成器 ---------------------------------------
+    @Bean
+    @ConditionalOnMissingBean({LightningTokenGenerator.class, LightningJwtEncoder.class})
+    public LightningTokenGenerator<LightningToken> tokenGenerator(JWKSourceProvider jwkSourceProvider
+    ) {
+        return new DelegatingLightningTokenGenerator(
+                new DefaultLightningAccessTokenGenerator(),
+                new DefaultLightningRefreshTokenGenerator(),
+                new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSourceProvider.getJWKSource()))
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(LightningTokenGenerator.class)
+    @ConditionalOnBean(LightningJwtEncoder.class)
+    public LightningTokenGenerator<LightningToken> tokenGenerator(LightningJwtEncoder jwtEncoder) {
+        return new DelegatingLightningTokenGenerator(
+                new DefaultLightningAccessTokenGenerator(),
+                new DefaultLightningRefreshTokenGenerator(),
+                new DefaultLightningJwtGenerator(jwtEncoder)
+        );
+    }
+
+    // --------------------------------------------------------------------------------
+
+
 }

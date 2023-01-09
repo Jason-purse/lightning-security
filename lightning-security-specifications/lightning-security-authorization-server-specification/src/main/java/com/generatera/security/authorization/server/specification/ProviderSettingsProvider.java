@@ -1,6 +1,6 @@
 package com.generatera.security.authorization.server.specification;
 
-import com.generatera.security.authorization.server.specification.endpoints.provider.ProviderSettings;
+import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import org.springframework.util.Assert;
 
 /**

@@ -10,6 +10,10 @@ public final class ConfigurationSettingNames {
         private static final String TOKEN_SETTINGS_NAMESPACE = "settings.".concat("token.");
         public static final String ACCESS_TOKEN_TIME_TO_LIVE;
         public static final String ACCESS_TOKEN_FORMAT;
+
+        public static final String ACCESS_TOKEN_VALUE_TYPE;
+
+        public static final String REFRESH_TOKEN_VALUE_TYPE;
         public static final String REUSE_REFRESH_TOKENS;
         public static final String REFRESH_TOKEN_TIME_TO_LIVE;
         public static final String ID_TOKEN_SIGNATURE_ALGORITHM;
@@ -25,6 +29,8 @@ public final class ConfigurationSettingNames {
             REFRESH_TOKEN_TIME_TO_LIVE = TOKEN_SETTINGS_NAMESPACE.concat("refresh-token-time-to-live");
             ID_TOKEN_SIGNATURE_ALGORITHM = TOKEN_SETTINGS_NAMESPACE.concat("id-token-signature-algorithm");
             AUDIENCE = TOKEN_SETTINGS_NAMESPACE.concat("token-audience");
+            ACCESS_TOKEN_VALUE_TYPE = TOKEN_SETTINGS_NAMESPACE.concat("access-token-value-type");
+            REFRESH_TOKEN_VALUE_TYPE = TOKEN_SETTINGS_NAMESPACE.concat("refresh-token-value-type");
         }
     }
 

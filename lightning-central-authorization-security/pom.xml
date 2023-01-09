@@ -19,8 +19,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>lightning-central-authorization-server</module>
-        <module>lightning-central-authorization-server-configuration</module>
+        <module>lightning-central-oauth2-authorization-server</module>
+        <module>lightning-central-oauth2-authorization-password-grant-support-server</module>
     </modules>
 
 </project>

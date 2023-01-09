@@ -13,6 +13,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>lightning-oauth2-resource-server-jwt-bearer-token-test</module>
+        <module>lightning-oauth2-aplication-authorization-resource-server-jwt-bearer-token-test</module>
+        <module>lightning-central-authorization-and-resource-server-jwt-bearer-token-test</module>
     </modules>
 
     <properties>

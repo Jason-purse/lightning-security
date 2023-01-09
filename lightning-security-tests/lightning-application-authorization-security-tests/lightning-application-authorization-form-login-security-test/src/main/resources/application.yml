@@ -5,7 +5,7 @@ lightning:
         form:
           login:
             config:
-              is-separation: false
+              is-separation: true
               backend-separation:
                 login-success-message: "登陆成功了呀，亲!"
                 login-failure-message: "登陆失败了呀，亲!"
@@ -25,7 +25,7 @@ lightning:
 #            enable: false
 
 server:
-  port: 8080
+  port: 8081
 
 spring:
   security:

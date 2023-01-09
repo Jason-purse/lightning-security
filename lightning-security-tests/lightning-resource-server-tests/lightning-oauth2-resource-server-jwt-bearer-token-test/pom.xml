@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>com.generatera</groupId>
-            <artifactId>lightning-resource-server-oauth2-jwt-Bear-token-specification</artifactId>
+            <artifactId>lightning-oauth2-resource-server</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>

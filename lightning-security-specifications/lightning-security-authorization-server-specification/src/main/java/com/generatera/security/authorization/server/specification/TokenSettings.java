@@ -1,5 +1,7 @@
 package com.generatera.security.authorization.server.specification;
 
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType;
 import org.springframework.util.Assert;
 
 import java.time.Duration;
@@ -17,10 +19,22 @@ public final class TokenSettings extends AbstractSettings {
         return (Duration)this.getSetting(ConfigurationSettingNames.Token.ACCESS_TOKEN_TIME_TO_LIVE);
     }
 
-    public TokenIssueFormat getAccessTokenFormat() {
+    public TokenIssueFormat getAccessTokenIssueFormat() {
         return this.getSetting(ConfigurationSettingNames.Token.ACCESS_TOKEN_FORMAT);
     }
 
+    public LightningTokenValueType getAccessTokenValueType() {
+        return this.getSetting(ConfigurationSettingNames.Token.ACCESS_TOKEN_VALUE_TYPE);
+    }
+
+
+    public TokenIssueFormat getRefreshTokenIssueFormat() {
+        return this.getSetting(ConfigurationSettingNames.Token.ACCESS_TOKEN_FORMAT);
+    }
+
+    public LightningTokenValueType getRefreshTokenValueType() {
+        return this.getSetting(ConfigurationSettingNames.Token.ACCESS_TOKEN_VALUE_TYPE);
+    }
     public boolean isReuseRefreshTokens() {
         return (Boolean)this.getSetting(ConfigurationSettingNames.Token.REUSE_REFRESH_TOKENS);
     }
@@ -61,6 +75,24 @@ public final class TokenSettings extends AbstractSettings {
         public Builder accessTokenIssueFormat(TokenIssueFormat accessTokenIssueTokenFormat) {
             Assert.notNull(accessTokenIssueTokenFormat, "accessTokenFormat cannot be null");
             return (Builder)this.setting(ConfigurationSettingNames.Token.ACCESS_TOKEN_FORMAT, accessTokenIssueTokenFormat);
+        }
+
+
+        public Builder accessTokenValueType(LightningTokenValueType tokenValueType) {
+            Assert.notNull(tokenValueType, "tokenValueType cannot be null");
+            return (Builder)this.setting(ConfigurationSettingNames.Token.ACCESS_TOKEN_VALUE_TYPE, tokenValueType);
+        }
+
+
+        public Builder refreshTokenIssueFormat(TokenIssueFormat accessTokenIssueTokenFormat) {
+            Assert.notNull(accessTokenIssueTokenFormat, "accessTokenFormat cannot be null");
+            return (Builder)this.setting(ConfigurationSettingNames.Token.ACCESS_TOKEN_FORMAT, accessTokenIssueTokenFormat);
+        }
+
+
+        public Builder refreshTokenValueType(LightningTokenValueType tokenValueType) {
+            Assert.notNull(tokenValueType, "tokenValueType cannot be null");
+            return (Builder)this.setting(ConfigurationSettingNames.Token.ACCESS_TOKEN_VALUE_TYPE, tokenValueType);
         }
 
         public Builder reuseRefreshTokens(boolean reuseRefreshTokens) {

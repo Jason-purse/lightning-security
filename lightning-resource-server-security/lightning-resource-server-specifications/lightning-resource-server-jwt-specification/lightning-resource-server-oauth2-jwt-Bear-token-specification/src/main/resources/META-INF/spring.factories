@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.generatera.resource.server.specification.token.oauth2.jwt.bearer.OAuth2ResourceServerJwtBearerTokenConfiguration

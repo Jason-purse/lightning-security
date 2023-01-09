@@ -1,5 +1,6 @@
 package com.generatera.authorization.server.common.configuration.provider;
 
+import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -33,9 +34,9 @@ public final class ProviderExtUtils {
 
 
     public static <B extends HttpSecurityBuilder<B>> ProviderSettingsProvider getProviderSettings(B builder) {
-        ProviderSettingsProvider providerSettings = (ProviderSettingsProvider) builder.getSharedObject(ProviderSettingsProvider.class);
+        ProviderSettingsProvider providerSettings = builder.getSharedObject(ProviderSettingsProvider.class);
         if (providerSettings == null) {
-            providerSettings = (ProviderSettingsProvider) getBean(builder, ProviderSettingsProvider.class);
+            providerSettings = getBean(builder, ProviderSettingsProvider.class);
             builder.setSharedObject(ProviderSettingsProvider.class, providerSettings);
         }
 

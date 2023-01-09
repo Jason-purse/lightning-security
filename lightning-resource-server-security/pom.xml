@@ -19,8 +19,8 @@
 
     <packaging>pom</packaging>
     <modules>
-        <module>lightning-resource-server-specifications</module>
         <module>lightning-oauth2-resource-server</module>
+        <module>lightning-resource-server-config</module>
     </modules>
 
 

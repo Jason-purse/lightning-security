@@ -20,9 +20,6 @@
 
     <modules>
         <module>lightning-authorization-server-configuration</module>
-        <module>lightning-authorization-server-plain-configuration</module>
-        <module>lightning-authorization-server-oauth2-configuration</module>
-        <module>lightning-authorization-server-specifications</module>
     </modules>
 
 </project>
