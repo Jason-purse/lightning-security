@@ -1,5 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.configuration;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.PropertiesBindImportSelector;
 import com.generatera.authorization.application.server.form.login.config.FormLoginProperties;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
@@ -43,6 +44,10 @@ public class OAuth2CentralAuthorizationServerCCImportSelector extends Properties
                     "oauth2-authorization-form-ext-properties",
                     new LinkedHashMap<>() {{
                         put(FormLoginProperties.IS_SEPARATION,Boolean.FALSE);
+
+                        // 设置 oidc 处理,使用oauth2 自带的 oidc
+                        // 也就是不需要 ...
+                        put(ApplicationAuthServerProperties.ServerMetaDataEndpointConfig.ENABLE_OIDC,Boolean.FALSE);
                     }}
             ));
         }

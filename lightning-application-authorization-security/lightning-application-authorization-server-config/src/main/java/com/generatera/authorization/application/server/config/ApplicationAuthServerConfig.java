@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config;
 
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -8,6 +9,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
@@ -21,7 +23,7 @@ import java.util.List;
 
 /**
  * 此配置作为 整个授权服务器的控制中心(模板配置)
- *
+ * <p>
  * 当自定义 AuthExtSecurityConfigurer的情况下,枢纽控制将被破坏,请注意实现 ...
  * 除此之外还处理白名单访问请求路径 ...
  */
@@ -29,6 +31,7 @@ import java.util.List;
 @AutoConfiguration
 @AutoConfigureBefore(SecurityAutoConfiguration.class)
 @EnableConfigurationProperties(ApplicationAuthServerProperties.class)
+@Import(ApplicationServerImportSelector.class)
 public class ApplicationAuthServerConfig {
 
     @Bean
@@ -70,6 +73,13 @@ public class ApplicationAuthServerConfig {
                             )
                             .permitAll();
                 }
+
+                ElvisUtil.isNotEmptyConsumer(
+                        properties
+                                .getServerMetaDataEndpointConfig().getEnableOidc(),
+                        flag -> authorizationManagerRequestMatcherRegistry
+                                .mvcMatchers(ApplicationAuthServerProperties.ServerMetaDataEndpointConfig.OPEN_CONNECT_ID_METADATA_ENDPOINT)
+                                .permitAll());
 
                 authorizationManagerRequestMatcherRegistry
                         .anyRequest()

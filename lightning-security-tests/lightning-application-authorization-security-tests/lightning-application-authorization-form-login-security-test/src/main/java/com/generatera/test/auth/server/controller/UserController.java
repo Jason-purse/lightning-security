@@ -1,8 +1,6 @@
 package com.generatera.test.auth.server.controller;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.generatera.security.authorization.server.specification.LightningUserContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,8 +21,10 @@ public class UserController {
     //}
 
     @GetMapping("current/user")
-    public Object currentUser(@AuthenticationPrincipal Object authentication) {
-        SecurityContext context = SecurityContextHolder.getContext();
-        return context.getAuthentication().getPrincipal();
+    public Object currentUser() {
+        return LightningUserContext.get()
+                .getUserPrincipal()
+                .map(Object::toString)
+                .orElse("no current user");
     }
 }

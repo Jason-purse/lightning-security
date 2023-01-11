@@ -11,18 +11,11 @@ import com.generatera.authorization.application.server.oauth2.login.config.autho
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningOAuth2AuthorizationRequestResolver;
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningAnonymousOAuthorizedClientRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningOAuthorizedClientService;
-import com.generatera.authorization.application.server.oauth2.login.config.token.DefaultOAuth2LoginTokenGenerator;
-import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginTokenGenerator;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
 import com.generatera.authorization.application.server.oauth2.login.config.user.OidcUserPrincipal;
-import com.generatera.security.authorization.server.specification.components.token.*;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.DefaultLightningJwtGenerator;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -58,31 +51,6 @@ public class ApplicationOAuth2LoginConfiguration {
     @RequiredArgsConstructor
     public static class OAuth2LoginConfiguration {
         private final AuthorizationExtEndpointConfig authorizationExtEndpointConfig = new AuthorizationExtEndpointConfig();
-        private final OAuth2LoginProperties oAuth2LoginProperties;
-        private final JWKSourceProvider jwkSourceProvider;
-
-
-        // token generator
-
-        @Bean
-        @ConditionalOnBean(LightningTokenGenerator.class)
-        @ConditionalOnMissingBean(LightningOAuth2LoginTokenGenerator.class)
-        public LightningOAuth2LoginTokenGenerator oAuth2LoginTokenGenerator(LightningTokenGenerator<LightningToken> tokenGenerator) {
-            return new DefaultOAuth2LoginTokenGenerator(tokenGenerator);
-        }
-
-        @Bean
-        @ConditionalOnMissingBean({LightningOAuth2LoginTokenGenerator.class, LightningTokenGenerator.class})
-        public LightningOAuth2LoginTokenGenerator tokenGenerator() {
-            return new DefaultOAuth2LoginTokenGenerator(
-                    new DelegatingLightningTokenGenerator(
-                            new DefaultLightningAccessTokenGenerator(),
-                            new DefaultLightningRefreshTokenGenerator(),
-                            new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSourceProvider.getJWKSource()))
-                    ));
-        }
-
-
 
 
         @Bean

@@ -13,10 +13,13 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.DefaultLightningJwtGenerator;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwtEncoder;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.LightningJwtCustomizer;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -59,6 +62,10 @@ import java.util.Optional;
 public class AuthorizationServerCommonComponentsConfiguration {
 
     static {
+
+        // authenticationToken ServiceHandler Providers
+        // // TODO: 2023/1/9 加载了额外多的类,没有必要 ...
+        // 可以通过 ImportSelector 进行改写,减少类的装载
         HandlerFactory.registerHandler(
                 new AbstractAuthenticationTokenServiceHandlerProvider() {
 
@@ -248,32 +255,49 @@ public class AuthorizationServerCommonComponentsConfiguration {
 
 
     // --------------------------- token 生成器 ---------------------------------------
-    // 当使用oauth2 authorization server的时候,token生成器,根本不会使用到这些Token 生成器 ...
+    // 当使用oauth2 central  authorization server的时候,token生成器,根本不会使用到这些Token 生成器 ...
     // 因为 oauth2 是基于 client认证的方式来提供 token
     // 除非需要根据直接使用表单登录进行 用户token 颁发 ...
     // 那么这个token 生成器将可以用于 token 颁发 ...
+
+    // 后续修改为 统一 到 oauth2 的一部分公共规范上
+    // // TODO: 2023/1/11  例如让表单增加token 端点,便于 token 刷新 / token 颁发 ...
+
+    @Bean
+    @ConditionalOnBean(LightningJwtEncoder.class)
+    @ConditionalOnMissingBean(LightningTokenGenerator.class)
+    public LightningTokenGenerator<LightningToken> tokenGenerator(
+            LightningJwtEncoder jwtEncoder,
+            @Autowired(required = false)
+            LightningJwtCustomizer jwtCustomizer) {
+
+        DefaultLightningJwtGenerator jwtGenerator = new DefaultLightningJwtGenerator(jwtEncoder);
+        ElvisUtil.isNotEmptyConsumer(jwtCustomizer,jwtGenerator::setJwtCustomizer);
+        return new DelegatingLightningTokenGenerator(
+                new DefaultLightningAccessTokenGenerator(),
+                new DefaultLightningRefreshTokenGenerator(),
+                jwtGenerator);
+    }
+
+
+    /**
+     * token 名称不能一样,否则当一个bean 方法被跳过时,它也将被跳过 ...
+     */
     @Bean
     @ConditionalOnMissingBean({LightningTokenGenerator.class, LightningJwtEncoder.class})
-    public LightningTokenGenerator<LightningToken> tokenGenerator(JWKSourceProvider jwkSourceProvider
+    public LightningTokenGenerator<LightningToken> defaultTokenGenerator(JWKSourceProvider jwkSourceProvider,
+                                                                  @Autowired(required = false)
+                                                                  LightningJwtCustomizer jwtCustomizer
     ) {
+        DefaultLightningJwtGenerator jwtGenerator = new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSourceProvider.getJWKSource()));
+        ElvisUtil.isNotEmptyConsumer(jwtCustomizer, jwtGenerator::setJwtCustomizer);
+
         return new DelegatingLightningTokenGenerator(
                 new DefaultLightningAccessTokenGenerator(),
                 new DefaultLightningRefreshTokenGenerator(),
-                new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSourceProvider.getJWKSource()))
+               jwtGenerator
         );
     }
-
-    @Bean
-    @ConditionalOnMissingBean(LightningTokenGenerator.class)
-    @ConditionalOnBean(LightningJwtEncoder.class)
-    public LightningTokenGenerator<LightningToken> tokenGenerator(LightningJwtEncoder jwtEncoder) {
-        return new DelegatingLightningTokenGenerator(
-                new DefaultLightningAccessTokenGenerator(),
-                new DefaultLightningRefreshTokenGenerator(),
-                new DefaultLightningJwtGenerator(jwtEncoder)
-        );
-    }
-
     // --------------------------------------------------------------------------------
 
 }

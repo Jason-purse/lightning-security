@@ -7,7 +7,12 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.util.Assert;
 
 import java.util.Map;
-
+/**
+ * @author FLJ
+ * @date 2023/1/11
+ * @time 16:06
+ * @Description Jwt 编码上下文 ...
+ */
 public final class JwtEncodingContext implements LightningTokenContext {
     private final Map<Object, Object> context;
 

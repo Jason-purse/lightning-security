@@ -3,19 +3,21 @@ package com.generatera.authorization.application.server.form.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
+import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.util.Assert;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
@@ -27,19 +29,38 @@ import java.util.Objects;
  */
 @Configuration
 @AutoConfiguration
-@AutoConfigureAfter(ApplicationAuthServerConfig.class)
+@AutoConfigureBefore(ApplicationAuthServerConfig.class)
 @EnableConfigurationProperties(FormLoginProperties.class)
 @Import({FormLoginConfigurationImportSelector.class})
 @RequiredArgsConstructor
 public class ApplicationFormLoginConfiguration {
+
     private final FormLoginProperties formLoginProperties;
 
+    /**
+     * 只需要给出一个 UserDetailsService 即可 ..
+     */
     @Bean
-    public LightningAppAuthServerConfigurer lightningFormLoginConfigurer(
-            @Autowired(required = false)
-            AuthenticationSuccessHandler authenticationSuccessHandler,
-            @Autowired(required = false)
-            AuthenticationFailureHandler authenticationFailureHandler) {
+    FormLoginDaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, @Autowired(required = false) PasswordEncoder passwordEncoder,
+                                                              @Autowired(required = false) UserDetailsPasswordService passwordManager) throws Exception {
+        FormLoginDaoAuthenticationProvider authenticationProvider = new FormLoginDaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        if (passwordEncoder != null) {
+            provider.setPasswordEncoder(passwordEncoder);
+        }
+
+        if (passwordManager != null) {
+            provider.setUserDetailsPasswordService(passwordManager);
+        }
+
+        provider.afterPropertiesSet();
+        return authenticationProvider;
+    }
+
+    @Bean
+    public LightningAppAuthServerConfigurer lightningFormLoginConfigurer() {
         return new LightningAppAuthServerConfigurer() {
             @Override
             public void configure(HttpSecurity builder) throws Exception {
@@ -47,9 +68,7 @@ public class ApplicationFormLoginConfiguration {
 
                 List<String> patterns = new LinkedList<>();
                 // 如果是前后端分离的 ..
-                if (Objects.requireNonNullElse(formLoginProperties.getIsSeparation(), Boolean.FALSE)) {
-                    separationConfig(formLoginConfigurer, authenticationSuccessHandler, authenticationFailureHandler);
-                } else {
+                if (!Objects.requireNonNullElse(formLoginProperties.getIsSeparation(), Boolean.FALSE)) {
                     // 前后端不分离配置 ..
                     FormLoginProperties.NoSeparation noSeparation = formLoginProperties.getNoSeparation();
                     if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
@@ -67,8 +86,8 @@ public class ApplicationFormLoginConfiguration {
                 }
 
                 genericConfig(formLoginConfigurer);
-                permission(formLoginConfigurer, patterns);
 
+                LogUtil.prettyLog("form login authorization server enabled .....");
             }
         };
     }
@@ -88,17 +107,6 @@ public class ApplicationFormLoginConfiguration {
         }
     }
 
-    private static void permission(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, List<String> patterns) {
-        // 资源放行
-        try {
-            formLoginConfigurer.and()
-                    .authorizeHttpRequests()
-                    .antMatchers(patterns.toArray(String[]::new))
-                    .permitAll();
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
 
     private static void noSeparationConfig(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, List<String> patterns, FormLoginProperties.NoSeparation noSeparation) {
         // 针对于 转发url 是post请求,所以静态资源不支持,会报错 405
@@ -137,13 +145,5 @@ public class ApplicationFormLoginConfiguration {
                 }
             }
         }
-    }
-
-    private static void separationConfig(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, AuthenticationSuccessHandler authenticationSuccessHandler, AuthenticationFailureHandler authenticationFailureHandler) {
-        Assert.notNull(authenticationSuccessHandler,"authenticationSuccessHandler must not be null !!!");
-        Assert.notNull(authenticationFailureHandler,"authenticationFailureHandler must not be null !!!");
-        // 前后端分离的 handler 配置 ..
-        formLoginConfigurer.successHandler(authenticationSuccessHandler);
-        formLoginConfigurer.failureHandler(authenticationFailureHandler);
     }
 }

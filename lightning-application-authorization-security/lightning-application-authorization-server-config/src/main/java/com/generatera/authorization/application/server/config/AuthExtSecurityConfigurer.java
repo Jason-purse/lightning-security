@@ -55,6 +55,8 @@ public class AuthExtSecurityConfigurer extends SecurityConfigurerAdapter<Default
         if(oAuth2AuthorizationServer == null) {
             oauth2CommonComponentFill(builder);
             oauth2CommonComponentValidation(builder);
+
+            // oidc provider meta data by AuthServerProviderMetadataConfiguration handle ..
         }
     }
 

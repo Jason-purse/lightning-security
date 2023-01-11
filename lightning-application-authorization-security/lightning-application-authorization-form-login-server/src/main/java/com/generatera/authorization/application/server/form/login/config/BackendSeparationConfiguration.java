@@ -1,26 +1,23 @@
 package com.generatera.authorization.application.server.form.login.config;
 
+import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.application.server.form.login.config.authentication.DefaultLightningFormLoginAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.form.login.config.authentication.LightningFormLoginAuthenticationEntryPoint;
-import com.generatera.authorization.application.server.form.login.config.token.DefaultFormLoginTokenGenerator;
-import com.generatera.authorization.application.server.form.login.config.token.FormLoginTokenGenerator;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
-import com.generatera.security.authorization.server.specification.components.token.*;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.DefaultLightningJwtGenerator;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
+import com.generatera.security.authorization.server.specification.components.token.LightningToken;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenGenerator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.Objects;
-
+@AutoConfiguration
 @RequiredArgsConstructor
 public class BackendSeparationConfiguration {
 
@@ -28,52 +25,37 @@ public class BackendSeparationConfiguration {
 
     private final TokenSettingsProvider tokenSettingsProvider;
 
-    @Autowired
-    private JWKSourceProvider jwkSourceProvider;
-
-    @Autowired(required = false)
-    private FormLoginTokenGenerator tokenGenerator;
-
-    @Autowired(required = false)
-    private LightningTokenGenerator<LightningToken> delegate;
-
-
     private final FormLoginProperties formLoginProperties;
 
 
     @Bean
-    @ConditionalOnMissingBean({AuthenticationSuccessHandler.class})
-    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-        return lightningFormLoginAuthenticationEntryPoint();
+    public LightningAppAuthServerConfigurer FormLoginAuthenticationEntryPointConfigurer(
+            DefaultLightningFormLoginAuthenticationEntryPoint formLoginAuthenticationEntryPoint
+    ) {
+        return new LightningAppAuthServerConfigurer() {
+            @Override
+            public void configure(HttpSecurity securityBuilder) throws Exception {
+                FormLoginConfigurer<HttpSecurity> httpSecurityFormLoginConfigurer = securityBuilder.formLogin();
+                httpSecurityFormLoginConfigurer
+                        .successHandler(formLoginAuthenticationEntryPoint)
+                        .failureHandler(formLoginAuthenticationEntryPoint);
+            }
+        };
     }
-
-    @Bean
-    @ConditionalOnMissingBean({AuthenticationFailureHandler.class})
-    public AuthenticationFailureHandler authenticationFailureHandler() {
-        return lightningFormLoginAuthenticationEntryPoint();
-    }
-
-
 
     /**
      * 代理此方法 ..
      *
      * @return authentication success / failure 都是同一个对象
      */
-    private LightningFormLoginAuthenticationEntryPoint lightningFormLoginAuthenticationEntryPoint() {
-
-        LightningTokenGenerator<LightningToken> tokenLightningTokenGenerator = Objects.requireNonNullElseGet(tokenGenerator,
-                () -> Objects.requireNonNullElseGet(delegate,() ->
-                    new DelegatingLightningTokenGenerator(
-                            new DefaultLightningAccessTokenGenerator(),
-                            new DefaultLightningRefreshTokenGenerator(),
-                            new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSourceProvider.getJWKSource()))
-                    )
-                ));
-
-        Assert.notNull(authenticationTokenService,"authenticationTokenService must not be null !!!");
-        LightningFormLoginAuthenticationEntryPoint point = new LightningFormLoginAuthenticationEntryPoint(
-                new DefaultFormLoginTokenGenerator(tokenLightningTokenGenerator), tokenSettingsProvider, authenticationTokenService);
+    @Bean
+    @ConditionalOnMissingBean(LightningFormLoginAuthenticationEntryPoint.class)
+    public DefaultLightningFormLoginAuthenticationEntryPoint lightningFormLoginAuthenticationEntryPoint(
+            LightningTokenGenerator<LightningToken> tokenGenerator
+    ) {
+        Assert.notNull(authenticationTokenService, "authenticationTokenService must not be null !!!");
+        DefaultLightningFormLoginAuthenticationEntryPoint point = new DefaultLightningFormLoginAuthenticationEntryPoint(
+                tokenGenerator, tokenSettingsProvider, authenticationTokenService);
         FormLoginProperties.BackendSeparation backendSeparation = formLoginProperties.getBackendSeparation();
 
         if (StringUtils.hasText(backendSeparation.getLoginSuccessMessage())) {

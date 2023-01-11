@@ -1,20 +1,42 @@
 package com.generatera.authorization.application.server.config;
 
+import com.generatera.authorization.server.common.configuration.provider.metadata.oidc.OidcProviderConfigurationEndpointFilter;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Collections;
 import java.util.List;
 
+import static com.generatera.authorization.application.server.config.ApplicationAuthServerProperties.APPLICATION_AUTH_SERVER_PREFIX;
+
 /**
  * 应用级别的 认证属性
  */
 @Data
-@ConfigurationProperties(prefix = "lightning.auth.app.server.config")
+@ConfigurationProperties(prefix = APPLICATION_AUTH_SERVER_PREFIX)
 public class ApplicationAuthServerProperties {
 
+    public static final String APPLICATION_AUTH_SERVER_PREFIX = "lightning.auth.app.server.config";
 
-    public final Permission permission = new Permission();
+    private final Permission permission = new Permission();
+
+    private ServerMetaDataEndpointConfig serverMetaDataEndpointConfig = new ServerMetaDataEndpointConfig();
+
+
+    @Data
+    public static class ServerMetaDataEndpointConfig {
+
+        public static final String ENABLE_OIDC = APPLICATION_AUTH_SERVER_PREFIX + ".enableOidc";
+
+        public static final String OPEN_CONNECT_ID_METADATA_ENDPOINT = OidcProviderConfigurationEndpointFilter.DEFAULT_OIDC_PROVIDER_CONFIGURATION_ENDPOINT_URI;
+
+        /**
+         * 那么默认需要 ..
+         */
+        private Boolean enableOidc = true;
+
+
+    }
 
 
     @Data
@@ -25,4 +47,5 @@ public class ApplicationAuthServerProperties {
          */
         private List<String> urlWhiteList = Collections.emptyList();
     }
+
 }

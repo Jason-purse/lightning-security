@@ -3,6 +3,9 @@ package com.generatera.authorization.server.common.configuration;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import static com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.AUTH_SERVER_COMPONENT_PREFIX;
+
 /**
  * @author FLJ
  * @date 2023/1/9
@@ -10,8 +13,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @Description 主要是 作为授权服务器的一些可配置属性 ...
  */
 @Data
-@ConfigurationProperties(prefix = "lightning.auth.server.common.component")
+@ConfigurationProperties(prefix = AUTH_SERVER_COMPONENT_PREFIX)
 public class AuthorizationServerComponentProperties {
+
+    public static final String AUTH_SERVER_COMPONENT_PREFIX = "lightning.auth.server.common.component";
     /**
      * token 生成器的名称(暂时没有使用)
      */

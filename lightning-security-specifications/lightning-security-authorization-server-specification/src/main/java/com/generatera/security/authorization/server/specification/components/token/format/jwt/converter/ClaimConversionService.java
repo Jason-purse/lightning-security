@@ -8,6 +8,8 @@ import org.springframework.core.convert.support.GenericConversionService;
  * @date 2023/1/3
  * @time 10:01
  * @Description spring oauth2 copy
+ *
+ * claims 约定(本身也就是支持基本的类型转换)
  */
 public final class ClaimConversionService extends GenericConversionService {
     private static volatile ClaimConversionService sharedInstance;

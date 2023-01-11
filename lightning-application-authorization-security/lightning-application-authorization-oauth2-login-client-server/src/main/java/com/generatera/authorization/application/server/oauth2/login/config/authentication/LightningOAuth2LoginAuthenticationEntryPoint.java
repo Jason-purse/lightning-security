@@ -7,10 +7,7 @@ import com.generatera.authorization.server.common.configuration.authorization.st
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
-import com.generatera.security.authorization.server.specification.components.token.LightningSecurityAccessTokenContext;
-import com.generatera.security.authorization.server.specification.components.token.LightningSecurityTokenContext;
-import com.generatera.security.authorization.server.specification.components.token.LightningToken;
-import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
+import com.generatera.security.authorization.server.specification.components.token.*;
 import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
@@ -39,7 +36,7 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
     private String authErrorMessage = "LOGIN_FAILURE";
 
 
-    private LightningOAuth2LoginTokenGenerator tokenGenerator;
+    private LightningTokenGenerator<LightningToken> tokenGenerator;
 
     private TokenSettingsProvider tokenSettingsProvider;
 

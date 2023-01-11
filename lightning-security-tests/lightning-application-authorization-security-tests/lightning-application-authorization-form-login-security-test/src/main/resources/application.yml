@@ -16,6 +16,9 @@ lightning:
                 enable-forward: false
                 default-success-url: /index.html
                 success-forward-or-redirect-url: /login.html
+        config:
+          server-meta-data-endpoint-config:
+            enable-oidc: false
 #              no-separation:
 #                success-forward-url: /login.html
 #                failure-forward-url: /failure.html

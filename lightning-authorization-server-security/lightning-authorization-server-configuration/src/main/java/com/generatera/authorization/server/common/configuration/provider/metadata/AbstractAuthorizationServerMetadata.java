@@ -149,14 +149,14 @@ public abstract class AbstractAuthorizationServerMetadata implements Authorizati
         protected void validate() {
             Assert.notNull(this.getClaims().get("issuer"), "issuer cannot be null");
             validateURL(this.getClaims().get("issuer"), "issuer must be a valid URL");
-            Assert.notNull(this.getClaims().get("authorization_endpoint"), "authorizationEndpoint cannot be null");
-            validateURL(this.getClaims().get("authorization_endpoint"), "authorizationEndpoint must be a valid URL");
-            Assert.notNull(this.getClaims().get("token_endpoint"), "tokenEndpoint cannot be null");
-            validateURL(this.getClaims().get("token_endpoint"), "tokenEndpoint must be a valid URL");
-            if (this.getClaims().get("token_endpoint_auth_methods_supported") != null) {
-                Assert.isInstanceOf(List.class, this.getClaims().get("token_endpoint_auth_methods_supported"), "tokenEndpointAuthenticationMethods must be of type List");
-                Assert.notEmpty((List)this.getClaims().get("token_endpoint_auth_methods_supported"), "tokenEndpointAuthenticationMethods cannot be empty");
-            }
+            //Assert.notNull(this.getClaims().get("authorization_endpoint"), "authorizationEndpoint cannot be null");
+            //validateURL(this.getClaims().get("authorization_endpoint"), "authorizationEndpoint must be a valid URL");
+            //Assert.notNull(this.getClaims().get("token_endpoint"), "tokenEndpoint cannot be null");
+            //validateURL(this.getClaims().get("token_endpoint"), "tokenEndpoint must be a valid URL");
+            //if (this.getClaims().get("token_endpoint_auth_methods_supported") != null) {
+            //    Assert.isInstanceOf(List.class, this.getClaims().get("token_endpoint_auth_methods_supported"), "tokenEndpointAuthenticationMethods must be of type List");
+            //    Assert.notEmpty((List)this.getClaims().get("token_endpoint_auth_methods_supported"), "tokenEndpointAuthenticationMethods cannot be empty");
+            //}
 
             if (this.getClaims().get("jwks_uri") != null) {
                 validateURL(this.getClaims().get("jwks_uri"), "jwksUri must be a valid URL");
