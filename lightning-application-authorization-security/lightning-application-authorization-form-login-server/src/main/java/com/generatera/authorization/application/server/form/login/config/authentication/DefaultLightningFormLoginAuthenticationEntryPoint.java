@@ -2,8 +2,8 @@ package com.generatera.authorization.application.server.form.login.config.authen
 
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.token.ApplicationLevelAuthorizationToken;
-import com.generatera.authorization.application.server.form.login.config.PlainLightningUserPrincipal;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
 import com.generatera.security.authorization.server.specification.components.token.*;
@@ -14,7 +14,6 @@ import lombok.Data;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -155,7 +154,7 @@ public class DefaultLightningFormLoginAuthenticationEntryPoint implements Lightn
                                 tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat(),
                                 tokenSettingsProvider.getTokenSettings().getAccessTokenValueType(),
                                 LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE,
-                                new PlainLightningUserPrincipal(((UserDetails) authentication.getPrincipal()))
+                                ((LightningUserPrincipal) authentication.getPrincipal())
                         ))
                 );
         LightningToken refreshToken = tokenGenerator.
@@ -167,7 +166,7 @@ public class DefaultLightningFormLoginAuthenticationEntryPoint implements Lightn
                                 tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat(),
                                 tokenSettingsProvider.getTokenSettings().getRefreshTokenValueType(),
                                 LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE,
-                                new PlainLightningUserPrincipal(((UserDetails) authentication.getPrincipal()))
+                                ((LightningUserPrincipal) authentication.getPrincipal())
                         ))
                 );
 

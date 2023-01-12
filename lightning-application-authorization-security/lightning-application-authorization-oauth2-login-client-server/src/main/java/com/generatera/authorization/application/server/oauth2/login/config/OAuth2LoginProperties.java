@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 
 @Data
-@ConfigurationProperties(prefix = "lightning.auth.app.server.oauth2.login.config")
+@ConfigurationProperties(prefix = "lightning.auth.app.server.oauth2.login.com.generatera.oauth2.resource.server.config")
 public class OAuth2LoginProperties {
 
 

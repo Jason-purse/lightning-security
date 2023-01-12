@@ -1,7 +1,7 @@
-//package com.generatera.authorization.application.server.form.login.config;
+//package com.generatera.authorization.application.server.form.login.com.generatera.oauth2.resource.server.config;
 //
-//import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
-//import com.generatera.resource.server.config.PropertiesBindImportSelector;
+//import com.generatera.authorization.application.server.com.generatera.oauth2.resource.server.config.ApplicationAuthServerProperties;
+//import com.generatera.resource.server.com.generatera.oauth2.resource.server.config.PropertiesBindImportSelector;
 //import org.springframework.beans.factory.BeanFactory;
 //import org.springframework.core.env.Environment;
 //import org.springframework.core.type.AnnotationMetadata;

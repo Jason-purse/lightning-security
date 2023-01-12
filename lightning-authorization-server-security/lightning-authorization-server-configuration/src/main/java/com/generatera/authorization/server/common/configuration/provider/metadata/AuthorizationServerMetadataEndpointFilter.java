@@ -1,6 +1,7 @@
 package com.generatera.authorization.server.common.configuration.provider.metadata;
 
 import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
+import com.generatera.security.authorization.server.specification.ClientAuthenticationMethod;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import org.jetbrains.annotations.NotNull;

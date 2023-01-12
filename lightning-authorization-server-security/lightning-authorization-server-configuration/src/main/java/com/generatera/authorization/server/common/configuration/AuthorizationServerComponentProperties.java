@@ -1,5 +1,6 @@
 package com.generatera.authorization.server.common.configuration;
 
+import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -98,26 +99,7 @@ public class AuthorizationServerComponentProperties {
 
 
 
-    @Data
-    public static class ProviderSettingProperties {
 
-        // 可以为空(自己自动生成)
-        private String issuer;
-
-        private String authorizationEndpoint = "/auth/v1/oauth2/authorize";
-
-        private String tokenEndpoint = "/auth/v1/oauth2/token";
-
-        private String jwkSetEndpoint = "/auth/v1/oauth2/jwks";
-
-        private String tokenRevocationEndpoint = "/auth/v1/oauth2/revoke";
-
-        private String tokenIntrospectionEndpoint = "/auth/v1/oauth2/introspect";
-
-        private String oidcClientRegistrationEndpoint = "/auth/v1/connect/register";
-
-        private String oidcUserInfoEndpoint = "/auth/v1/userinfo";
-    }
 
     @Data
     public static class AuthorizationStoreConfig {

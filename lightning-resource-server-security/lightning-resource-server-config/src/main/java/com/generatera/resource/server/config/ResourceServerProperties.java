@@ -15,12 +15,12 @@ public class ResourceServerProperties {
         /**
          * 默认使用Bearer Token
          */
-        private TokenType tokenType = TokenType.Bearer;
+        private TokenType tokenType = TokenType.JWT;
 
         private final BearerTokenConfig bearerTokenConfig = new BearerTokenConfig();
 
         public enum TokenType {
-            Bearer,
+            JWT,
             Opaque
         }
 

@@ -12,7 +12,7 @@ import com.generatera.authorization.application.server.oauth2.login.config.autho
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningAnonymousOAuthorizedClientRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningOAuthorizedClientService;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
-import com.generatera.authorization.application.server.oauth2.login.config.user.OidcUserPrincipal;
+import com.generatera.authorization.application.server.oauth2.login.config.user.OidcUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -61,7 +61,7 @@ public class ApplicationOAuth2LoginConfiguration {
 
                 @Override
                 public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
-                    return new OidcUserPrincipal(oidcUserService.loadUser(userRequest));
+                    return new OidcUserDetails(oidcUserService.loadUser(userRequest));
                 }
             };
         }
@@ -114,7 +114,7 @@ public class ApplicationOAuth2LoginConfiguration {
 
 
                 private static void tokenAccessConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, LightningOAuth2AccessTokenResponseClient accessTokenResponseClient) {
-                    // token endpoint config
+                    // token endpoint com.generatera.oauth2.resource.server.config
                     OAuth2LoginConfigurer<HttpSecurity>.TokenEndpointConfig tokenEndpointConfig = oAuth2LoginConfigurer.tokenEndpoint();
                     if (accessTokenResponseClient != null) {
                         tokenEndpointConfig.accessTokenResponseClient(accessTokenResponseClient);
@@ -122,7 +122,7 @@ public class ApplicationOAuth2LoginConfiguration {
                 }
 
                 private static void redirectConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, OAuth2LoginProperties properties) {
-                    // redirection endpoint config
+                    // redirection endpoint com.generatera.oauth2.resource.server.config
                     OAuth2LoginConfigurer<HttpSecurity>.RedirectionEndpointConfig redirectionEndpointConfig =
                             oAuth2LoginConfigurer.redirectionEndpoint();
 
@@ -133,7 +133,7 @@ public class ApplicationOAuth2LoginConfiguration {
                 }
 
                 private static void userInfoEndpointConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, LightningOAuth2GrantedAuthoritiesMapper authoritiesMapper, LightningOAuth2UserService oAuth2UserService, LightningOidcUserService oidcUserService, LightningOAuthorizedClientService oAuthorizedClientService, LightningAnonymousOAuthorizedClientRepository anonymousOAuthorizedClientRepository) {
-                    // userinfo endpoint config
+                    // userinfo endpoint com.generatera.oauth2.resource.server.config
                     OAuth2LoginConfigurer<HttpSecurity>.UserInfoEndpointConfig userInfoEndpointConfig
                             = oAuth2LoginConfigurer.userInfoEndpoint();
                     if (authoritiesMapper != null) {
@@ -161,7 +161,7 @@ public class ApplicationOAuth2LoginConfiguration {
                 private static void oauth2AuthorizationCodeFlowConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, OAuth2LoginProperties properties, LightningAuthorizationRequestRepository repository, LightningOAuth2AuthorizationRequestResolver requestResolver) {
                     // authorization code flow for component
 
-                    // authorization endpoint config
+                    // authorization endpoint com.generatera.oauth2.resource.server.config
                     OAuth2LoginConfigurer<HttpSecurity>.AuthorizationEndpointConfig authorizationEndpointConfig
                             = oAuth2LoginConfigurer.authorizationEndpoint();
                     OAuth2LoginProperties.OAuthorizationRequestEndpoint oAuthorizationRequestEndpoint =

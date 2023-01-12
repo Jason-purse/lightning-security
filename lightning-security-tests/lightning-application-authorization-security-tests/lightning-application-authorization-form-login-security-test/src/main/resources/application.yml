@@ -23,7 +23,7 @@ lightning:
 #                success-forward-url: /login.html
 #                failure-forward-url: /failure.html
 
-#        config:
+#        com.generatera.oauth2.resource.server.config:
 #          form-login:
 #            enable: false
 

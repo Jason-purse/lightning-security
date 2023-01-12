@@ -22,7 +22,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.List;
 
 /**
- * oauth2 central authorization server config
+ * oauth2 central authorization server com.generatera.oauth2.resource.server.config
  *
  * 1. oauth2 central authorization server的 一部分组件注册
  *      1.1 clientRegistrationRepository

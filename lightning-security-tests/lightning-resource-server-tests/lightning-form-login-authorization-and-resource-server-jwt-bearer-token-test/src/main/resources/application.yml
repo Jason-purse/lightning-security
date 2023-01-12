@@ -1,0 +1,13 @@
+lightning:
+  auth:
+    app:
+      server:
+        form:
+          login:
+            config:
+              is-separation: true
+
+spring:
+  security:
+    user:
+      password: 123456

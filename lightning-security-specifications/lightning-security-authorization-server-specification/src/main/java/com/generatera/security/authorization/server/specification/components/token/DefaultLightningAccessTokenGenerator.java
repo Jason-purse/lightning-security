@@ -4,6 +4,7 @@ import com.generatera.security.authorization.server.specification.TokenIssueForm
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.ClaimAccessor;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.DefaultPlainToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.keygen.Base64StringKeyGenerator;
 import org.springframework.security.crypto.keygen.StringKeyGenerator;
 import org.springframework.util.CollectionUtils;
@@ -20,6 +21,7 @@ import java.util.*;
  */
 public class DefaultLightningAccessTokenGenerator implements LightningAccessTokenGenerator {
     private final StringKeyGenerator accessTokenGenerator = new Base64StringKeyGenerator(Base64.getUrlEncoder().withoutPadding(), 96);
+
     public DefaultLightningAccessTokenGenerator() {
 
     }
@@ -44,8 +46,8 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
                     .subject(context.getPrincipal().getName())
                     .audience(context.getTokenSettings().getAudiences())
                     .issuedAt(issuedAt).expiresAt(expiresAt).notBefore(issuedAt).id(UUID.randomUUID().toString());
-            if (!CollectionUtils.isEmpty(context.getPrincipal().getAuthoritiesForString())) {
-                claimsBuilder.claim("scope", context.getPrincipal().getAuthoritiesForString());
+            if (!CollectionUtils.isEmpty(context.getPrincipal().getAuthorities())) {
+                claimsBuilder.claim("scope", context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new));
             }
 
 //            if (this.accessTokenCustomizer != null) {
@@ -65,7 +67,7 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
                     LightningTokenType.LightningTokenValueType.BEARER_TOKEN_TYPE,
                     this.accessTokenGenerator.generateKey(), accessTokenClaimsSet.getIssuedAt(),
                     accessTokenClaimsSet.getExpiresAt(),
-                    context.getPrincipal().getAuthoritiesForString(),
+                    context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toList(),
                     accessTokenClaimsSet.getClaims()
             );
         }

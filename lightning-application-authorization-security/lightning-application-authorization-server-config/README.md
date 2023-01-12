@@ -1,4 +1,4 @@
-# lightning-application-authorization-server-config
+# lightning-application-authorization-server-com.generatera.oauth2.resource.server.config
 主要是配置引导 授权服务器启动的模板配置,支持的授权服务器包括:
 1. 表单登录
 2. oauth2 授权登录

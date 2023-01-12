@@ -1,4 +1,4 @@
-//package com.generatera.authorization.application.server.config.securityContext;
+//package com.generatera.authorization.application.server.com.generatera.oauth2.resource.server.config.securityContext;
 //
 //import org.springframework.core.convert.converter.Converter;
 //

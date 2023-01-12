@@ -40,6 +40,28 @@ public interface LightningTokenType {
         public static final LightningTokenValueType BEARER_TOKEN_TYPE = new LightningTokenValueType("Bearer");
     }
 
+    /**
+     * token 值类型的格式 ...
+     *
+     * 本质上全是 jwt ...
+     */
+    class LightningTokenValueTypeFormat extends DefaultLightningTokenType {
+
+        public LightningTokenValueTypeFormat(String value) {
+            super(value);
+        }
+
+        /**
+         * jwt
+         */
+        public static final LightningTokenValueTypeFormat JWT = new LightningTokenValueTypeFormat("jwt");
+        /**
+         * opaque
+         */
+        public static final LightningTokenValueTypeFormat OPAQUE = new LightningTokenValueTypeFormat("opaque");
+
+    }
+
 
     @Deprecated
     class LightningAccessTokenType extends DefaultLightningTokenType {

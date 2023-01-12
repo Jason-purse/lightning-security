@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
@@ -27,11 +26,8 @@ public class LightningResourceServerConfig {
             return new LightningAppAuthServerConfigurer() {
                 @Override
                 public void configure(HttpSecurity securityBuilder) throws Exception {
-                    OAuth2ResourceServerConfigurer<HttpSecurity> resourceServerConfigurer
-                            = securityBuilder.oauth2ResourceServer();
-                    securityBuilder.setSharedObject(OAuth2ResourceServerConfigurer.class,resourceServerConfigurer);
                     for (LightningResourceServerConfigurer configurer : configurers) {
-                        configurer.configure(resourceServerConfigurer);
+                        configurer.configure(securityBuilder);
                     }
                 }
             };
@@ -43,9 +39,8 @@ public class LightningResourceServerConfig {
        @Bean
        public SecurityFilterChain resourceServerBootstrap(HttpSecurity security,
                                                           List<LightningResourceServerConfigurer> configurers) throws Exception {
-           OAuth2ResourceServerConfigurer<HttpSecurity> resourceServerConfigurer = security.oauth2ResourceServer();
            for (LightningResourceServerConfigurer configurer : configurers) {
-               configurer.configure(resourceServerConfigurer);
+               configurer.configure(security);
            }
 
            security

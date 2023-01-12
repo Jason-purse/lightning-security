@@ -1,6 +1,6 @@
-//package com.generatera.authorization.application.server.config.securityContext;
+//package com.generatera.authorization.application.server.com.generatera.oauth2.resource.server.config.securityContext;
 //
-//import com.generatera.authorization.application.server.config.model.entity.LightningSecurityContextEntity;
+//import com.generatera.authorization.application.server.com.generatera.oauth2.resource.server.config.model.entity.LightningSecurityContextEntity;
 //import com.generatera.security.authorization.server.specification.components.token.LightningToken;
 //import com.jianyue.lightning.util.JsonUtil;
 //import org.jetbrains.annotations.Nullable;

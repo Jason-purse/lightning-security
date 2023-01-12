@@ -20,6 +20,11 @@ public interface LightningUserContext {
     Optional<LightningUserPrincipal> getUserPrincipal();
 
     /**
+     * 获取指定 LightningUserPrincipal
+     */
+    <T extends LightningUserPrincipal> Optional<T> getUserPrincipal(Class<T> principalClass);
+
+    /**
      * 直接获取当前上下文 ...
      * 此用户上下文与线程绑定 ...
      */
@@ -47,5 +52,11 @@ class DefaultLightningUserContext implements LightningUserContext {
     @Override
     public Optional<LightningUserPrincipal> getUserPrincipal() {
         return Optional.ofNullable(userPrincipal);
+    }
+
+    @Override
+    public <T extends LightningUserPrincipal> Optional<T> getUserPrincipal(Class<T> principalClass) {
+        return getUserPrincipal()
+                .map(principalClass::cast);
     }
 }

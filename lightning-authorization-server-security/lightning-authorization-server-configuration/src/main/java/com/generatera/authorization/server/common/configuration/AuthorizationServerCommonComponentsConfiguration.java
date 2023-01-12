@@ -4,10 +4,11 @@ import com.generatera.authorization.server.common.configuration.AuthorizationSer
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.authorization.server.common.configuration.authorization.store.*;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService.AbstractAuthenticationTokenServiceHandlerProvider;
-import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
+import com.generatera.security.authorization.server.specification.HandlerFactory;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.generatera.security.authorization.server.specification.TokenSettings;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
+import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import com.generatera.security.authorization.server.specification.components.token.*;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.DefaultLightningJwtGenerator;
@@ -232,7 +233,7 @@ public class AuthorizationServerCommonComponentsConfiguration {
      */
     @Bean
     public ProviderSettingsProvider provider(AuthorizationServerComponentProperties properties) {
-        AuthorizationServerComponentProperties.ProviderSettingProperties settingProperties = properties.getProviderSettingProperties();
+        ProviderSettingProperties settingProperties = properties.getProviderSettingProperties();
         final ProviderSettings.Builder builder = ProviderSettings
                 .builder();
 

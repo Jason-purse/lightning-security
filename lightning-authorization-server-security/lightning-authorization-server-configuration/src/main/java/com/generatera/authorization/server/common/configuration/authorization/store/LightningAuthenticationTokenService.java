@@ -4,7 +4,7 @@ import com.generatera.authorization.server.common.configuration.AuthorizationSer
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
-import com.generatera.authorization.server.common.configuration.util.HandlerFactory;
+import com.generatera.security.authorization.server.specification.HandlerFactory;
 
 /**
  * @author FLJ

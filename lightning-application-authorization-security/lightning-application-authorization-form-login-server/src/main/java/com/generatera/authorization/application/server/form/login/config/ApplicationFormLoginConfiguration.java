@@ -5,19 +5,14 @@ import com.generatera.authorization.application.server.config.LightningAppAuthSe
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsPasswordService;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
@@ -31,33 +26,11 @@ import java.util.Objects;
 @AutoConfiguration
 @AutoConfigureBefore(ApplicationAuthServerConfig.class)
 @EnableConfigurationProperties(FormLoginProperties.class)
-@Import({FormLoginConfigurationImportSelector.class})
+@Import({FormLoginConfigurationImportSelector.class,UserDetailsServiceAutoConfiguration.class})
 @RequiredArgsConstructor
 public class ApplicationFormLoginConfiguration {
 
     private final FormLoginProperties formLoginProperties;
-
-    /**
-     * 只需要给出一个 UserDetailsService 即可 ..
-     */
-    @Bean
-    FormLoginDaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, @Autowired(required = false) PasswordEncoder passwordEncoder,
-                                                              @Autowired(required = false) UserDetailsPasswordService passwordManager) throws Exception {
-        FormLoginDaoAuthenticationProvider authenticationProvider = new FormLoginDaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService);
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        if (passwordEncoder != null) {
-            provider.setPasswordEncoder(passwordEncoder);
-        }
-
-        if (passwordManager != null) {
-            provider.setUserDetailsPasswordService(passwordManager);
-        }
-
-        provider.afterPropertiesSet();
-        return authenticationProvider;
-    }
 
     @Bean
     public LightningAppAuthServerConfigurer lightningFormLoginConfigurer() {

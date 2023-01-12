@@ -52,6 +52,14 @@ public class FormLoginProperties {
         private String badCredentialMessage = "BAD CREDENTIAL ERROR";
 
         private final TokenSettings tokenSettings = new TokenSettings();
+
+        /**
+         * 默认不作为 资源服务器 ...
+         */
+        private Boolean asResourceServer = Boolean.FALSE;
+
+        // 分离的情况下,需要考虑 Token 的解析 ...
+        // 当需要开启Token的解析时,我们需要引入对应的resource server 依赖 ....
     }
 
     @Data

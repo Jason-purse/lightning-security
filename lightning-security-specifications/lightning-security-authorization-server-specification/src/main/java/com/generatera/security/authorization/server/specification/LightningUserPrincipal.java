@@ -1,9 +1,8 @@
 package com.generatera.security.authorization.server.specification;
 
-import org.springframework.security.core.AuthenticatedPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * @author FLJ
@@ -11,10 +10,12 @@ import java.util.List;
  * @time 12:50
  * @Description Lightning UserPrincipal
  *
- * 必须可序列化
  */
-public interface LightningUserPrincipal extends AuthenticatedPrincipal, Serializable {
+public interface LightningUserPrincipal extends UserDetails, Serializable {
 
-    List<String> getAuthoritiesForString();
+
+    default String getName() {
+        return getUsername();
+    }
 
 }

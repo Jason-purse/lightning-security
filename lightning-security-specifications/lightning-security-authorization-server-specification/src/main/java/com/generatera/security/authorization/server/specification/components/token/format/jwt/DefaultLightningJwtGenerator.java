@@ -8,6 +8,7 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.JwtEncodingContext;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.LightningJwtCustomizer;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.JwsHeader;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -51,15 +52,15 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
 
             LightningUserPrincipal principal = context.getPrincipal();
             claimsBuilder
-                    .subject(principal.getName())
+                    .subject(principal.getUsername())
                     .audience(context.getTokenSettings().getAudiences())
                     .issuedAt(issuedAt)
                     .expiresAt(expiresAt);
             // 访问Token
             if (context.getTokenType() == LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE) {
                 claimsBuilder.notBefore(issuedAt);
-                if (!CollectionUtils.isEmpty(principal.getAuthoritiesForString())) {
-                    claimsBuilder.claim("scope", principal.getAuthoritiesForString());
+                if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
+                    claimsBuilder.claim("scope", org.apache.commons.lang3.StringUtils.joinWith(",",principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new)));
                 }
             } else {
                 // 刷新token 配置
