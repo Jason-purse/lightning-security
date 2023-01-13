@@ -187,6 +187,8 @@ public class DefaultLightningFormLoginAuthenticationEntryPoint implements Lightn
                 .attribute(USER_INFO_ATTRIBUTE_NAME,JsonUtil.getDefaultJsonUtil().asJSON(principal))
                 .build();
 
+        authenticationTokenService.save(authorization);
+
         AuthHttpResponseUtil.commence(
                 response,
                 JsonUtil.getDefaultJsonUtil().asJSON(
