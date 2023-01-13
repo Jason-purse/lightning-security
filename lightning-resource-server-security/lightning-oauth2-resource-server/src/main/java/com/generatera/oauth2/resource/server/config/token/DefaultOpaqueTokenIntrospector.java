@@ -1,14 +1,18 @@
 package com.generatera.oauth2.resource.server.config.token;
 
-import com.generatera.oauth2.resource.server.config.LightningOAuth2UserPrincipal;
+import com.generatera.oauth2.resource.server.config.LightningOpaqueOAuth2UserPrincipal;
+import com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.*;
 import org.springframework.http.client.support.BasicAuthenticationInterceptor;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.introspection.BadOpaqueTokenException;
+import org.springframework.security.oauth2.server.resource.introspection.OAuth2IntrospectionAuthenticatedPrincipal;
 import org.springframework.security.oauth2.server.resource.introspection.OAuth2IntrospectionException;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
@@ -20,8 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author FLJ
@@ -39,6 +42,11 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
     private final RestOperations restOperations;
     private Converter<String, RequestEntity<?>> requestEntityConverter;
 
+    /**
+     * 用来将 jwt claims 转换为 userPrincipal的 映射器 ..
+     */
+    private JwtClaimsToUserPrincipalMapper jwtClaimsToUserPrincipalMapper;
+
     public DefaultOpaqueTokenIntrospector(String introspectionUri, String clientId, String clientSecret) {
         Assert.notNull(introspectionUri, "introspectionUri cannot be null");
         Assert.notNull(clientId, "clientId cannot be null");
@@ -55,6 +63,11 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
         Assert.notNull(restOperations, "restOperations cannot be null");
         this.requestEntityConverter = this.defaultRequestEntityConverter(URI.create(introspectionUri));
         this.restOperations = restOperations;
+    }
+
+    public void setJwtClaimsToUserPrincipalMapper(JwtClaimsToUserPrincipalMapper jwtClaimsToUserPrincipalMapper) {
+        Assert.notNull(jwtClaimsToUserPrincipalMapper,"jwtClaimsToUserPrincipalMapper must not be null !!!");
+        this.jwtClaimsToUserPrincipalMapper = jwtClaimsToUserPrincipalMapper;
     }
 
     public static DefaultOpaqueTokenIntrospector clientSecretPostOf(String introspectionUri, String clientId, String clientSecret) {
@@ -90,7 +103,7 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
         return body;
     }
 
-    public LightningOAuth2UserPrincipal doIntrospect(String token) {
+    public LightningUserPrincipal introspect(String token) {
         RequestEntity<?> requestEntity = this.requestEntityConverter.convert(token);
         if (requestEntity == null) {
             throw new OAuth2IntrospectionException("requestEntityConverter returned a null entity");
@@ -141,7 +154,7 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
         }
     }
 
-    private LightningOAuth2UserPrincipal convertClaimsSet(Map<String, Object> claims,String token) {
+    protected LightningUserPrincipal convertClaimsSet(Map<String, Object> claims, String token) {
         claims.computeIfPresent("aud", (k, v) -> {
             return v instanceof String ? Collections.singletonList(v) : v;
         });
@@ -157,13 +170,29 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
         claims.computeIfPresent("iss", (k, v) -> {
             return v.toString();
         });
-        claims.computeIfPresent("nbf", (k, v) -> {
-            return Instant.ofEpochSecond(((Number) v).longValue());
+        claims.computeIfPresent("nbf", (k, v) -> Instant.ofEpochSecond(((Number) v).longValue()));
+        Collection<GrantedAuthority> authorities = new LinkedList<>();
+        claims.computeIfPresent("scope", (k, v) -> {
+            if (!(v instanceof String)) {
+                return v;
+            } else {
+                Collection<String> scopes = Arrays.asList(((String)v).split(" "));
+
+                for (String scope : scopes) {
+                    authorities.add(new SimpleGrantedAuthority("SCOPE_" + scope));
+                }
+
+                return scopes;
+            }
         });
-        return new LightningOAuth2UserPrincipal(
-                Jwt.withTokenValue(token)
-                        .claims(map -> map.putAll(claims))
-                        .build()
+
+        if(jwtClaimsToUserPrincipalMapper != null) {
+           return jwtClaimsToUserPrincipalMapper.convert(claims);
+        }
+
+        return new LightningOpaqueOAuth2UserPrincipal(
+                new OAuth2IntrospectionAuthenticatedPrincipal(
+                        claims,authorities)
         );
     }
 }

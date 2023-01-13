@@ -1,6 +1,5 @@
 package com.generatera.oauth2.resource.server.config.token;
 
-import com.generatera.oauth2.resource.server.config.token.LightningJwtAuthenticationConverter;
 import com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
@@ -50,7 +49,7 @@ public class PlainJwtAuthenticationConverter extends LightningJwtAuthenticationC
                     jwt.getHeaders(),
                     jwt.getClaims()
             );
-            LightningUserPrincipal userPrincipal = jwtClaimsMapper.convert(lightningJwt);
+            LightningUserPrincipal userPrincipal = jwtClaimsMapper.convert(lightningJwt.getClaims());
             return new UsernamePasswordAuthenticationToken(
                     userPrincipal,
                     authenticationToken.getCredentials(),

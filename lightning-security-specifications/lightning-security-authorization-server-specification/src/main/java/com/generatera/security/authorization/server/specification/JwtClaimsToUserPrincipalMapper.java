@@ -1,6 +1,7 @@
 package com.generatera.security.authorization.server.specification;
 
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwt;
+import java.util.Map;
+
 /**
  * @author FLJ
  * @date 2023/1/12
@@ -15,5 +16,5 @@ import com.generatera.security.authorization.server.specification.components.tok
  */
 public interface JwtClaimsToUserPrincipalMapper {
 
-    LightningUserPrincipal convert(LightningJwt jwt);
+    LightningUserPrincipal convert(Map<String,Object> claims);
 }

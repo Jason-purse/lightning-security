@@ -1,12 +1,12 @@
 package com.generatera.oauth2.resource.server.config.token;
 
-import com.generatera.oauth2.resource.server.config.LightningOAuth2UserPrincipal;
+import com.generatera.oauth2.resource.server.config.LightningJwtOAuth2UserPrincipal;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.util.Assert;
 
@@ -31,6 +31,9 @@ import java.util.Collection;
  * 那么你有两种方式可以选择,第一种,通过 重写当前转换器 ..
  * 第二种,给出 {@link com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper}
  * 进行 jwt 到 UserPrincipal的映射 ...
+ *
+ *
+ * 查看默认实现 {@link PlainJwtAuthenticationConverter} 了解使用详情 ...
  * @see com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper
  * @see com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2UserService
  * @see com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOidcUserService
@@ -38,15 +41,13 @@ import java.util.Collection;
 public class LightningJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
     // 专门用来转换 权限的 ...
     private Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-    private String principalClaimName = "sub";
 
     public LightningJwtAuthenticationConverter() {
     }
 
     public  AbstractAuthenticationToken convert(@NotNull Jwt jwt) {
         Collection<GrantedAuthority> authorities = this.extractAuthorities(jwt);
-        String principalClaimValue = jwt.getClaimAsString(this.principalClaimName);
-        return new JwtAuthenticationToken(new LightningOAuth2UserPrincipal(jwt), authorities, principalClaimValue);
+        return new UsernamePasswordAuthenticationToken(new LightningJwtOAuth2UserPrincipal(jwt), authorities);
     }
 
     /** @deprecated */
@@ -58,10 +59,5 @@ public class LightningJwtAuthenticationConverter implements Converter<Jwt, Abstr
     public void setJwtGrantedAuthoritiesConverter(Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter) {
         Assert.notNull(jwtGrantedAuthoritiesConverter, "jwtGrantedAuthoritiesConverter cannot be null");
         this.jwtGrantedAuthoritiesConverter = jwtGrantedAuthoritiesConverter;
-    }
-
-    public void setPrincipalClaimName(String principalClaimName) {
-        Assert.hasText(principalClaimName, "principalClaimName cannot be empty");
-        this.principalClaimName = principalClaimName;
     }
 }

@@ -1,10 +1,10 @@
 package com.generatera.oauth2.resource.server.config;
 
-import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
+import com.generatera.oauth2.resource.server.config.token.LightningOAuth2UserPrincipal;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwt;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.time.Instant;
@@ -20,12 +20,14 @@ import java.util.*;
  * <p>
  * 这个只是默认实现,包装了Jwt ...
  */
-public class LightningOAuth2UserPrincipal extends Jwt implements LightningUserPrincipal, OAuth2AuthenticatedPrincipal {
+public class LightningJwtOAuth2UserPrincipal implements LightningOAuth2UserPrincipal {
 
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public LightningOAuth2UserPrincipal(Jwt jwt) {
-        super(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getHeaders(), jwt.getClaims());
+    private final LightningJwt jwt;
+
+    public LightningJwtOAuth2UserPrincipal(Jwt jwt) {
+        this.jwt = new LightningJwt(jwt.getTokenValue(),jwt.getIssuedAt(),jwt.getExpiresAt(),jwt.getHeaders(),jwt.getClaims());
         this.authorities = initAuthorities();
     }
 
@@ -33,7 +35,7 @@ public class LightningOAuth2UserPrincipal extends Jwt implements LightningUserPr
     @NotNull
     private List<GrantedAuthority> initAuthorities() {
         return Optional
-                .ofNullable(getClaimAsString("scope"))
+                .ofNullable(jwt.getClaimAsString("scope"))
                 .map(ele -> ele.split(","))
                 .map(ele -> {
                     List<GrantedAuthority> values = new LinkedList<>();
@@ -47,17 +49,17 @@ public class LightningOAuth2UserPrincipal extends Jwt implements LightningUserPr
 
     @Override
     public String getName() {
-        return getSubject();
+        return jwt.getSubject();
     }
 
     @Override
     public <A> A getAttribute(String name) {
-        return getClaim(name);
+        return jwt.getClaim(name);
     }
 
     @Override
     public Map<String, Object> getAttributes() {
-        return getClaims();
+        return jwt.getClaims();
     }
 
     @Override
@@ -88,7 +90,7 @@ public class LightningOAuth2UserPrincipal extends Jwt implements LightningUserPr
     @Override
     public boolean isCredentialsNonExpired() {
         return Optional
-                .ofNullable(getExpiresAt())
+                .ofNullable(jwt.getExpiresAt())
                 .map(ele -> Instant.now().isBefore(ele))
                 .orElse(Boolean.FALSE);
     }

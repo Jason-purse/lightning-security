@@ -1,11 +1,13 @@
 package com.generatera.oauth2.resource.server.config.token;
 
-import com.generatera.security.authorization.server.specification.ClientAuthenticationMethod;
-import com.generatera.security.authorization.server.specification.HandlerFactory;
 import com.generatera.oauth2.resource.server.config.OAuth2ResourceServerProperties;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
 import com.generatera.resource.server.config.LogUtil;
+import com.generatera.security.authorization.server.specification.ClientAuthenticationMethod;
+import com.generatera.security.authorization.server.specification.HandlerFactory;
+import com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -107,19 +109,30 @@ public class OpaqueTokenVerificationConfiguration {
      * <p>
      * 否则用户可以重写自定义的 ...
      * <p>
-     * 重写为了兼容到 ... {@link com.generatera.oauth2.resource.server.config.LightningOAuth2UserPrincipal}
+     * 重写为了兼容到 ... {@link com.generatera.security.authorization.server.specification.LightningUserPrincipal}
+     * <p>
+     * 可以通过 jwtClaimsToUserPrincipalMapper 转换业务中需要使用的  LightningUserPrincipal
+     * 否则 userPrincipal 永远是一个 OAuth2AuthenticatedPrincipal
      */
     @Bean
     @ConditionalOnMissingBean(LightningOAuth2OpaqueTokenIntrospector.class)
-    public LightningOAuth2OpaqueTokenIntrospector tokenIntrospector(OAuth2ResourceServerProperties properties) {
+    public LightningOAuth2OpaqueTokenIntrospector tokenIntrospector(OAuth2ResourceServerProperties properties,
+                                                                    @Autowired(required = false)
+                                                                            JwtClaimsToUserPrincipalMapper jwtClaimsToUserPrincipalMapper) {
 
         List<String> clientMethods = properties.getOpaqueTokenConfig().getClientMethods();
         Assert.notNull(clientMethods, "clientMethods must not be null !!!");
 
         for (String clientMethod : clientMethods) {
             HandlerFactory.HandlerProvider handler = HandlerFactory.getHandler(LightningOAuth2OpaqueTokenIntrospector.class, clientMethod);
-            if(handler != null) {
-                return ((ClientAuthenticationMethodHandler) handler.getHandler()).getTokenIntrospector(properties);
+            if (handler != null) {
+                LightningOAuth2OpaqueTokenIntrospector tokenIntrospector = ((ClientAuthenticationMethodHandler) handler.getHandler()).getTokenIntrospector(properties);
+                if (tokenIntrospector instanceof DefaultOpaqueTokenIntrospector introspector) {
+                    if (jwtClaimsToUserPrincipalMapper != null) {
+                        introspector.setJwtClaimsToUserPrincipalMapper(jwtClaimsToUserPrincipalMapper);
+                    }
+                }
+                return tokenIntrospector;
             }
         }
 
