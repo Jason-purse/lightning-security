@@ -1,5 +1,6 @@
 package com.generatera.security.authorization.server.specification.components.token;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 
@@ -12,6 +13,7 @@ import lombok.EqualsAndHashCode;
 
 public interface LightningTokenType {
 
+    @JsonGetter
     String value();
 
 

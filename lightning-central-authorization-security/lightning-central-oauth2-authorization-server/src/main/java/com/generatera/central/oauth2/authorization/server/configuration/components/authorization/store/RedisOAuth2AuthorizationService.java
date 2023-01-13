@@ -1,7 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store;
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
-import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization.RedisOAuth2AuthorizationEntity;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.jianyue.lightning.util.JsonUtil;
@@ -35,7 +34,9 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    private final OAuth2CentralAuthorizationServerProperties properties;
+    private final String keyPrefix;
+
+    private final Long expiredDuration;
 
     private final static String AUTHORIZATION_CODE_TOKEN_TYPE = "authorization_code_token_type";
     private final static String OIDC_TOKEN_TYPE = "oidc_token_type";
@@ -99,14 +100,11 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
         final String key = constructKey(authorization.getId());
 
         // id -> token entity
-        redisTemplate.opsForValue().set(key, JsonUtil.getDefaultJsonUtil().asJSON(entity), properties.getAuthorizationStore().getRedis().getExpiredTimeDuration(), TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(key, JsonUtil.getDefaultJsonUtil().asJSON(entity), expiredDuration, TimeUnit.MILLISECONDS);
     }
 
     protected String constructKey(Object... name) {
-        return Optional.ofNullable(properties.getAuthorizationStore().getRedis().getKeyPrefix())
-                .filter(ele -> !StringUtils.isBlank(ele))
-                .orElse(properties.getAuthorizationStore().getRedis().getKeyPrefix())
-                + StringUtils.joinWith("-", name);
+        return keyPrefix + StringUtils.joinWith("-", name);
 
     }
 
@@ -213,7 +211,7 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
     }
 
     private void tokenSet(String keyPrefix, String key, String id) {
-        redisTemplate.opsForValue().set(keyPrefix + key, id, properties.getAuthorizationStore().getRedis().getExpiredTimeDuration(), TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(keyPrefix + key, id, expiredDuration, TimeUnit.MILLISECONDS);
     }
 
     @Nullable

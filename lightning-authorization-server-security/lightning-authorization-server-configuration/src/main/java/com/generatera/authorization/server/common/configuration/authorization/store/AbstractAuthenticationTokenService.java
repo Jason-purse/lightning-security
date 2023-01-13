@@ -11,6 +11,9 @@ import org.springframework.util.Assert;
  * @date 2023/1/4
  * @time 14:33
  * @Description 抽象的 认证Token 管理 service
+ *
+ *
+ * 包括 access_token  / refresh_token的基本管理 ....
  */
 public abstract class AbstractAuthenticationTokenService implements LightningAuthenticationTokenService {
 

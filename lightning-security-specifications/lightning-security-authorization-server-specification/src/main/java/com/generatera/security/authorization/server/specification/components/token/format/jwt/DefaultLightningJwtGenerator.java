@@ -27,9 +27,17 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
 
     private LightningJwtCustomizer jwtCustomizer;
 
+    private final Boolean isOpaque;
+
     public DefaultLightningJwtGenerator(LightningJwtEncoder jwtEncoder) {
+       this(jwtEncoder,false);
+    }
+
+    public DefaultLightningJwtGenerator(LightningJwtEncoder jwtEncoder,Boolean isOpaque) {
         Assert.notNull(jwtEncoder, "jwtEncoder cannot be null");
+        Assert.notNull(isOpaque,"isOpaque cannot be null");
         this.jwtEncoder = jwtEncoder;
+        this.isOpaque = false;
     }
 
     @Override
@@ -59,12 +67,16 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
             // 访问Token
             if (context.getTokenType() == LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE) {
                 claimsBuilder.notBefore(issuedAt);
-                if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
-                    claimsBuilder.claim("scope", org.apache.commons.lang3.StringUtils.joinWith(",",principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new)));
+                if(!isOpaque) {
+                    if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
+                        claimsBuilder.claim("scope", org.apache.commons.lang3.StringUtils.joinWith(",",principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new)));
+                    }
                 }
             } else {
                 // 刷新token 配置
             }
+
+            claimsBuilder.claim("isOpaque",isOpaque);
 
             JwsHeader.Builder headersBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
             if (this.jwtCustomizer != null) {

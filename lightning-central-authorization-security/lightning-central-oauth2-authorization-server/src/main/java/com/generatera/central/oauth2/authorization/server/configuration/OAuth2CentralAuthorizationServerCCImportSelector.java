@@ -6,6 +6,7 @@ import com.generatera.authorization.application.server.form.login.config.FormLog
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties.StoreKind;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.consent.AuthorizationConsentConfiguration.JpaAuthorizationConsentComponentConfiguration;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.AuthorizationStoreConfiguration;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.AuthorizationStoreConfiguration.JpaOAuth2AuthorizationStoreConfig;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.AuthorizationStoreConfiguration.MongoOAuth2AuthorizationStoreConfig;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.AuthorizationStoreConfiguration.RedisOAuth2AuthorizationStoreConfig;
@@ -101,6 +102,9 @@ public class OAuth2CentralAuthorizationServerCCImportSelector extends Properties
                 candidates.add(
                         MongoOAuth2AuthorizationStoreConfig.class.getName()
                 );
+            }
+            else if(storeKind == StoreKind.MEMORY) {
+                candidates.add(AuthorizationStoreConfiguration.MemoryOAuth2AuthorizationStoreConfig.class.getName());
             }
         }
     }

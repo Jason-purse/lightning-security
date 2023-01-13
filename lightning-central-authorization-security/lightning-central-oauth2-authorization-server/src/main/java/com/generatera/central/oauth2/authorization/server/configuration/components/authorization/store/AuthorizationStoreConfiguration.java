@@ -1,6 +1,5 @@
 package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store;
 
-import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties;
 import com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.store.OAuth2AuthorizationRepository;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -10,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 
 /**
@@ -24,9 +24,13 @@ public class AuthorizationStoreConfiguration {
 
     public static class RedisOAuth2AuthorizationStoreConfig {
         @Bean
-        public LightningAuthorizationService<DefaultOAuth2Authorization> oAuth2AuthorizationService(StringRedisTemplate redisTemplate,
+        public OAuth2AuthorizationService oAuth2AuthorizationService(StringRedisTemplate redisTemplate,
                                                                                                     OAuth2CentralAuthorizationServerProperties properties) {
-            return new RedisOAuth2AuthorizationService(redisTemplate,properties);
+            return new DefaultOpaqueSupportOAuth2AuthorizationService(
+                    new RedisOAuth2AuthorizationService(redisTemplate,
+                            properties.getAuthorizationStore().getRedis().getKeyPrefix(),
+                            properties.getAuthorizationStore().getRedis().getExpiredTimeDuration())
+            );
         }
     }
 
@@ -35,15 +39,30 @@ public class AuthorizationStoreConfiguration {
     public static class JpaOAuth2AuthorizationStoreConfig {
 
         @Bean
-        public LightningAuthorizationService<DefaultOAuth2Authorization> oAuth2AuthorizationService(OAuth2AuthorizationRepository oAuth2AuthorizationRepository, RegisteredClientRepository registeredClientRepository) {
-            return new JpaOAuth2AuthorizationService(oAuth2AuthorizationRepository, registeredClientRepository);
+        public OAuth2AuthorizationService oAuth2AuthorizationService(
+                OAuth2AuthorizationRepository oAuth2AuthorizationRepository,
+                RegisteredClientRepository registeredClientRepository) {
+            return new DefaultOpaqueSupportOAuth2AuthorizationService(
+                    new JpaOAuth2AuthorizationService(
+                            oAuth2AuthorizationRepository, registeredClientRepository));
         }
     }
 
     public static class MongoOAuth2AuthorizationStoreConfig {
         @Bean
-        public LightningAuthorizationService<DefaultOAuth2Authorization> oAuth2AuthorizationService(MongoTemplate mongoTemplate) {
-            return new MongoOAuth2AuthorizationService(mongoTemplate);
+        public OAuth2AuthorizationService oAuth2AuthorizationService(MongoTemplate mongoTemplate) {
+            return new DefaultOpaqueSupportOAuth2AuthorizationService(
+                    new MongoOAuth2AuthorizationService(mongoTemplate)
+            );
+        }
+    }
+
+    public static class MemoryOAuth2AuthorizationStoreConfig {
+        @Bean
+        public OAuth2AuthorizationService oAuth2AuthorizationService() {
+            return new DefaultOpaqueSupportOAuth2AuthorizationService(
+                    new DefaultOAuth2AuthorizationService()
+            );
         }
     }
 }

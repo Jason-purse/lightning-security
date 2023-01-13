@@ -2,6 +2,7 @@ package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueTypeFormat;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -71,6 +72,12 @@ public class AuthorizationServerComponentProperties {
          * 生成的 token 类型
          */
         private LightningTokenType.LightningTokenValueType tokenValueType = LightningTokenType.LightningTokenValueType.BEARER_TOKEN_TYPE;
+
+        /**
+         * 生成的 token 的值的格式是 (JWT)
+         * 这里的jwt 只是一个形式的代称(不等价于 JSON Web Tokens ), 因为所有的token 都是jwt生成的 ..
+         */
+        private LightningTokenValueTypeFormat tokenValueFormat = LightningTokenValueTypeFormat.JWT;
 
         private Boolean reuseRefreshToken = Boolean.TRUE;
 

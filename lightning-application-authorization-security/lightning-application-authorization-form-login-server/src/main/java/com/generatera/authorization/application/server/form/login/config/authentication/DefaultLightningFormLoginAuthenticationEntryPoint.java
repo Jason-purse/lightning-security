@@ -2,11 +2,13 @@ package com.generatera.authorization.application.server.form.login.config.authen
 
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.token.ApplicationLevelAuthorizationToken;
+import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
 import com.generatera.security.authorization.server.specification.components.token.*;
+import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
@@ -19,6 +21,8 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
+
+import static com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization.USER_INFO_ATTRIBUTE_NAME;
 
 /**
  * 进行表单登陆的 认证端点提示,当出现认证错误时 ..以及 登陆成功的处理器 ..
@@ -170,6 +174,18 @@ public class DefaultLightningFormLoginAuthenticationEntryPoint implements Lightn
                         ))
                 );
 
+
+        // 凭证信息,也直接进行存储
+        LightningUserPrincipal principal = ((LightningUserPrincipal) authentication.getPrincipal());
+
+        DefaultLightningAuthorization authorization
+                = new DefaultLightningAuthorization.Builder()
+                .id(UuidUtil.nextId())
+                .principalName(authentication.getName())
+                .accessToken(((LightningToken.LightningAccessToken) token))
+                .refreshToken(((LightningToken.LightningRefreshToken) refreshToken))
+                .attribute(USER_INFO_ATTRIBUTE_NAME,JsonUtil.getDefaultJsonUtil().asJSON(principal))
+                .build();
 
         AuthHttpResponseUtil.commence(
                 response,

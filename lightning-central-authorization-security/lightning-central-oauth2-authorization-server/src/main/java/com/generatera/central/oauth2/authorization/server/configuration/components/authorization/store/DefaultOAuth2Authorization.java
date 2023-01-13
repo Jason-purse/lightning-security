@@ -83,4 +83,8 @@ public class DefaultOAuth2Authorization extends OAuth2Authorization implements L
     public String toString() {
         return authorization.toString();
     }
+
+    public OAuth2Authorization getWrappedAuthorization() {
+        return authorization;
+    }
 }

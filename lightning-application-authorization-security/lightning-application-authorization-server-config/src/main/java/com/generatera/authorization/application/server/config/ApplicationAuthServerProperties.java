@@ -26,7 +26,7 @@ public class ApplicationAuthServerProperties {
     @Data
     public static class ServerMetaDataEndpointConfig {
 
-        public static final String ENABLE_OIDC = APPLICATION_AUTH_SERVER_PREFIX + ".enableOidc";
+        public static final String ENABLE_OIDC = APPLICATION_AUTH_SERVER_PREFIX + ".serverMetaDataEndpointConfig.enableOidc";
 
         public static final String OPEN_CONNECT_ID_METADATA_ENDPOINT = OidcProviderConfigurationEndpointFilter.DEFAULT_OIDC_PROVIDER_CONFIGURATION_ENDPOINT_URI;
 

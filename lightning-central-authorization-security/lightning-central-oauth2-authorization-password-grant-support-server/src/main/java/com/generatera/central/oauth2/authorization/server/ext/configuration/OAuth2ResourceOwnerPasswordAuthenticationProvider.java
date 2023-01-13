@@ -1,6 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.ext.configuration;
 
-import com.jianyue.lightning.boot.starter.util.SnowflakeIdWorker;
+import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -54,9 +54,6 @@ public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements Authen
     private final AuthenticationManager authenticationManager;
     private final OAuth2AuthorizationService authorizationService;
     private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
-    // TODO: 2022/12/30  默认应该基于分布式系统的雪花算法进行唯一性id 处理 ..
-    // 但是目前先以单台worker,单个授权服务器的形式进行处理 ..
-    private final SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker();
 
 
     /**
@@ -206,8 +203,8 @@ public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements Authen
             idToken = null;
         }
 
-        // 使用雪花算法保证永远不重复
-        authorizationBuilder.id(snowflakeIdWorker.nextId());
+        // 使用uuid算法保证永远不重复
+        authorizationBuilder.id(UuidUtil.nextId());
         OAuth2Authorization authorization = authorizationBuilder.build();
 
         this.authorizationService.save(authorization);

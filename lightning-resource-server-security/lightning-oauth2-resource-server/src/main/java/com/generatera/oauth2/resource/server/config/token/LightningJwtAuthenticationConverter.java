@@ -38,7 +38,7 @@ import java.util.Collection;
  * @see com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2UserService
  * @see com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOidcUserService
  */
-public class LightningJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
+class LightningJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
     // 专门用来转换 权限的 ...
     private Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
 

@@ -16,7 +16,7 @@ import java.time.Instant;
  * @author basit
  */
 @Entity
-@Table(name = "oauth2_authorization")
+@Table(name = "central_oauth2_authorization")
 public class JpaOAuth2AuthorizationEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -36,13 +36,13 @@ public class JpaOAuth2AuthorizationEntity implements Serializable {
 	@Column(name = "authorized_scopes", length = 1000)
 	private String authorizedScopes;
 
-	@Column(length = 4000)
+	@Column(columnDefinition = "text")
 	private String attributes;
 
 	@Column(length = 500)
 	private String state;
 
-	@Column(name = "authorization_code_value", length = 4000)
+	@Column(name = "authorization_code_value", length = 2000)
 	private String authorizationCodeValue;
 
 	@Column(name = "authorization_code_issued_at")
@@ -51,10 +51,10 @@ public class JpaOAuth2AuthorizationEntity implements Serializable {
 	@Column(name = "authorization_code_expires_at")
 	private Instant authorizationCodeExpiresAt;
 
-	@Column(name = "authorization_code_metadata")
+	@Column(name = "authorization_code_metadata",columnDefinition = "text")
 	private String authorizationCodeMetadata;
 
-	@Column(name = "access_token_value", length = 4000)
+	@Column(name = "access_token_value", length = 2000)
 	private String accessTokenValue;
 
 	@Column(name = "access_token_issued_at")
@@ -63,16 +63,16 @@ public class JpaOAuth2AuthorizationEntity implements Serializable {
 	@Column(name = "access_token_expires_at")
 	private Instant accessTokenExpiresAt;
 
-	@Column(name = "access_token_metadata", length = 2000)
+	@Column(name = "access_token_metadata", columnDefinition = "text")
 	private String accessTokenMetadata;
 
 	@Column(name = "access_token_type")
 	private String accessTokenType;
 
-	@Column(name = "access_token_scopes", length = 1000)
+	@Column(name = "access_token_scopes", columnDefinition = "text")
 	private String accessTokenScopes;
 
-	@Column(name = "refresh_token_value", length = 4000)
+	@Column(name = "refresh_token_value", length = 2000)
 	private String refreshTokenValue;
 
 	@Column(name = "refresh_token_issued_at")
@@ -81,10 +81,10 @@ public class JpaOAuth2AuthorizationEntity implements Serializable {
 	@Column(name = "refresh_token_expires_at")
 	private Instant refreshTokenExpiresAt;
 
-	@Column(name = "refresh_token_metadata", length = 2000)
+	@Column(name = "refresh_token_metadata", columnDefinition = "text")
 	private String refreshTokenMetadata;
 
-	@Column(name = "oidc_id_token_value", length = 4000)
+	@Column(name = "oidc_id_token_value", length = 2000)
 	private String oidcIdTokenValue;
 
 	@Column(name = "oidc_id_token_issued_at")
@@ -93,7 +93,7 @@ public class JpaOAuth2AuthorizationEntity implements Serializable {
 	@Column(name = "oidc_id_token_expires_at")
 	private Instant oidcIdTokenExpiresAt;
 
-	@Column(name = "oidc_id_token_metadata", length = 2000)
+	@Column(name = "oidc_id_token_metadata", columnDefinition = "text")
 	private String oidcIdTokenMetadata;
 
 	public String getId() {

@@ -32,10 +32,19 @@ import java.util.*;
  * @time 15:56
  * @Description 自省token 检查器 ...
  * <p>
- * 支持 client_secret_basic 以及 client_secret_post
+ * 支持 client_secret_basic 以及 client_secret_post 客户端校验方式 ..
+ *
+ * 并且默认丢弃 scopes(使用authorities 作为它的 替代品) ...
+ * 一般来说默认用不上 ....
+ *
+ * 你可以选择覆盖 DefaultOpaqueTokenIntrospector 继承实现,或者使用 JwtClaimsToUserPrincipalMapper 进行 {@link LightningUserPrincipal}
+ * 自定义 ...
+ *
+ * @see DefaultOpaqueTokenIntrospector#convertClaimsSet
+ * @see JwtClaimsToUserPrincipalMapper
  */
 public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueTokenIntrospector {
-    private static final String AUTHORITY_PREFIX = "SCOPE_";
+    private  String authorityPrefix = "SCOPE_";
     private static final ParameterizedTypeReference<Map<String, Object>> STRING_OBJECT_MAP = new ParameterizedTypeReference<Map<String, Object>>() {
     };
     private final Log logger = LogFactory.getLog(this.getClass());
@@ -63,6 +72,11 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
         Assert.notNull(restOperations, "restOperations cannot be null");
         this.requestEntityConverter = this.defaultRequestEntityConverter(URI.create(introspectionUri));
         this.restOperations = restOperations;
+    }
+
+    public void setAuthorityPrefix(String authorityPrefix) {
+        Assert.hasText(authorityPrefix,"authorityPrefix must not be null !!!");
+        this.authorityPrefix = authorityPrefix;
     }
 
     public void setJwtClaimsToUserPrincipalMapper(JwtClaimsToUserPrincipalMapper jwtClaimsToUserPrincipalMapper) {
@@ -179,16 +193,23 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
                 Collection<String> scopes = Arrays.asList(((String)v).split(" "));
 
                 for (String scope : scopes) {
-                    authorities.add(new SimpleGrantedAuthority("SCOPE_" + scope));
+                    authorities.add(new SimpleGrantedAuthority(authorityPrefix + scope));
                 }
 
                 return scopes;
             }
         });
 
+
+        // 能够让 jwtClaimsToUserPrincipalMapper 使用到这个属性 ...
+        claims.put("authorities",authorities);
+
         if(jwtClaimsToUserPrincipalMapper != null) {
            return jwtClaimsToUserPrincipalMapper.convert(claims);
         }
+        // 移除掉 scope
+        claims.remove("scope");
+        claims.remove("authorities");
 
         return new LightningOpaqueOAuth2UserPrincipal(
                 new OAuth2IntrospectionAuthenticatedPrincipal(

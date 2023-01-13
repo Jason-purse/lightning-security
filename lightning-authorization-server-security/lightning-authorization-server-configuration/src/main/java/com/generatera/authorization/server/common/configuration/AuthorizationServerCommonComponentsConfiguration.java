@@ -4,6 +4,7 @@ import com.generatera.authorization.server.common.configuration.AuthorizationSer
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.authorization.server.common.configuration.authorization.store.*;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService.AbstractAuthenticationTokenServiceHandlerProvider;
+import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.generatera.security.authorization.server.specification.TokenSettings;
@@ -17,9 +18,12 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.LightningJwtCustomizer;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
+import com.jianyue.lightning.util.JsonUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -59,8 +63,9 @@ import java.util.Optional;
  */
 @Configuration
 @AutoConfigureBefore(SecurityAutoConfiguration.class)
+@RequiredArgsConstructor
 @EnableConfigurationProperties(AuthorizationServerComponentProperties.class)
-public class AuthorizationServerCommonComponentsConfiguration {
+public class AuthorizationServerCommonComponentsConfiguration implements InitializingBean {
 
     static {
 
@@ -164,6 +169,9 @@ public class AuthorizationServerCommonComponentsConfiguration {
 
     }
 
+    private final AuthorizationServerComponentProperties properties;
+
+
     /**
      * jwk set(rsa source)
      */
@@ -176,9 +184,9 @@ public class AuthorizationServerCommonComponentsConfiguration {
 
     /**
      * 需要 authorization service
-     *
+     * <p>
      * 这是必须的(当不存在的时候)
-     *
+     * <p>
      * 例如 oauth2 authorization server 是会有自己的 AuthorizationService ..
      */
     @Bean
@@ -190,8 +198,8 @@ public class AuthorizationServerCommonComponentsConfiguration {
                 = HandlerFactory.getHandler(LightningAuthenticationTokenService.class,
                 Optional.ofNullable(properties.getAuthorizationStoreConfig().getStoreKind()).orElse(StoreKind.MEMORY)
         );
-        Assert.notNull(provider,"provider must not be null !!!");
-        return  ((AbstractAuthenticationTokenServiceHandlerProvider.LightningAuthenticationTokenServiceHandler)
+        Assert.notNull(provider, "provider must not be null !!!");
+        return ((AbstractAuthenticationTokenServiceHandlerProvider.LightningAuthenticationTokenServiceHandler)
                 provider.getHandler())
                 .getService(properties);
 
@@ -268,14 +276,20 @@ public class AuthorizationServerCommonComponentsConfiguration {
     @ConditionalOnBean(LightningJwtEncoder.class)
     @ConditionalOnMissingBean(LightningTokenGenerator.class)
     public LightningTokenGenerator<LightningToken> tokenGenerator(
+            AuthorizationServerComponentProperties properties,
             LightningJwtEncoder jwtEncoder,
             @Autowired(required = false)
-            LightningJwtCustomizer jwtCustomizer) {
-
+                    LightningJwtCustomizer jwtCustomizer) {
         DefaultLightningJwtGenerator jwtGenerator = new DefaultLightningJwtGenerator(jwtEncoder);
-        ElvisUtil.isNotEmptyConsumer(jwtCustomizer,jwtGenerator::setJwtCustomizer);
+        ElvisUtil.isNotEmptyConsumer(jwtCustomizer, jwtGenerator::setJwtCustomizer);
+
+        // opaque token 生成器 判断条件
         return new DelegatingLightningTokenGenerator(
-                new DefaultLightningAccessTokenGenerator(),
+                new DefaultLightningAccessTokenGenerator(
+                        Optional.ofNullable(properties.getTokenSettings().getTokenValueFormat())
+                                .map(ele -> ele == LightningTokenType.LightningTokenValueTypeFormat.OPAQUE)
+                                .orElse(false)
+                ),
                 new DefaultLightningRefreshTokenGenerator(),
                 jwtGenerator);
     }
@@ -286,19 +300,32 @@ public class AuthorizationServerCommonComponentsConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean({LightningTokenGenerator.class, LightningJwtEncoder.class})
-    public LightningTokenGenerator<LightningToken> defaultTokenGenerator(JWKSourceProvider jwkSourceProvider,
-                                                                  @Autowired(required = false)
-                                                                  LightningJwtCustomizer jwtCustomizer
+    public LightningTokenGenerator<LightningToken> defaultTokenGenerator(
+            AuthorizationServerComponentProperties properties,
+            JWKSourceProvider jwkSourceProvider,
+            @Autowired(required = false)
+                    LightningJwtCustomizer jwtCustomizer
     ) {
         DefaultLightningJwtGenerator jwtGenerator = new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSourceProvider.getJWKSource()));
         ElvisUtil.isNotEmptyConsumer(jwtCustomizer, jwtGenerator::setJwtCustomizer);
 
         return new DelegatingLightningTokenGenerator(
-                new DefaultLightningAccessTokenGenerator(),
+                new DefaultLightningAccessTokenGenerator(
+                        Optional.ofNullable(properties.getTokenSettings().getTokenValueFormat())
+                                .map(ele -> ele == LightningTokenType.LightningTokenValueTypeFormat.OPAQUE)
+                                .orElse(false)
+                ),
                 new DefaultLightningRefreshTokenGenerator(),
-               jwtGenerator
+                jwtGenerator
         );
     }
     // --------------------------------------------------------------------------------
 
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        LogUtil.prettyLog("authorization server common component configuration properties print: \n" +
+                JsonUtil.getDefaultJsonUtil().asJSON(properties)
+        );
+    }
 }

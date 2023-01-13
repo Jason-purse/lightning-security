@@ -16,6 +16,9 @@ import java.io.Serializable;
  * @date 2023/1/4
  * @time 14:01
  * @Description lightning Token Entity
+ *
+ *
+ * 目前主要包含了访问 token  / 刷新 token的内容
  */
 @Table(name = "lightning_token")
 @Entity
@@ -43,9 +46,19 @@ public class LightningAuthenticationTokenEntity implements Serializable {
     @Field(name = "access_expired_at")
     private Long accessExpiredAt;
 
+    /**
+     * @see com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType
+     */
     @Column(name = "access_token_type")
     @Field(name = "access_token_type")
     private String accessTokenType;
+
+    /**
+     * @see com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueTypeFormat
+     */
+    @Column(name = "access_token_type_format")
+    @Field(name = "access_token_type_format")
+    private String accessTokenTypeFormat;
 
     @Column(name = "refresh_token_value")
     @Field(name = "refresh_token_value")
@@ -62,5 +75,10 @@ public class LightningAuthenticationTokenEntity implements Serializable {
     @Column(name = "refresh_token_type")
     @Field(name = "access_token_type")
     private String refreshTokenType;
+
+
+    @Column(name = "refresh_token_type_format")
+    @Field(name = "refresh_token_type_format")
+    private String refreshTokenTypeFormat;
 
 }

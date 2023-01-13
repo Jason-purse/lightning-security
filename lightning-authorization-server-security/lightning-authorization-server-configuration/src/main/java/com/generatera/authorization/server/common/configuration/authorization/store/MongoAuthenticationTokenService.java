@@ -46,6 +46,26 @@ public class MongoAuthenticationTokenService extends AbstractAuthenticationToken
 
     @Override
     public LightningAuthenticationTokenEntity doFindByToken(LightningAuthenticationTokenEntity entity) {
+        if(entity.getAccessTokenValue() != null) {
+            return mongoTemplate.findOne(
+                    Query.query(
+                            Criteria.where("access_token_value").is(entity.getAccessTokenValue())
+                                    .and("access_token_type").is(entity.getAccessTokenType())
+                    ),
+                    LightningAuthenticationTokenEntity.class
+            );
+        }
+        else if(entity.getRefreshTokenValue() != null) {
+            return mongoTemplate.findOne(
+                    Query.query(
+                            Criteria.where("refresh_token_value")
+                                    .is(entity.getRefreshTokenValue())
+                                    .and("refresh_token_type")
+                                    .is(entity.getRefreshTokenType())),
+                            LightningAuthenticationTokenEntity.class
+                    );
+        }
+        // find by token
         return null;
     }
 }

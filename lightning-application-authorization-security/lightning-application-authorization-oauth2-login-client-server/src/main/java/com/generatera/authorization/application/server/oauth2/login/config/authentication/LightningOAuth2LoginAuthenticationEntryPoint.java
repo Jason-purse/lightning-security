@@ -3,11 +3,13 @@ package com.generatera.authorization.application.server.oauth2.login.config.auth
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.token.ApplicationLevelAuthorizationToken;
 import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginTokenGenerator;
+import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
 import com.generatera.security.authorization.server.specification.components.token.*;
+import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
 import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
@@ -23,6 +25,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization.USER_INFO_ATTRIBUTE_NAME;
 
 public class LightningOAuth2LoginAuthenticationEntryPoint implements AuthenticationSuccessHandler, AuthenticationFailureHandler {
 
@@ -41,8 +45,6 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
     private TokenSettingsProvider tokenSettingsProvider;
 
     private LightningAuthenticationTokenService authenticationTokenService;
-
-
 
 
     public void setTokenGenerator(LightningOAuth2LoginTokenGenerator tokenGenerator) {
@@ -67,12 +69,12 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
 
     @Autowired
     public void setTokenSettingsProvider(TokenSettingsProvider tokenSettingsProvider) {
-        Assert.notNull(tokenSettingsProvider,"tokenSettingsProvider must not be null !!!");
+        Assert.notNull(tokenSettingsProvider, "tokenSettingsProvider must not be null !!!");
         this.tokenSettingsProvider = tokenSettingsProvider;
     }
 
     public void setAuthenticationTokenService(LightningAuthenticationTokenService authenticationTokenService) {
-        Assert.notNull(authenticationTokenService,"authenticationTokenService must not be null !!!");
+        Assert.notNull(authenticationTokenService, "authenticationTokenService must not be null !!!");
         this.authenticationTokenService = authenticationTokenService;
     }
 
@@ -94,8 +96,7 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
                             )
                     )
             );
-        }
-        else {
+        } else {
 
             if (StringUtils.hasText(authErrorMessage)) {
                 AuthHttpResponseUtil.commence(
@@ -150,6 +151,21 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
                         )
                 );
 
+
+        // 凭证信息,也直接进行存储
+        LightningUserPrincipal principal = ((LightningUserPrincipal) authentication.getPrincipal());
+
+        DefaultLightningAuthorization authorization
+                = new DefaultLightningAuthorization.Builder()
+                .id(UuidUtil.nextId())
+                .principalName(authentication.getName())
+                .accessToken(((LightningToken.LightningAccessToken) token))
+                .refreshToken(((LightningToken.LightningRefreshToken) refreshToken))
+                .attribute(USER_INFO_ATTRIBUTE_NAME,JsonUtil.getDefaultJsonUtil().asJSON(principal))
+                .build();
+
+
+        authenticationTokenService.save(authorization);
 
         AuthHttpResponseUtil.commence(
                 response,

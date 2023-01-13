@@ -6,4 +6,6 @@ package com.generatera.authorization.server.common.configuration.authorization;
  * @Description Lightning Authorization 也就是 授权成功之后的 访问 token / 刷新token / 等等其他扩展token的存储 ...
  */
 public interface LightningAuthorization {
+
+    public static final String USER_INFO_ATTRIBUTE_NAME = "userinfo";
 }

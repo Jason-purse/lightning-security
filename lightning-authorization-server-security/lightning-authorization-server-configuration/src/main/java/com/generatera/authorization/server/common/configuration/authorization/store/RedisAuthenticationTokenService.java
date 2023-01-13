@@ -11,7 +11,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class RedisAuthenticationTokenService extends AbstractAuthenticationTokenService {
@@ -24,12 +23,12 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
     private final Long expiredTimeDuration;
 
 
-
     public RedisAuthenticationTokenService(
             String keyPrefix
             , Long expiredTimeDuration) {
         Assert.isTrue(expiredTimeDuration != null && expiredTimeDuration > 0, "expiredTimeDuration must not be null and must gte 0 !!!");
 
+        Assert.hasText(keyPrefix, "keyPrefix must not be null !!!");
         this.keyPrefix = keyPrefix;
         this.expiredTimeDuration = expiredTimeDuration;
     }
@@ -57,12 +56,8 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
 
     }
 
-    private String constructKey(String id) {
-        return Optional.ofNullable(keyPrefix)
-                .filter(StringUtils::hasText)
-                .map(ele -> ele + "." + id)
-                // 避免和其他store service 重复
-                .orElse("lightning.app.auth.server.authentication.store." + id);
+    private String constructKey(String key) {
+        return keyPrefix + key;
     }
 
     private String constructTokenKey(String token, LightningAuthenticationTokenType tokenType) {

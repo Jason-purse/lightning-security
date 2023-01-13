@@ -21,9 +21,20 @@ import java.util.*;
  */
 public class DefaultLightningAccessTokenGenerator implements LightningAccessTokenGenerator {
     private final StringKeyGenerator accessTokenGenerator = new Base64StringKeyGenerator(Base64.getUrlEncoder().withoutPadding(), 96);
+    private final String authoritiesName;
+    private final boolean isOpaque;
 
     public DefaultLightningAccessTokenGenerator() {
+        this.isOpaque = false;
+        this.authoritiesName  = "scope";
+    }
 
+    public DefaultLightningAccessTokenGenerator(boolean isOpaque,String authoritiesName) {
+        this.isOpaque = isOpaque;
+        this.authoritiesName = authoritiesName;
+    }
+    public DefaultLightningAccessTokenGenerator(boolean isOpaque) {
+        this(isOpaque,"scope");
     }
 
     @Override
@@ -46,21 +57,28 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
                     .subject(context.getPrincipal().getName())
                     .audience(context.getTokenSettings().getAudiences())
                     .issuedAt(issuedAt).expiresAt(expiresAt).notBefore(issuedAt).id(UUID.randomUUID().toString());
-            if (!CollectionUtils.isEmpty(context.getPrincipal().getAuthorities())) {
-                claimsBuilder.claim("scope", context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new));
+
+            if(!isOpaque) {
+                if (!CollectionUtils.isEmpty(context.getPrincipal().getAuthorities())) {
+                    claimsBuilder.claim(authoritiesName, context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new));
+                }
             }
 
-//            if (this.accessTokenCustomizer != null) {
-//                LightningTokenClaimsContext.Builder accessTokenContextBuilder =
-//                        LightningTokenClaimsSet.with(claimsBuilder).registeredClient(context.getRegisteredClient())).principal(context.getPrincipal())).providerContext(context.getProviderContext())).authorizedScopes(context.getAuthorizedScopes())).tokenType(context.getTokenType())).authorizationGrantType(context.getAuthorizationGrantType());
-//                if (context.getAuthorization() != null) {
-//                    accessTokenContextBuilder.authorization(context.getAuthorization());
-//                }
-//
-//
-//                LightningTokenClaimsContext accessTokenContext = accessTokenContextBuilder.build();
-//                this.accessTokenCustomizer.customize(accessTokenContext);
-//            }
+            // 是否为 不透明token ..
+            claimsBuilder.claim("isOpaque",isOpaque);
+
+
+            //if (this.accessTokenCustomizer != null) {
+            //    LightningTokenClaimsContext.Builder accessTokenContextBuilder =
+            //            LightningTokenClaimsSet.with(claimsBuilder).registeredClient(context.getRegisteredClient())).principal(context.getPrincipal())).providerContext(context.getProviderContext())).authorizedScopes(context.getAuthorizedScopes())).tokenType(context.getTokenType())).authorizationGrantType(context.getAuthorizationGrantType());
+            //    if (context.getAuthorization() != null) {
+            //        accessTokenContextBuilder.authorization(context.getAuthorization());
+            //    }
+            //
+            //
+            //    LightningTokenClaimsContext accessTokenContext = accessTokenContextBuilder.build();
+            //    this.accessTokenCustomizer.customize(accessTokenContext);
+            //}
 
             LightningTokenClaimsSet accessTokenClaimsSet = claimsBuilder.build();
             return new LightningAccessTokenClaims(

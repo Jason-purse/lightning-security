@@ -13,7 +13,7 @@ public class ResourceServerProperties {
     @Data
     public static class TokenVerificationConfig {
         /**
-         * 默认使用Bearer Token
+         * 默认使用Bearer jwt Token
          */
         private TokenType tokenType = TokenType.JWT;
 
