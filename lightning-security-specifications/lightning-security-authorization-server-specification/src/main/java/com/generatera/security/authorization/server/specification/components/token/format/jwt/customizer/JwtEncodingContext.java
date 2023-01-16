@@ -31,6 +31,11 @@ public final class JwtEncodingContext implements LightningTokenContext {
         return this.context.containsKey(key);
     }
 
+    @Override
+    public Map<Object, Object> getContexts() {
+        return context;
+    }
+
     public JwsHeader.Builder getHeaders() {
         return this.get(JwsHeader.Builder.class);
     }

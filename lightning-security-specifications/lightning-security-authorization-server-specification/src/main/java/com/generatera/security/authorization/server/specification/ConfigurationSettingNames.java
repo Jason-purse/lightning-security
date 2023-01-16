@@ -1,5 +1,10 @@
 package com.generatera.security.authorization.server.specification;
-
+/**
+ * @author FLJ
+ * @date 2023/1/16
+ * @time 16:41
+ * @Description 配置设置的名称, spring-oauth2 -copys
+ */
 public final class ConfigurationSettingNames {
     private static final String SETTINGS_NAMESPACE = "settings.";
 
@@ -9,9 +14,14 @@ public final class ConfigurationSettingNames {
     public static final class Token {
         private static final String TOKEN_SETTINGS_NAMESPACE = "settings.".concat("token.");
         public static final String ACCESS_TOKEN_TIME_TO_LIVE;
+        /**
+         * access token 颁发格式
+         */
         public static final String ACCESS_TOKEN_FORMAT;
 
         public static final String ACCESS_TOKEN_VALUE_TYPE;
+
+        public static final String ACCESS_TOKEN_VALUE_FORMAT;
 
         public static final String REFRESH_TOKEN_VALUE_TYPE;
         public static final String REUSE_REFRESH_TOKENS;
@@ -30,6 +40,7 @@ public final class ConfigurationSettingNames {
             ID_TOKEN_SIGNATURE_ALGORITHM = TOKEN_SETTINGS_NAMESPACE.concat("id-token-signature-algorithm");
             AUDIENCE = TOKEN_SETTINGS_NAMESPACE.concat("token-audience");
             ACCESS_TOKEN_VALUE_TYPE = TOKEN_SETTINGS_NAMESPACE.concat("access-token-value-type");
+            ACCESS_TOKEN_VALUE_FORMAT = TOKEN_SETTINGS_NAMESPACE.concat("access-token-value-format");
             REFRESH_TOKEN_VALUE_TYPE = TOKEN_SETTINGS_NAMESPACE.concat("refresh-token-value-type");
         }
     }

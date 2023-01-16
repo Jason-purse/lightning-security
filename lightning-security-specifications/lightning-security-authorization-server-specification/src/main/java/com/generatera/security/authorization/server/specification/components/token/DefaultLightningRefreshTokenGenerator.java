@@ -16,7 +16,7 @@ import java.util.Base64;
 public class DefaultLightningRefreshTokenGenerator implements LightningRefreshTokenGenerator {
     private final StringKeyGenerator refreshTokenGenerator = new Base64StringKeyGenerator(Base64.getUrlEncoder().withoutPadding(), 96);
     @Override
-    public LightningToken.LightningRefreshToken generate(LightningSecurityTokenContext context) {
+    public LightningToken.LightningRefreshToken generate(LightningTokenContext context) {
         if (!LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE.equals(context.getTokenType())) {
             return null;
         } else {

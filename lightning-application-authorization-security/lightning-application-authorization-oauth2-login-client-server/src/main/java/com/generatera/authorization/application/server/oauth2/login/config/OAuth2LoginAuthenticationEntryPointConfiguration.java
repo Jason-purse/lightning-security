@@ -2,8 +2,9 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
 import com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint;
-import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginTokenGenerator;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.security.authorization.server.specification.components.token.LightningToken;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,7 +27,7 @@ public class OAuth2LoginAuthenticationEntryPointConfiguration {
     @Bean
     @ConditionalOnMissingBean(LightningOAuth2LoginAuthenticationEntryPoint.class)
     public LightningOAuth2LoginAuthenticationEntryPoint entryPoint(
-            LightningOAuth2LoginTokenGenerator tokenGenerator
+            LightningTokenGenerator<LightningToken> tokenGenerator
     ) {
         LightningOAuth2LoginAuthenticationEntryPoint point = new LightningOAuth2LoginAuthenticationEntryPoint();
         OAuth2LoginProperties.BackendSeparation backendSeparation = oAuth2LoginProperties.getBackendSeparation();

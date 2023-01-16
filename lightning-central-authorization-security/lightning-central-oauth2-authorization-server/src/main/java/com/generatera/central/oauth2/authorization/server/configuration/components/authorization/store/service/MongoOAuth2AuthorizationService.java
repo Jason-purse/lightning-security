@@ -1,6 +1,7 @@
-package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store;
+package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.service;
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.DefaultOAuth2Authorization;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import lombok.AllArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;

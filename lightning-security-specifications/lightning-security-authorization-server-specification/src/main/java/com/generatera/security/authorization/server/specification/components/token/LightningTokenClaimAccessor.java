@@ -6,6 +6,12 @@ import java.net.URL;
 import java.time.Instant;
 import java.util.List;
 
+/**
+ * @author FLJ
+ * @date 2023/1/16
+ * @time 14:22
+ * @Description lightning token claim 访问器 (jwt info)
+ */
 public interface LightningTokenClaimAccessor extends ClaimAccessor {
     default URL getIssuer() {
         return this.getClaimAsURL("iss");

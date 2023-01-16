@@ -151,38 +151,52 @@ public class DefaultLightningFormLoginAuthenticationEntryPoint implements Lightn
 
         LightningToken token = tokenGenerator.
                 generate(
-                        new LightningSecurityAccessTokenContext(LightningSecurityTokenContext.of(
-                                authentication,
-                                ProviderContextHolder.getProviderContext(),
-                                tokenSettingsProvider.getTokenSettings(),
-                                tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat(),
-                                tokenSettingsProvider.getTokenSettings().getAccessTokenValueType(),
-                                LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE,
-                                ((LightningUserPrincipal) authentication.getPrincipal())
-                        ))
+                        new LightningAccessTokenContext(
+                                DefaultLightningTokenContext.builder()
+                                        .authentication(authentication)
+                                        .providerContext(ProviderContextHolder.getProviderContext())
+                                        .tokenSettings(tokenSettingsProvider.getTokenSettings())
+                                        .tokenValueType(tokenSettingsProvider.getTokenSettings().getAccessTokenValueType())
+                                        .tokenIssueFormat(tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat())
+                                        .tokenValueFormat(tokenSettingsProvider.getTokenSettings().getAccessTokenValueFormat())
+                                        .tokenType(LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE)
+                                        .build())
                 );
         LightningToken refreshToken = tokenGenerator.
                 generate(
-                        new LightningSecurityAccessTokenContext(LightningSecurityTokenContext.of(
-                                authentication,
-                                ProviderContextHolder.getProviderContext(),
-                                tokenSettingsProvider.getTokenSettings(),
-                                tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat(),
-                                tokenSettingsProvider.getTokenSettings().getRefreshTokenValueType(),
-                                LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE,
-                                ((LightningUserPrincipal) authentication.getPrincipal())
-                        ))
+                        new LightningAccessTokenContext(
+                                DefaultLightningTokenContext.builder()
+                                        .authentication(authentication)
+                                        .providerContext(ProviderContextHolder.getProviderContext())
+                                        .tokenSettings(tokenSettingsProvider.getTokenSettings())
+                                        .tokenValueType(tokenSettingsProvider.getTokenSettings().getRefreshTokenValueType())
+                                        .tokenIssueFormat(tokenSettingsProvider.getTokenSettings().getRefreshTokenIssueFormat())
+                                        .tokenValueFormat(tokenSettingsProvider.getTokenSettings().getAccessTokenValueFormat())
+                                        .tokenType(LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE)
+                                        .build())
                 );
 
 
         // 凭证信息,也直接进行存储
         LightningUserPrincipal principal = ((LightningUserPrincipal) authentication.getPrincipal());
 
+
+        // lightningJwt 需要进行转换(因为jwksource 的性质决定它可能根据不同的token生成器进行 token生成)...
+        // todo 考虑token 是否可以永久有效 ..
+        LightningToken.ComplexToken complexToken = (LightningToken.ComplexToken) token;
+        LightningAccessTokenGenerator.LightningAuthenticationAccessToken accessToken
+                = new LightningAccessTokenGenerator.LightningAuthenticationAccessToken(
+                token, complexToken.getTokenValueType(),
+                tokenSettingsProvider
+                        .getTokenSettings()
+                        .getAccessTokenValueFormat()
+        );
+
         DefaultLightningAuthorization authorization
                 = new DefaultLightningAuthorization.Builder()
                 .id(UuidUtil.nextId())
                 .principalName(authentication.getName())
-                .accessToken(((LightningToken.LightningAccessToken) token))
+                .accessToken(accessToken)
                 .refreshToken(((LightningToken.LightningRefreshToken) refreshToken))
                 .attribute(USER_INFO_ATTRIBUTE_NAME,JsonUtil.getDefaultJsonUtil().asJSON(principal))
                 .build();

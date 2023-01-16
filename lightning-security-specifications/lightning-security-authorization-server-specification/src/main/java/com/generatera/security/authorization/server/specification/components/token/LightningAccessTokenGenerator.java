@@ -1,9 +1,7 @@
 package com.generatera.security.authorization.server.specification.components.token;
 
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType;
-import org.springframework.lang.NonNull;
-
-import java.util.Set;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 
 /**
  * @author FLJ
@@ -18,14 +16,23 @@ public interface LightningAccessTokenGenerator extends LightningTokenGenerator<L
 
         private final LightningTokenValueType tokenValueType;
 
+        private final LightningTokenValueFormat tokenValueTypeFormat;
+
         public LightningAuthenticationAccessToken(LightningToken delegate,
-                                                  LightningTokenValueType tokenValueType) {
+                                                  LightningTokenValueType tokenValueType,
+                                                  LightningTokenValueFormat tokenValueTypeFormat) {
             super(delegate);
             this.tokenValueType = tokenValueType;
+            this.tokenValueTypeFormat = tokenValueTypeFormat;
         }
 
         public LightningTokenValueType getTokenValueType() {
             return tokenValueType;
+        }
+
+        @Override
+        public LightningTokenValueFormat getTokenValueFormat() {
+            return tokenValueTypeFormat;
         }
     }
 }

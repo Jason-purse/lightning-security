@@ -1,10 +1,11 @@
-package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store;
+package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2Util;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.DefaultOAuth2Authorization;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.jackson.mixin.AuditDeletedDateMixin;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.jackson.mixin.LongMixin;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.jackson.mixin.UserAuthorityMixin;
@@ -13,7 +14,7 @@ import com.generatera.central.oauth2.authorization.server.configuration.model.en
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.UserAuthority;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.UserPrincipal;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization.JpaOAuth2AuthorizationEntity;
-import com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.store.OAuth2AuthorizationRepository;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.repository.OAuth2AuthorizationRepository;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.security.jackson2.SecurityJackson2Modules;

@@ -1,8 +1,8 @@
 package com.generatera.security.authorization.server.specification.components.token.format.plain;
 
 
-import com.generatera.security.authorization.server.specification.components.token.LightningSecurityTokenContext;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenContext;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenGenerator;
 
 /**
@@ -14,7 +14,7 @@ import com.generatera.security.authorization.server.specification.components.tok
 public class DefaultAuthorizationServerPlainTokenGenerator implements LightningTokenGenerator<LightningToken> {
 
     @Override
-    public LightningToken generate(LightningSecurityTokenContext context) {
+    public LightningToken generate(LightningTokenContext context) {
         String tokenValue = UuidUtil.nextId();
         return new DefaultPlainToken(tokenValue);
     }

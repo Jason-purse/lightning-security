@@ -6,5 +6,5 @@ package com.generatera.security.authorization.server.specification.components.to
  */
 public interface LightningTokenGenerator<T extends LightningToken> {
 
-    T generate(LightningSecurityTokenContext context);
+    T generate(LightningTokenContext context);
 }

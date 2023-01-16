@@ -24,6 +24,9 @@ import java.util.Map;
  * @date 2023/1/4
  * @time 10:32
  * @Description 主要是处理 token 生成器 ..
+ *
+ * 给出我们自己自定义 OAuth2 TokenGeneartor的机会 ..
+ * 不再使用 spring-security-oauth2 自己的 token 生成器的默认逻辑 。。。
  */
 final class OAuth2AuthorizationServerConfigurerExtUtils {
         private OAuth2AuthorizationServerConfigurerExtUtils() {
@@ -61,7 +64,6 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
                         tokenGenerator = new DelegatingOAuth2TokenGenerator(accessTokenGenerator, refreshTokenGenerator);
                     }
                 }
-
                 builder.setSharedObject(OAuth2TokenGenerator.class, tokenGenerator);
             }
 

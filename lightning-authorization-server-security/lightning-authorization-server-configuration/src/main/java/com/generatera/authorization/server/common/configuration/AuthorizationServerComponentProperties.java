@@ -2,7 +2,7 @@ package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
-import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueTypeFormat;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -13,6 +13,16 @@ import static com.generatera.authorization.server.common.configuration.Authoriza
  * @date 2023/1/9
  * @time 11:03
  * @Description 主要是 作为授权服务器的一些可配置属性 ...
+ *
+ *
+ * 我们主要是想要集成token生成规范(借鉴oauth2的token生成) ...
+ * 本质上其实和oauth2 类似,保留Oauth2的token 审查端点,token 撤销端点,包括 自己作为第三方提供商的一些提供者配置 ...
+ * 能够有效的和 对应的资源服务器进行 token 工作协同,例如opaque token 省查 / jwt token 自解析 ...
+ *
+ * 那么当前项目主要配置如下:
+ * 1. 提供者配置
+ * 2. 默认token 配置
+ *    需要注意的是对应 oauth2来说,这个token配置仅仅作为 客户端的token 配置兜底 ..
  */
 @Data
 @ConfigurationProperties(prefix = AUTH_SERVER_COMPONENT_PREFIX)
@@ -77,7 +87,7 @@ public class AuthorizationServerComponentProperties {
          * 生成的 token 的值的格式是 (JWT)
          * 这里的jwt 只是一个形式的代称(不等价于 JSON Web Tokens ), 因为所有的token 都是jwt生成的 ..
          */
-        private LightningTokenValueTypeFormat tokenValueFormat = LightningTokenValueTypeFormat.JWT;
+        private LightningTokenValueFormat tokenValueFormat = LightningTokenValueFormat.JWT;
 
         private Boolean reuseRefreshToken = Boolean.TRUE;
 
@@ -113,7 +123,7 @@ public class AuthorizationServerComponentProperties {
         /**
          * 授权存储方式
          */
-        private final StoreKind storeKind = StoreKind.MEMORY;
+        private StoreKind storeKind = StoreKind.MEMORY;
         /**
          * lightning.auth.server.authorization.store.redis
          */

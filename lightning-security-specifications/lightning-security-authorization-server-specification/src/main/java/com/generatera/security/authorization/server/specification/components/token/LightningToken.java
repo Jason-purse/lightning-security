@@ -29,10 +29,13 @@ public interface LightningToken {
     }
 
     interface LightningAccessToken extends LightningToken {
+        LightningTokenValueType getTokenValueType();
 
+        LightningTokenType.LightningTokenValueFormat getTokenValueFormat();
     }
 
     interface LightningRefreshToken extends LightningToken  {
+
     }
 
     /**

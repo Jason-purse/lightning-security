@@ -1,7 +1,7 @@
 package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.consent;
 
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization.OAuth2AuthorizationConsentEntity;
-import com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.consent.OAuth2AuthorizationConsentRepository;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.consent.repository.OAuth2AuthorizationConsentRepository;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

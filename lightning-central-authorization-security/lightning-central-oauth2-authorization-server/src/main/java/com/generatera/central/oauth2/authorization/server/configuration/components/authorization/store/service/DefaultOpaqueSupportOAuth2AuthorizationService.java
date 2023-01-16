@@ -1,6 +1,7 @@
-package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store;
+package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.service;
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.DefaultOAuth2Authorization;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.DefaultOpaqueAwareOAuth2TokenCustomizer;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import org.springframework.core.convert.converter.Converter;
@@ -149,11 +150,21 @@ public class DefaultOpaqueSupportOAuth2AuthorizationService implements Lightning
 
     @Override
     public OAuth2Authorization findById(String id) {
-        return this.delegate.findAuthorizationById(id);
+        return unWrapHandle(this.delegate.findAuthorizationById(id));
     }
 
     @Override
     public OAuth2Authorization findByToken(String token, OAuth2TokenType tokenType) {
-        return this.findByToken(token, tokenType != null ? new LightningTokenType.LightningAuthenticationTokenType(tokenType.getValue()) : null);
+        DefaultOAuth2Authorization authorization = this.findByToken(token, tokenType != null ? new LightningTokenType.LightningAuthenticationTokenType(tokenType.getValue()) : null);
+        return unWrapHandle(authorization);
+    }
+
+    private  OAuth2Authorization unWrapHandle(OAuth2Authorization oAuth2Authorization) {
+        if(oAuth2Authorization != null) {
+            if(oAuth2Authorization instanceof DefaultOAuth2Authorization delegate) {
+                return delegate.getWrappedAuthorization();
+            }
+        }
+        return oAuth2Authorization;
     }
 }

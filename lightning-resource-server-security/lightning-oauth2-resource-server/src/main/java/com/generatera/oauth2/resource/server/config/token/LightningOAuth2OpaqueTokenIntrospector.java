@@ -1,6 +1,6 @@
 package com.generatera.oauth2.resource.server.config.token;
 
-import com.generatera.security.authorization.server.specification.components.token.format.opaque.LightningOpaqueTokenIntrospector;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningOpaqueTokenIntrospector;
 /**
  * @author FLJ
  * @date 2023/1/12

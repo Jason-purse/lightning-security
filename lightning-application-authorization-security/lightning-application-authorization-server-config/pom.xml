@@ -70,6 +70,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

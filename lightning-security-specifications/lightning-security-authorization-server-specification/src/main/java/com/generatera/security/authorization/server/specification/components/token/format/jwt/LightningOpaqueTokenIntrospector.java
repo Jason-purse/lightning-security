@@ -1,4 +1,4 @@
-package com.generatera.security.authorization.server.specification.components.token.format.opaque;
+package com.generatera.security.authorization.server.specification.components.token.format.jwt;
 
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 

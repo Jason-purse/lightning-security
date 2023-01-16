@@ -68,7 +68,7 @@ public class OAuth2CentralAuthorizationServerProperties {
         private StoreKind kind = StoreKind.MEMORY;
 
 
-        private final Redis redis = new Redis("lightning-auth-server-authorization-");
+        private final Redis redis = new Redis("lightning-central-oauth2-server-authorization-");
 
 
     }

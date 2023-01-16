@@ -1,5 +1,6 @@
 package com.generatera.authorization.server.common.configuration.model.entity;
 
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -54,7 +55,7 @@ public class LightningAuthenticationTokenEntity implements Serializable {
     private String accessTokenType;
 
     /**
-     * @see com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueTypeFormat
+     * @see LightningTokenType.LightningTokenValueFormat
      */
     @Column(name = "access_token_type_format")
     @Field(name = "access_token_type_format")
@@ -81,4 +82,10 @@ public class LightningAuthenticationTokenEntity implements Serializable {
     @Field(name = "refresh_token_type_format")
     private String refreshTokenTypeFormat;
 
+
+    /**
+     * 用户信息,用来更新令牌 ..(如果是 opaque) ..
+     * 通过LightningUserPrincipalConverter 处理 ..
+     */
+    private Object userPrincipal;
 }

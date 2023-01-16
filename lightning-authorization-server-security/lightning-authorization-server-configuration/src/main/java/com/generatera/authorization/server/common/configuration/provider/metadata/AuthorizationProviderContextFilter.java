@@ -14,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
 /**
  * @author FLJ
  * @date 2023/1/4
@@ -45,6 +46,6 @@ public final class AuthorizationProviderContextFilter extends OncePerRequestFilt
     }
 
     private static String getContextPath(HttpServletRequest request) {
-        return UriComponentsBuilder.fromHttpUrl(UrlUtils.buildFullRequestUrl(request)).replacePath(request.getContextPath()).replaceQuery((String)null).fragment((String)null).build().toUriString();
+        return UriComponentsBuilder.fromHttpUrl(UrlUtils.buildFullRequestUrl(request)).replacePath(request.getContextPath()).replaceQuery((String) null).fragment((String) null).build().toUriString();
     }
 }

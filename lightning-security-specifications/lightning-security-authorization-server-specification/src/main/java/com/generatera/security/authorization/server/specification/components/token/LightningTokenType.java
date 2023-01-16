@@ -47,20 +47,20 @@ public interface LightningTokenType {
      *
      * 本质上全是 jwt ...
      */
-    class LightningTokenValueTypeFormat extends DefaultLightningTokenType {
+    class LightningTokenValueFormat extends DefaultLightningTokenType {
 
-        public LightningTokenValueTypeFormat(String value) {
+        public LightningTokenValueFormat(String value) {
             super(value);
         }
 
         /**
          * jwt
          */
-        public static final LightningTokenValueTypeFormat JWT = new LightningTokenValueTypeFormat("jwt");
+        public static final LightningTokenValueFormat JWT = new LightningTokenValueFormat("jwt");
         /**
          * opaque
          */
-        public static final LightningTokenValueTypeFormat OPAQUE = new LightningTokenValueTypeFormat("opaque");
+        public static final LightningTokenValueFormat OPAQUE = new LightningTokenValueFormat("opaque");
 
     }
 

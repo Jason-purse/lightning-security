@@ -3,11 +3,11 @@ package com.generatera.model.entity;
 
 import com.generatera.authorization.server.common.configuration.annotations.SafeSerialize;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.UserAuthority;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.CredentialsContainer;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @SafeSerialize
-public class LightningOAuth2UserDetails implements UserDetails,CredentialsContainer, Cloneable {
+public class LightningOAuth2UserDetails implements LightningUserPrincipal,CredentialsContainer, Cloneable {
 
     private Long id;
 

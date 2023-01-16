@@ -3,7 +3,7 @@ package com.generatera.security.authorization.server.specification.components.to
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.SignatureAlgorithm;
 import com.generatera.security.authorization.server.specification.TokenIssueFormat;
-import com.generatera.security.authorization.server.specification.components.token.LightningSecurityTokenContext;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenContext;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.JwtEncodingContext;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.LightningJwtCustomizer;
@@ -25,6 +25,9 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
 
     private final LightningJwtEncoder jwtEncoder;
 
+    /**
+     * lightning jwt customizer ...
+     */
     private LightningJwtCustomizer jwtCustomizer;
 
     private final Boolean isOpaque;
@@ -41,7 +44,7 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
     }
 
     @Override
-    public LightningJwt generate(LightningSecurityTokenContext context) {
+    public LightningJwt generate(LightningTokenContext context) {
         if (!TokenIssueFormat.SELF_CONTAINED.equals(context.getTokenSettings().getAccessTokenIssueFormat())) {
             return null;
         } else {
@@ -78,15 +81,13 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
 
             claimsBuilder.claim("isOpaque",isOpaque);
 
+            // 加密算法可以定制 ...
             JwsHeader.Builder headersBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
             if (this.jwtCustomizer != null) {
                 JwtEncodingContext.Builder jwtContextBuilder
                         = JwtEncodingContext.with(headersBuilder, claimsBuilder)
-                        .principal(context.getAuthentication())
-                        .providerContext(context.getProviderContext())
-                        //.authorizedScopes(principal.getAuthorities())
-                        .tokenType(context.getTokenType())
-                        .tokenValueType(context.getTokenValueType());
+                        // 直接尝试 context 复制即可 ..
+                        .context(contextMap -> contextMap.putAll(context.getContexts()));
 
                 JwtEncodingContext jwtContext = jwtContextBuilder.build();
                 this.jwtCustomizer.customizeToken(jwtContext);

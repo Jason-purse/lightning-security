@@ -41,6 +41,15 @@ import java.util.List;
  * <p>
  * 3. oauth2 central authServer ext customizers
  *
+ * 也就是作为中央 oauth2 授权服务器 提供额外的配置
+ * 首先就是它包含了已经注册的客户端列表信息(需要一个仓库,但是普通的授权服务器不可能存在此东西) ...
+ * 4. 也就是自己的 token 自定义器(暂时,先分离配置,后续通过 lightning-token-generator 兼容到  oauth2 token -generator)
+ * 5. 同样也需要授权协商仓库(保留授权协商信息)
+ *
+ *
+ * // TODO: 2023/1/16  通过 lightning-security-authorization-server-specification 的规定信息进行 oauth2 兼容 ..
+ *
+ *
  * @see org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
  * @see com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer
  * @see LightningOAuth2CentralAuthorizationServerExtConfigurer
@@ -65,33 +74,6 @@ public class OAuth2CentralAuthorizationServerConfiguration {
         return ProviderSettings.withSettings(providerSettings.getSettings()).build();
     }
 
-
-    @Bean
-    @SuppressWarnings("unchecked")
-    public LightningAppAuthServerConfigurer configurer(
-            @Autowired(required = false)
-                    List<LightningOAuth2CentralAuthorizationServerExtConfigurer> extConfigurers
-    ) {
-        return new LightningAppAuthServerConfigurer() {
-            @Override
-            public void configure(HttpSecurity securityBuilder) throws Exception {
-
-                OAuth2AuthorizationServerConfigurer<HttpSecurity> configurer = securityBuilder.getConfigurer(OAuth2AuthorizationServerConfigurer.class);
-                if (configurer == null) {
-                    configurer
-                            = OAuth2AuthorizationServerConfigurerExtUtils.getOAuth2AuthorizationServerConfigurer(securityBuilder);
-                    securityBuilder.apply(configurer);
-                }
-
-                // 增加扩展
-                if (!CollectionUtils.isEmpty(extConfigurers)) {
-                    for (LightningOAuth2CentralAuthorizationServerExtConfigurer extConfigurer : extConfigurers) {
-                        extConfigurer.configure(configurer);
-                    }
-                }
-            }
-        };
-    }
 
     // -------------------------- token customizer -----------------------------------------------------------------
 
@@ -120,7 +102,7 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                 // 顺序很重要
                 new DefaultTokenDetailAwareOAuth2TokenCustomizer(properties.getTokenSettings())::customize,
                 defaultOpaqueAwareOAuth2TokenCustomizer::customize
-                );
+        );
     }
 
 
@@ -148,6 +130,45 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                 tokenCustomizer,
                 centralOAuth2JwtTokenCustomizer(properties)
         );
+    }
+
+
+    /**
+     * 支持 oauth2 authorization server configurer ..
+     * 并且支持 oauth2 授权服务器的额外配置且扩展,通过{@link LightningOAuth2CentralAuthorizationServerExtConfigurer} 进行配置,
+     * 同时它本质上可以通过@Order注解或者Ordered接口进行执行顺序处理,默认是通过{@link org.springframework.core.annotation.AnnotationAwareOrderComparator}
+     * 进行顺序比较器处理 顺序,如果没有优先级要求,默认追加到 配置器列表尾部 ...
+     * @param extConfigurers 并支持 oauth2 authorization server 扩展配置(例如 支持自定义的授权方式,例如password) ..
+     * 详情查看 模块 lightning-central-oauth2-authorization-password-grant-support-server ..
+     *
+     */
+    @Bean
+    @SuppressWarnings("unchecked")
+    public LightningAppAuthServerConfigurer configurer(
+            @Autowired(required = false)
+                    List<LightningOAuth2CentralAuthorizationServerExtConfigurer> extConfigurers
+    ) {
+        return new LightningAppAuthServerConfigurer() {
+            @Override
+            public void configure(HttpSecurity securityBuilder) throws Exception {
+
+                OAuth2AuthorizationServerConfigurer<HttpSecurity> configurer = securityBuilder.getConfigurer(OAuth2AuthorizationServerConfigurer.class);
+
+                // 启动这个配置 ..
+                if (configurer == null) {
+                    configurer
+                            = OAuth2AuthorizationServerConfigurerExtUtils.getOAuth2AuthorizationServerConfigurer(securityBuilder);
+                    securityBuilder.apply(configurer);
+                }
+
+                // 增加扩展
+                if (!CollectionUtils.isEmpty(extConfigurers)) {
+                    for (LightningOAuth2CentralAuthorizationServerExtConfigurer extConfigurer : extConfigurers) {
+                        extConfigurer.configure(configurer);
+                    }
+                }
+            }
+        };
     }
 
 }

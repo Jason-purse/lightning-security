@@ -11,6 +11,10 @@ public class MongoAuthenticationTokenService extends AbstractAuthenticationToken
     @Autowired
     private MongoTemplate mongoTemplate;
 
+    public MongoAuthenticationTokenService(LightningUserPrincipalConverter lightningUserPrincipalConverter) {
+        super(lightningUserPrincipalConverter);
+    }
+
 
     @Override
     protected void doSave(LightningAuthenticationTokenEntity entity) {

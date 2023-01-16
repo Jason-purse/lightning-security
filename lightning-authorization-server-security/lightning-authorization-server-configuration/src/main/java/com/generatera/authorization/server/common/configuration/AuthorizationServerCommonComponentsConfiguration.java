@@ -90,8 +90,13 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                             }
 
                             @Override
-                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
-                                return new DefaultAuthenticationTokenService();
+                            public LightningAuthenticationTokenService getService(Object... args) {
+                                LightningUserPrincipalConverter userPrincipalConverter = (LightningUserPrincipalConverter) args[1];
+                                DefaultAuthenticationTokenService authenticationTokenService = new DefaultAuthenticationTokenService();
+                                if(userPrincipalConverter != null) {
+                                    authenticationTokenService.setTokenConverter(new OptimizedAuthenticationTokenConverter(userPrincipalConverter));
+                                }
+                                return authenticationTokenService;
                             }
                         };
                     }
@@ -113,8 +118,9 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                             }
 
                             @Override
-                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
-                                return new JpaAuthenticationTokenService();
+                            public LightningAuthenticationTokenService getService(Object... args) {
+                                LightningUserPrincipalConverter userPrincipalConverter = (LightningUserPrincipalConverter) args[1];
+                                return new JpaAuthenticationTokenService(userPrincipalConverter);
                             }
                         };
                     }
@@ -136,8 +142,9 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                             }
 
                             @Override
-                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
-                                return new MongoAuthenticationTokenService();
+                            public LightningAuthenticationTokenService getService(Object... args) {
+                                LightningUserPrincipalConverter userPrincipalConverter = (LightningUserPrincipalConverter) args[1];
+                                return new MongoAuthenticationTokenService(userPrincipalConverter);
                             }
                         };
                     }
@@ -159,9 +166,11 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                             }
 
                             @Override
-                            public LightningAuthenticationTokenService getService(AuthorizationServerComponentProperties properties) {
+                            public LightningAuthenticationTokenService getService(Object... args) {
+                                AuthorizationServerComponentProperties properties = (AuthorizationServerComponentProperties) args[0];
+                                LightningUserPrincipalConverter userPrincipalConverter = (LightningUserPrincipalConverter) args[1];
                                 AuthorizationServerComponentProperties.Redis redis = properties.getAuthorizationStoreConfig().getRedis();
-                                return new RedisAuthenticationTokenService(redis.getKeyPrefix(), redis.getExpiredTimeDuration());
+                                return new RedisAuthenticationTokenService(redis.getKeyPrefix(), redis.getExpiredTimeDuration(),userPrincipalConverter);
                             }
                         };
                     }
@@ -191,7 +200,9 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
      */
     @Bean
     @ConditionalOnMissingBean(LightningAuthorizationService.class)
-    public LightningAuthenticationTokenService authorizationService(AuthorizationServerComponentProperties properties) {
+    public LightningAuthenticationTokenService authorizationService(AuthorizationServerComponentProperties properties,
+                                                                    @Autowired(required = false)
+                                                                    LightningUserPrincipalConverter userPrincipalConverter) {
 
 
         HandlerFactory.HandlerProvider provider
@@ -201,7 +212,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
         Assert.notNull(provider, "provider must not be null !!!");
         return ((AbstractAuthenticationTokenServiceHandlerProvider.LightningAuthenticationTokenServiceHandler)
                 provider.getHandler())
-                .getService(properties);
+                .getService(properties,userPrincipalConverter);
 
     }
 
@@ -221,6 +232,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                         .audience(properties.getTokenSettings().getAudiences())
                         .accessTokenIssueFormat(jwkSourceProvider.getTokenIssueFormat())
                         .accessTokenValueType(properties.getTokenSettings().getTokenValueType())
+                        .accessTokenValueFormat(properties.getTokenSettings().getTokenValueFormat())
                         .accessTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getAccessTokenTimeToLive()))
                         .refreshTokenIssueFormat(jwkSourceProvider.getTokenIssueFormat())
                         .refreshTokenValueType(properties.getTokenSettings().getTokenValueType())
@@ -287,7 +299,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
         return new DelegatingLightningTokenGenerator(
                 new DefaultLightningAccessTokenGenerator(
                         Optional.ofNullable(properties.getTokenSettings().getTokenValueFormat())
-                                .map(ele -> ele == LightningTokenType.LightningTokenValueTypeFormat.OPAQUE)
+                                .map(ele -> ele == LightningTokenType.LightningTokenValueFormat.OPAQUE)
                                 .orElse(false)
                 ),
                 new DefaultLightningRefreshTokenGenerator(),
@@ -312,7 +324,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
         return new DelegatingLightningTokenGenerator(
                 new DefaultLightningAccessTokenGenerator(
                         Optional.ofNullable(properties.getTokenSettings().getTokenValueFormat())
-                                .map(ele -> ele == LightningTokenType.LightningTokenValueTypeFormat.OPAQUE)
+                                .map(ele -> ele == LightningTokenType.LightningTokenValueFormat.OPAQUE)
                                 .orElse(false)
                 ),
                 new DefaultLightningRefreshTokenGenerator(),

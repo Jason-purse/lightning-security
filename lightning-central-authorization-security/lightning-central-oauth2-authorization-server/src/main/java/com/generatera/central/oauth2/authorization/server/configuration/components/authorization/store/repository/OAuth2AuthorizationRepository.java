@@ -1,4 +1,4 @@
-package com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.store;
+package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.repository;
 
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization.JpaOAuth2AuthorizationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;

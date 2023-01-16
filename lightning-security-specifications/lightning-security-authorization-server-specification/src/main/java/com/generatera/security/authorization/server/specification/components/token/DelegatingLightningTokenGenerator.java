@@ -22,7 +22,7 @@ public final class DelegatingLightningTokenGenerator implements LightningTokenGe
     }
 
     @Nullable
-    public LightningToken generate(LightningSecurityTokenContext context) {
+    public LightningToken generate(LightningTokenContext context) {
         Iterator<LightningTokenGenerator<LightningToken>> var2 = this.tokenGenerators.iterator();
 
         LightningToken token;

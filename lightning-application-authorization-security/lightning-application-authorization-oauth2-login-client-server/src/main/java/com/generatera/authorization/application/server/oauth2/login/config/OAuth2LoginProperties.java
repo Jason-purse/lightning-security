@@ -1,15 +1,16 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 
-@Data
-@ConfigurationProperties(prefix = "lightning.auth.app.server.oauth2.login.com.generatera.oauth2.resource.server.config")
-public class OAuth2LoginProperties {
+import static com.generatera.authorization.application.server.oauth2.login.config.OAuth2LoginProperties.OAUTH2_LOGIN_AUTH_SERVER_PREFIX;
 
+@Data
+@ConfigurationProperties(prefix = OAUTH2_LOGIN_AUTH_SERVER_PREFIX)
+public class OAuth2LoginProperties {
+    public static final String OAUTH2_LOGIN_AUTH_SERVER_PREFIX = "lightning.auth.app.server.oauth2.login.config";
 
     private Boolean isSeparation = false;
 

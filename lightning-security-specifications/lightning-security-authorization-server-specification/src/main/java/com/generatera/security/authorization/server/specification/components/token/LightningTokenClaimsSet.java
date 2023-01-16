@@ -9,7 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-
+/**
+ * @author FLJ
+ * @date 2023/1/16
+ * @time 14:24
+ * @Description 基础的 Token claims Set ..
+ */
 public final class LightningTokenClaimsSet implements LightningTokenClaimAccessor {
     private final Map<String, Object> claims;
 

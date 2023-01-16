@@ -1,9 +1,10 @@
 package com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store;
 
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties;
-import com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.store.OAuth2AuthorizationRepository;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.repository.OAuth2AuthorizationRepository;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.service.*;
+import com.generatera.authorization.server.common.configuration.authorization.store.LightningUserPrincipalConverter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -25,17 +26,18 @@ public class AuthorizationStoreConfiguration {
     public static class RedisOAuth2AuthorizationStoreConfig {
         @Bean
         public OAuth2AuthorizationService oAuth2AuthorizationService(StringRedisTemplate redisTemplate,
-                                                                                                    OAuth2CentralAuthorizationServerProperties properties) {
+                                                                     LightningUserPrincipalConverter userPrincipalConverter,
+                                                                     OAuth2CentralAuthorizationServerProperties properties) {
             return new DefaultOpaqueSupportOAuth2AuthorizationService(
                     new RedisOAuth2AuthorizationService(redisTemplate,
                             properties.getAuthorizationStore().getRedis().getKeyPrefix(),
-                            properties.getAuthorizationStore().getRedis().getExpiredTimeDuration())
+                            properties.getAuthorizationStore().getRedis().getExpiredTimeDuration(),
+                            userPrincipalConverter)
             );
         }
     }
 
-    @EnableJpaRepositories(basePackages = "com.generatera.central.oauth2.authorization.server.configuration.repository.authorization.store")
-    @EntityScan(basePackages = "com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization")
+    @EnableJpaRepositories
     public static class JpaOAuth2AuthorizationStoreConfig {
 
         @Bean

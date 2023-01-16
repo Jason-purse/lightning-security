@@ -1,6 +1,6 @@
 package com.generatera.security.authorization.server.specification;
 
-import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType;
 import org.springframework.util.Assert;
 
@@ -8,7 +8,14 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * @author FLJ
+ * @date 2023/1/16
+ * @time 15:51
+ * @Description Token 的基本配置 ..
+ *
+ * 对于 oauth2 授权服务器来说, 这个token 仅仅是作为 兜底策略 ...
+ */
 public final class TokenSettings extends AbstractSettings {
 
     private TokenSettings(Map<String, Object> settings) {
@@ -25,6 +32,10 @@ public final class TokenSettings extends AbstractSettings {
 
     public LightningTokenValueType getAccessTokenValueType() {
         return this.getSetting(ConfigurationSettingNames.Token.ACCESS_TOKEN_VALUE_TYPE);
+    }
+
+    public LightningTokenValueFormat getAccessTokenValueFormat() {
+        return this.getSetting(ConfigurationSettingNames.Token.ACCESS_TOKEN_VALUE_FORMAT);
     }
 
 
@@ -81,6 +92,11 @@ public final class TokenSettings extends AbstractSettings {
         public Builder accessTokenValueType(LightningTokenValueType tokenValueType) {
             Assert.notNull(tokenValueType, "tokenValueType cannot be null");
             return (Builder)this.setting(ConfigurationSettingNames.Token.ACCESS_TOKEN_VALUE_TYPE, tokenValueType);
+        }
+
+        public Builder accessTokenValueFormat(LightningTokenValueFormat tokenValueFormat) {
+            Assert.notNull(tokenValueFormat, "tokenValueFormat cannot be null");
+            return this.setting(ConfigurationSettingNames.Token.ACCESS_TOKEN_VALUE_FORMAT,tokenValueFormat);
         }
 
 

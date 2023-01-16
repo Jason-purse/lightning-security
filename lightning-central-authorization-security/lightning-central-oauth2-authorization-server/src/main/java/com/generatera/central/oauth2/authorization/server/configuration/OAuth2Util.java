@@ -2,7 +2,14 @@ package com.generatera.central.oauth2.authorization.server.configuration;
 
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-
+/**
+ * @author FLJ
+ * @date 2023/1/16
+ * @time 9:43
+ * @Description 主要是 解析授权授予类型(同样是 spring-oauth2 copy),由于原始类final的原因 ...
+ *
+ * 并且支持自定义 客户端认证方式 ..
+ */
 public interface OAuth2Util {
 
 	static AuthorizationGrantType resolveAuthorizationGrantType(String authorizationGrantType) {

@@ -2,7 +2,6 @@ package com.generatera.authorization.application.server.oauth2.login.config.auth
 
 import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.application.server.config.token.ApplicationLevelAuthorizationToken;
-import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2LoginTokenGenerator;
 import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
@@ -27,7 +26,16 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import static com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization.USER_INFO_ATTRIBUTE_NAME;
-
+/**
+ * @author FLJ
+ * @date 2023/1/16
+ * @time 14:03
+ * @Description  可以进行简单的提示信息 注入 ...
+ *
+ * 其次可以配置token生成器进行 token 生成(包括访问 token / 刷新 token)
+ *
+ * 另外,颁发的token会通过 LightningAuthenticationTokenService 进行保存,以便 opaque token 能够进行 token Introspect端点进行检测 ..
+ */
 public class LightningOAuth2LoginAuthenticationEntryPoint implements AuthenticationSuccessHandler, AuthenticationFailureHandler {
 
     private String loginSuccessMessage = "LOGIN_SUCCESS";
@@ -47,7 +55,7 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
     private LightningAuthenticationTokenService authenticationTokenService;
 
 
-    public void setTokenGenerator(LightningOAuth2LoginTokenGenerator tokenGenerator) {
+    public void setTokenGenerator(LightningTokenGenerator<LightningToken> tokenGenerator) {
         Assert.notNull(tokenGenerator, "tokenGenerator must not be null !!!");
         this.tokenGenerator = tokenGenerator;
     }
@@ -122,46 +130,62 @@ public class LightningOAuth2LoginAuthenticationEntryPoint implements Authenticat
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
 
+        // todo 上下文所需内容还需要 仔细审查
+
         LightningToken token = tokenGenerator.
                 generate(
-                        new LightningSecurityAccessTokenContext(
-                                LightningSecurityTokenContext.of(
-                                        authentication,
-                                        ProviderContextHolder.getProviderContext(),
-                                        tokenSettingsProvider.getTokenSettings(),
-                                        tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat(),
-                                        LightningTokenType.LightningTokenValueType.BEARER_TOKEN_TYPE,
-                                        LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE,
-                                        ((LightningUserPrincipal) authentication.getPrincipal())
-                                )
+                        new LightningAccessTokenContext(
+                                DefaultLightningTokenContext.builder()
+                                        .authentication(authentication)
+                                        .providerContext(ProviderContextHolder.getProviderContext())
+                                        .tokenSettings(tokenSettingsProvider.getTokenSettings())
+                                        .tokenValueType(tokenSettingsProvider.getTokenSettings().getAccessTokenValueType())
+                                        .tokenIssueFormat(tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat())
+                                        .tokenValueFormat(tokenSettingsProvider.getTokenSettings().getAccessTokenValueFormat())
+                                        .tokenType(LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE)
+                                        .build()
                         )
                 );
         LightningToken refreshToken = tokenGenerator.
                 generate(
-                        new LightningSecurityAccessTokenContext(
-                                LightningSecurityTokenContext.of(
-                                        authentication,
-                                        ProviderContextHolder.getProviderContext(),
-                                        tokenSettingsProvider.getTokenSettings(),
-                                        tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat(),
-                                        LightningTokenType.LightningTokenValueType.BEARER_TOKEN_TYPE,
-                                        LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE,
-                                        ((LightningUserPrincipal) authentication.getPrincipal())
+                        new LightningAccessTokenContext(
+                                DefaultLightningTokenContext.builder()
+                                        .authentication(authentication)
+                                        .providerContext(ProviderContextHolder.getProviderContext())
+                                        .tokenSettings(tokenSettingsProvider.getTokenSettings())
+                                        .tokenValueType(tokenSettingsProvider.getTokenSettings().getRefreshTokenValueType())
+                                        .tokenIssueFormat(tokenSettingsProvider.getTokenSettings().getRefreshTokenIssueFormat())
+                                         // todo
+                                        .tokenValueFormat(tokenSettingsProvider.getTokenSettings().getAccessTokenValueFormat())
+                                        .tokenType(LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE)
+                                        .build()
                                 )
-                        )
                 );
 
 
         // 凭证信息,也直接进行存储
         LightningUserPrincipal principal = ((LightningUserPrincipal) authentication.getPrincipal());
 
+        // lightningJwt 需要进行转换(因为jwksource 的性质决定它可能根据不同的token生成器进行 token生成)...
+        // todo 考虑token 是否可以永久有效 ..
+        LightningToken.ComplexToken complexToken = (LightningToken.ComplexToken) token;
+        LightningAccessTokenGenerator.LightningAuthenticationAccessToken accessToken
+                = new LightningAccessTokenGenerator.LightningAuthenticationAccessToken(
+                token, complexToken.getTokenValueType(),
+                tokenSettingsProvider
+                        .getTokenSettings()
+                        .getAccessTokenValueFormat()
+        );
+
+
         DefaultLightningAuthorization authorization
                 = new DefaultLightningAuthorization.Builder()
                 .id(UuidUtil.nextId())
                 .principalName(authentication.getName())
-                .accessToken(((LightningToken.LightningAccessToken) token))
+                .accessToken(accessToken)
                 .refreshToken(((LightningToken.LightningRefreshToken) refreshToken))
-                .attribute(USER_INFO_ATTRIBUTE_NAME,JsonUtil.getDefaultJsonUtil().asJSON(principal))
+                // 用户信息 ..
+                .attribute(USER_INFO_ATTRIBUTE_NAME, principal)
                 .build();
 
 

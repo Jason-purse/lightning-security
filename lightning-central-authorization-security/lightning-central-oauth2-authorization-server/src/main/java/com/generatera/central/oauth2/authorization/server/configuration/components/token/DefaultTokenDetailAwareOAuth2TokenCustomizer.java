@@ -46,7 +46,7 @@ public class DefaultTokenDetailAwareOAuth2TokenCustomizer implements LightningCe
         return claims -> {
             LightningTokenType.LightningTokenValueType tokenValueType = tokenSettings.getTokenValueType();
             claims.put(TOKEN_VALUE_TYPE_CLAIM_NAME,tokenValueType.value());
-            LightningTokenType.LightningTokenValueTypeFormat tokenValueFormat = tokenSettings.getTokenValueFormat();
+            LightningTokenType.LightningTokenValueFormat tokenValueFormat = tokenSettings.getTokenValueFormat();
             claims.put(TOKEN_VALUE_FORMAT_TYPE_CLAIM_NAME,tokenValueFormat.value());
         };
     }

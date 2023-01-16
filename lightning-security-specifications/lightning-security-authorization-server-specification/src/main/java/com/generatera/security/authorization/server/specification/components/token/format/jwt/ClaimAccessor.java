@@ -8,7 +8,12 @@ import java.net.URL;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * @author FLJ
+ * @date 2023/1/16
+ * @time 14:21
+ * @Description claim 访问器 ...
+ */
 public interface ClaimAccessor {
 
     Map<String, Object> getClaims();

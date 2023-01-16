@@ -11,6 +11,10 @@ public class JpaAuthenticationTokenService extends AbstractAuthenticationTokenSe
     @Autowired
     private  JpaAuthenticationTokenRepository repository;
 
+    public JpaAuthenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter){
+        super(userPrincipalConverter);
+    }
+
 
 
     @Override

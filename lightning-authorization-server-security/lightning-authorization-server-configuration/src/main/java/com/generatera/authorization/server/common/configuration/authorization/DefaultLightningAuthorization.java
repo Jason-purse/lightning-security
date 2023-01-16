@@ -132,28 +132,31 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
         }
 
         public Builder accessToken(LightningAccessToken accessToken) {
-            return this.token(accessToken);
+            return this.token(accessToken,LightningAccessToken.class);
         }
 
         public Builder refreshToken(LightningRefreshToken refreshToken) {
-            return this.token(refreshToken);
+            return this.token(refreshToken,LightningRefreshToken.class);
         }
 
         public <T extends LightningToken> Builder token(T token) {
-            return this.token(token, (metadata) -> {
+            return this.token(token,token.getClass());
+        }
+
+        public <T extends LightningToken> Builder token(T token,Class<? extends LightningToken> clazz) {
+            return this.token(token,clazz, (metadata) -> {
             });
         }
 
-        public <T extends LightningToken> Builder token(T token, Consumer<Map<String, Object>> metadataConsumer) {
+        public <T extends LightningToken> Builder token(T token,Class<? extends LightningToken> tokenClass, Consumer<Map<String, Object>> metadataConsumer) {
             Assert.notNull(token, "token cannot be null");
             Map<String, Object> metadata = DefaultLightningAuthorization.Token.defaultMetadata();
-            Token<?> existingToken = this.tokens.get(token.getClass());
+            Token<?> existingToken = this.tokens.get(tokenClass);
             if (existingToken != null) {
                 metadata.putAll(existingToken.getMetadata());
             }
 
             metadataConsumer.accept(metadata);
-            Class<? extends LightningToken> tokenClass = token.getClass();
             this.tokens.put(tokenClass, new Token<>(token, metadata));
             return this;
         }

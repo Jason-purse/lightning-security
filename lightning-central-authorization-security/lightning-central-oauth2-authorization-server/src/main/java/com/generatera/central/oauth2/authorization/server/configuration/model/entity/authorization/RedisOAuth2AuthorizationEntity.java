@@ -45,6 +45,7 @@ public class RedisOAuth2AuthorizationEntity implements Serializable {
      * 注册客户端id
      */
     private String registeredClientId;
+
     /**
      * 主体名称
      */
@@ -71,8 +72,12 @@ public class RedisOAuth2AuthorizationEntity implements Serializable {
     @JsonDeserialize(using = OAuth2AuthorizationTokenDeserializer.class)
     private OAuth2Authorization.Token<?> authorizationCodeToken;
 
+
     /**
      * 属性(可序列化)
+     *
+     * CodeVerifierAuthenticator,其中需要 获取一些 {@link org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest}的相关信息  ..
+     *
      */
     private Map<String, Object> attributes;
 }

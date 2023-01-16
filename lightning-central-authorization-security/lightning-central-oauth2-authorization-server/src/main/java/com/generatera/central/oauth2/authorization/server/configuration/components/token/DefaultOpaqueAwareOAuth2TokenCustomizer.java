@@ -24,7 +24,7 @@ public class DefaultOpaqueAwareOAuth2TokenCustomizer implements LightningCentral
     /**
      * 默认 jwt ..
      */
-    private LightningTokenType.LightningTokenValueTypeFormat valueTypeFormat = LightningTokenType.LightningTokenValueTypeFormat.JWT;
+    private LightningTokenType.LightningTokenValueFormat valueTypeFormat = LightningTokenType.LightningTokenValueFormat.JWT;
 
     @Override
     public void customize(OAuth2TokenContext context) {
@@ -43,7 +43,7 @@ public class DefaultOpaqueAwareOAuth2TokenCustomizer implements LightningCentral
         // pass
     }
 
-    public void setValueTypeFormat(LightningTokenType.LightningTokenValueTypeFormat valueTypeFormat) {
+    public void setValueTypeFormat(LightningTokenType.LightningTokenValueFormat valueTypeFormat) {
         Assert.notNull(valueTypeFormat, "value type format must not be null !!!");
         this.valueTypeFormat = valueTypeFormat;
     }
@@ -55,7 +55,7 @@ public class DefaultOpaqueAwareOAuth2TokenCustomizer implements LightningCentral
         {
             Object tokenValueTypeFormat = claims.get(DefaultTokenDetailAwareOAuth2TokenCustomizer.TOKEN_VALUE_FORMAT_TYPE_CLAIM_NAME);
             Assert.notNull(tokenValueTypeFormat,"tokenValueTypeFormat must not be null !!!");
-            if (tokenValueTypeFormat.toString().equalsIgnoreCase(LightningTokenType.LightningTokenValueTypeFormat.OPAQUE.value())) {
+            if (tokenValueTypeFormat.toString().equalsIgnoreCase(LightningTokenType.LightningTokenValueFormat.OPAQUE.value())) {
 
                 Object scope = claims.get("scope");
                 if (scope != null) {

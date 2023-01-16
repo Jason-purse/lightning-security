@@ -7,11 +7,15 @@ import com.generatera.security.authorization.server.specification.components.tok
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.keygen.Base64StringKeyGenerator;
 import org.springframework.security.crypto.keygen.StringKeyGenerator;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author FLJ
@@ -24,21 +28,27 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
     private final String authoritiesName;
     private final boolean isOpaque;
 
+    private LightningTokenCustomizer<LightningTokenClaimsContext> accessTokenCustomizer;
+
+
     public DefaultLightningAccessTokenGenerator() {
-        this.isOpaque = false;
-        this.authoritiesName  = "scope";
+        this(false);
     }
 
-    public DefaultLightningAccessTokenGenerator(boolean isOpaque,String authoritiesName) {
+    public DefaultLightningAccessTokenGenerator(boolean isOpaque) {
+        this(isOpaque, "scope");
+    }
+
+    public DefaultLightningAccessTokenGenerator(boolean isOpaque, String authoritiesName) {
         this.isOpaque = isOpaque;
         this.authoritiesName = authoritiesName;
     }
-    public DefaultLightningAccessTokenGenerator(boolean isOpaque) {
-        this(isOpaque,"scope");
-    }
+
 
     @Override
-    public LightningAuthenticationAccessToken generate(LightningSecurityTokenContext context) {
+    public LightningAuthenticationAccessToken generate(LightningTokenContext context) {
+
+        // 访问 token 且 reference 形式才生成 token
         if (LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE.equals(context.getTokenType())
                 && TokenIssueFormat.REFERENCE.equals(context.getTokenSettings().getAccessTokenIssueFormat())) {
             String issuer = null;
@@ -58,31 +68,31 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
                     .audience(context.getTokenSettings().getAudiences())
                     .issuedAt(issuedAt).expiresAt(expiresAt).notBefore(issuedAt).id(UUID.randomUUID().toString());
 
-            if(!isOpaque) {
+            if (!isOpaque) {
                 if (!CollectionUtils.isEmpty(context.getPrincipal().getAuthorities())) {
                     claimsBuilder.claim(authoritiesName, context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new));
                 }
             }
 
             // 是否为 不透明token ..
-            claimsBuilder.claim("isOpaque",isOpaque);
+            claimsBuilder.claim("isOpaque", isOpaque);
 
 
-            //if (this.accessTokenCustomizer != null) {
-            //    LightningTokenClaimsContext.Builder accessTokenContextBuilder =
-            //            LightningTokenClaimsSet.with(claimsBuilder).registeredClient(context.getRegisteredClient())).principal(context.getPrincipal())).providerContext(context.getProviderContext())).authorizedScopes(context.getAuthorizedScopes())).tokenType(context.getTokenType())).authorizationGrantType(context.getAuthorizationGrantType());
-            //    if (context.getAuthorization() != null) {
-            //        accessTokenContextBuilder.authorization(context.getAuthorization());
-            //    }
-            //
-            //
-            //    LightningTokenClaimsContext accessTokenContext = accessTokenContextBuilder.build();
-            //    this.accessTokenCustomizer.customize(accessTokenContext);
-            //}
+            // 访问 token 自定义器 ...
+            if (this.accessTokenCustomizer != null) {
+                LightningTokenClaimsContext.Builder accessTokenContextBuilder =
+                        LightningTokenClaimsContext.with(claimsBuilder)
+                                // 直接尝试contexts 复制即可 ..
+                                .context(contextMap -> contextMap.putAll(context.getContexts()));
+
+                LightningTokenClaimsContext accessTokenContext = accessTokenContextBuilder.build();
+                this.accessTokenCustomizer.customize(accessTokenContext);
+            }
 
             LightningTokenClaimsSet accessTokenClaimsSet = claimsBuilder.build();
             return new LightningAccessTokenClaims(
-                    LightningTokenType.LightningTokenValueType.BEARER_TOKEN_TYPE,
+                    context.getTokenValueType(),
+                    context.getTokenSettings().getAccessTokenValueFormat(),
                     this.accessTokenGenerator.generateKey(), accessTokenClaimsSet.getIssuedAt(),
                     accessTokenClaimsSet.getExpiresAt(),
                     context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toList(),
@@ -94,16 +104,23 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
     }
 
 
+    public void setAccessTokenCustomizer(LightningTokenCustomizer<LightningTokenClaimsContext> accessTokenCustomizer) {
+        Assert.notNull(accessTokenCustomizer, "accessTokenCustomizer must not be null !!!");
+        this.accessTokenCustomizer = accessTokenCustomizer;
+    }
+
     private static final class LightningAccessTokenClaims extends LightningAuthenticationAccessToken implements LightningAccessToken, ClaimAccessor {
         private final Map<String, Object> claims;
 
         private final List<String> scopes;
 
-        private LightningAccessTokenClaims(LightningTokenType.LightningTokenValueType tokenValueType, String tokenValue,
+        private LightningAccessTokenClaims(LightningTokenType.LightningTokenValueType tokenValueType,
+                                           LightningTokenType.LightningTokenValueFormat tokenValueFormat,
+                                           String tokenValue,
                                            Instant issuedAt, Instant expiresAt,
                                            List<String> scopes,
                                            Map<String, Object> claims) {
-            super(new DefaultPlainToken(tokenValue, issuedAt, expiresAt), tokenValueType);
+            super(new DefaultPlainToken(tokenValue, issuedAt, expiresAt), tokenValueType, tokenValueFormat);
             this.claims = claims;
             this.scopes = scopes;
         }

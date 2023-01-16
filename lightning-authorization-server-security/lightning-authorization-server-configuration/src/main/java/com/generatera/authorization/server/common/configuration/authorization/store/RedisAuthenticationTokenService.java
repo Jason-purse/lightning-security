@@ -25,9 +25,10 @@ public class RedisAuthenticationTokenService extends AbstractAuthenticationToken
 
     public RedisAuthenticationTokenService(
             String keyPrefix
-            , Long expiredTimeDuration) {
+            , Long expiredTimeDuration,
+            LightningUserPrincipalConverter userPrincipalConverter) {
+        super(userPrincipalConverter);
         Assert.isTrue(expiredTimeDuration != null && expiredTimeDuration > 0, "expiredTimeDuration must not be null and must gte 0 !!!");
-
         Assert.hasText(keyPrefix, "keyPrefix must not be null !!!");
         this.keyPrefix = keyPrefix;
         this.expiredTimeDuration = expiredTimeDuration;

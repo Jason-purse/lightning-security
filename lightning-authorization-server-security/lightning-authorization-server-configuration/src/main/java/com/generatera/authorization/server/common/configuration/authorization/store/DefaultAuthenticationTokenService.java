@@ -1,9 +1,11 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,8 +15,27 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2023/1/4
  * @time 15:11
  * @Description 基于内存的 AuthenticationTokenService
+ *
+ * 默认不需要 {@link LightningUserPrincipalConverter}, 但是你也可以覆盖 ...
  */
 public class DefaultAuthenticationTokenService extends AbstractAuthenticationTokenService {
+
+    public DefaultAuthenticationTokenService() {
+        super(
+                // 默认不做任何事情 ..
+new LightningUserPrincipalConverter() {
+                    @NotNull
+                    @Override
+                    public LightningUserPrincipal convert(@NotNull Object value) {
+                        return ((LightningUserPrincipal) value);
+                    }
+
+                    @Override
+                    public Object serialize(LightningUserPrincipal userPrincipal) {
+                        return userPrincipal;
+                    }
+                });
+    }
 
     private final Map<String, LightningAuthenticationTokenEntity> cache = new ConcurrentHashMap<>();
 

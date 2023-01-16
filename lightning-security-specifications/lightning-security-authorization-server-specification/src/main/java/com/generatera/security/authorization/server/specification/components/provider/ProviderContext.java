@@ -4,7 +4,12 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import java.util.function.Supplier;
-
+/**
+ * @author FLJ
+ * @date 2023/1/16
+ * @time 14:26
+ * @Description 提供者上下文 ...
+ */
 public final class ProviderContext {
     private final ProviderSettings providerSettings;
     private final Supplier<String> issuerSupplier;
