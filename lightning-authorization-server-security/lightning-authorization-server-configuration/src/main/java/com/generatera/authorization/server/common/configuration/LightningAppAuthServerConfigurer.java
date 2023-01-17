@@ -1,4 +1,4 @@
-package com.generatera.authorization.application.server.config;
+package com.generatera.authorization.server.common.configuration;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 

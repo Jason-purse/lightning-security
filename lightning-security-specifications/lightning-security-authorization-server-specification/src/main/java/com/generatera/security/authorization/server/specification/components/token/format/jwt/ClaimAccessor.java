@@ -1,6 +1,7 @@
 package com.generatera.security.authorization.server.specification.components.token.format.jwt;
 
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.converter.ClaimConversionService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.util.Assert;
 
@@ -16,6 +17,7 @@ import java.util.Map;
  */
 public interface ClaimAccessor {
 
+    @NotNull
     Map<String, Object> getClaims();
 
     @SuppressWarnings("unchecked")
@@ -26,12 +28,6 @@ public interface ClaimAccessor {
     default boolean hasClaim(String claim) {
         Assert.notNull(claim, "claim cannot be null");
         return this.getClaims().containsKey(claim);
-    }
-
-    /** @deprecated */
-    @Deprecated
-    default Boolean containsClaim(String claim) {
-        return this.hasClaim(claim);
     }
 
     default String getClaimAsString(String claim) {

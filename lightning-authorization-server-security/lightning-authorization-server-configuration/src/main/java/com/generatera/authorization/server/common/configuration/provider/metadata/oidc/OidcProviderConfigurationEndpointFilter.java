@@ -1,6 +1,6 @@
 package com.generatera.authorization.server.common.configuration.provider.metadata.oidc;
 
-import com.generatera.security.authorization.server.specification.SignatureAlgorithm;
+import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import org.jetbrains.annotations.NotNull;

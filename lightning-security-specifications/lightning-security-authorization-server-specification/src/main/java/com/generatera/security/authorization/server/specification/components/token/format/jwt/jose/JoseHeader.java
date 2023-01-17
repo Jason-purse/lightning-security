@@ -1,6 +1,6 @@
 package com.generatera.security.authorization.server.specification.components.token.format.jwt.jose;
 
-import com.generatera.security.authorization.server.specification.JwaAlgorithm;
+import com.generatera.security.authorization.server.specification.components.token.JwaAlgorithm;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.converter.ClaimConversionService;
 import org.springframework.util.Assert;
 

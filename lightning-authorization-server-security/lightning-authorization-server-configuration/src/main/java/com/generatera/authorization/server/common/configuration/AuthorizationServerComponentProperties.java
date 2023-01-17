@@ -6,6 +6,9 @@ import com.generatera.security.authorization.server.specification.components.tok
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Collections;
+import java.util.List;
+
 import static com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.AUTH_SERVER_COMPONENT_PREFIX;
 
 /**
@@ -56,6 +59,18 @@ public class AuthorizationServerComponentProperties {
     private final AuthorizationStoreConfig authorizationStoreConfig = new AuthorizationStoreConfig();
 
 
+    private final Permission permission = new Permission();
+
+
+
+    @Data
+    public static class Permission {
+
+        /**
+         * url 白名单 - 放行,不需要token 校验
+         */
+        private List<String> urlWhiteList = Collections.emptyList();
+    }
 
     @Data
     public static class TokenSettings {

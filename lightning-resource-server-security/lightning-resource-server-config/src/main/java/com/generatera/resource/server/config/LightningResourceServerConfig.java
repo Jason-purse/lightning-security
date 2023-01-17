@@ -1,6 +1,6 @@
 package com.generatera.resource.server.config;
 
-import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -17,7 +17,7 @@ import java.util.List;
 @EnableConfigurationProperties(ResourceServerProperties.class)
 public class LightningResourceServerConfig {
 
-    @ConditionalOnBean(type = "com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer")
+    @ConditionalOnBean(type = "com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer")
     public static class HasAuthorizationServerConfiguration {
         @Bean
         public LightningAppAuthServerConfigurer resourceConfigurerBootstrap(
@@ -34,7 +34,7 @@ public class LightningResourceServerConfig {
         }
     }
 
-   @ConditionalOnMissingBean(type = "com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer")
+   @ConditionalOnMissingBean(type = "com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer")
    public static class NoAuthorizationServerConfiguration {
        @Bean
        public SecurityFilterChain resourceServerBootstrap(HttpSecurity security,

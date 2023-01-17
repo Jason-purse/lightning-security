@@ -1,7 +1,7 @@
 package com.generatera;
 
 import com.generatera.authorization.application.server.config.DefaultLightningUserDetails;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningUserPrincipalConverter;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import lombok.AllArgsConstructor;
 import lombok.Data;

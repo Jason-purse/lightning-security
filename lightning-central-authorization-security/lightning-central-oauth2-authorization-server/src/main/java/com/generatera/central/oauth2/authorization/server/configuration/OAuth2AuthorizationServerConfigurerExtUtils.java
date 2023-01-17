@@ -45,7 +45,11 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
             return oAuth2AuthorizationServerConfigurer;
         }
 
+    /**
+     * 获取 token 生成器 ..
+     */
         static <B extends HttpSecurityBuilder<B>> OAuth2TokenGenerator<? extends OAuth2Token> getTokenGenerator(B builder) {
+            // 是否存在共享对象 ...
             OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = (OAuth2TokenGenerator<? extends OAuth2Token>)builder.getSharedObject(OAuth2TokenGenerator.class);
             if (tokenGenerator == null) {
                 tokenGenerator = (OAuth2TokenGenerator<? extends OAuth2Token>)getOptionalBean(builder, OAuth2TokenGenerator.class);
@@ -71,7 +75,8 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
         }
 
         private static <B extends HttpSecurityBuilder<B>> JwtGenerator getJwtGenerator(B builder) {
-            JwtGenerator jwtGenerator = (JwtGenerator)builder.getSharedObject(JwtGenerator.class);
+            // 共享对象中,是否存在 jwt 生成器 ...
+            JwtGenerator jwtGenerator = builder.getSharedObject(JwtGenerator.class);
             if (jwtGenerator == null) {
                 JwtEncoder jwtEncoder = getJwtEncoder(builder);
                 if (jwtEncoder != null) {

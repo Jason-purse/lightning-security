@@ -1,6 +1,7 @@
 package com.generatera.oauth2.resource.server.config.token;
 
 import com.generatera.oauth2.resource.server.config.LightningJwtOAuth2UserPrincipal;
+import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -18,7 +19,7 @@ import java.util.Collection;
  * @Description Lightning Jwt authentication Converter
  *
  * 由于默认的 JWT 认证转换器  将 jwt 转换为了 LightningOAuth2UserPrincipal,可能拿取用户的一些信息不是很方便 ...
- * 默认不强制要求重写转换器或者 {@link com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper}
+ * 默认不强制要求重写转换器或者 {@link JwtClaimsToUserPrincipalMapper}
  * 但是 这仅仅是测试场景才如此 ...
  *
  * 另外token的生成是通过
@@ -29,12 +30,12 @@ import java.util.Collection;
  * 那么如果是Jwt,则需要遵守如下规则:
  *
  * 那么你有两种方式可以选择,第一种,通过 重写当前转换器 ..
- * 第二种,给出 {@link com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper}
+ * 第二种,给出 {@link JwtClaimsToUserPrincipalMapper}
  * 进行 jwt 到 UserPrincipal的映射 ...
  *
  *
  * 查看默认实现 {@link PlainJwtAuthenticationConverter} 了解使用详情 ...
- * @see com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper
+ * @see JwtClaimsToUserPrincipalMapper
  * @see com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2UserService
  * @see com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOidcUserService
  */

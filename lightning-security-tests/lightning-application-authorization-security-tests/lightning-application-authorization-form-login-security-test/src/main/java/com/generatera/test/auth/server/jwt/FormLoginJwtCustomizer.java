@@ -1,7 +1,7 @@
 package com.generatera.test.auth.server.jwt;
 
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtClaimsSet;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.JwtEncodingContext;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtEncodingContext;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.LightningJwtCustomizer;
 import org.springframework.stereotype.Component;
 

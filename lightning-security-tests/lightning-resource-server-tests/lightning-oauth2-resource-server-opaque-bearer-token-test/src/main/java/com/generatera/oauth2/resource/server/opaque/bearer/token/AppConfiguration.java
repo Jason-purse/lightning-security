@@ -1,6 +1,6 @@
 package com.generatera.oauth2.resource.server.opaque.bearer.token;
 
-import com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper;
+import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

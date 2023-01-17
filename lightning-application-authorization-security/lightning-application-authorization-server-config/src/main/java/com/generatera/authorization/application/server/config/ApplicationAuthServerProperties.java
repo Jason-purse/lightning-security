@@ -4,9 +4,6 @@ import com.generatera.authorization.server.common.configuration.provider.metadat
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.Collections;
-import java.util.List;
-
 import static com.generatera.authorization.application.server.config.ApplicationAuthServerProperties.APPLICATION_AUTH_SERVER_PREFIX;
 
 /**
@@ -17,8 +14,6 @@ import static com.generatera.authorization.application.server.config.Application
 public class ApplicationAuthServerProperties {
 
     public static final String APPLICATION_AUTH_SERVER_PREFIX = "lightning.auth.app.server.config";
-
-    private final Permission permission = new Permission();
 
     private ServerMetaDataEndpointConfig serverMetaDataEndpointConfig = new ServerMetaDataEndpointConfig();
 
@@ -37,15 +32,4 @@ public class ApplicationAuthServerProperties {
 
 
     }
-
-
-    @Data
-    public static class Permission {
-
-        /**
-         * url 白名单 - 放行,不需要token 校验
-         */
-        private List<String> urlWhiteList = Collections.emptyList();
-    }
-
 }

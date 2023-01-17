@@ -9,6 +9,8 @@ import java.util.Collections;
  * @date 2023/1/6
  * @time 15:33
  * @Description Jwt Token(Authentication)
+ *
+ * jwt token中的 claims 已经包含了 {@code authorities}
  */
 public class JwtTokenAuthenticationToken extends AbstractAuthenticationToken {
 

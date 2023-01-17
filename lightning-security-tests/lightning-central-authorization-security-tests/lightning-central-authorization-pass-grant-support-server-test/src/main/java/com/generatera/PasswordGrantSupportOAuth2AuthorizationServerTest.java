@@ -8,7 +8,7 @@ import com.generatera.central.oauth2.authorization.server.configuration.componen
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.AuditDeletedDate;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.UserAuthority;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.UserPrincipal;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningUserPrincipalConverter;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.model.entity.LightningOAuth2UserDetails;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.jianyue.lightning.util.JsonUtil;

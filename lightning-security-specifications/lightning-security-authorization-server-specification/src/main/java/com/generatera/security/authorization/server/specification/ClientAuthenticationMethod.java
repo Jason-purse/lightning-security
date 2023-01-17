@@ -8,6 +8,14 @@ import java.io.Serializable;
  * @date 2023/1/12
  * @time 16:02
  * @Description 客户端认证方法 ..
+ *
+ * 这个不应该存放在这里 ...
+ * 对于普通的授权认证系统来说,不存在客户端认证形式 ...
+ * 目前仅仅只有oauth2 才使用这个 ...
+ *
+ * 所以如果有了oauth2 依赖也不会使用这个 ..
+ *
+ * @see com.generatera.authorization.server.common.configuration.provider.metadata.AuthorizationServerMetadataEndpointFilter
  */
 public final class ClientAuthenticationMethod implements Serializable {
 

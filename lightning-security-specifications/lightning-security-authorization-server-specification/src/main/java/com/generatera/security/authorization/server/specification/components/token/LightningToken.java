@@ -1,5 +1,6 @@
 package com.generatera.security.authorization.server.specification.components.token;
 
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -28,11 +29,15 @@ public interface LightningToken {
         return null;
     }
 
+
+
     interface LightningAccessToken extends LightningToken {
+
         LightningTokenValueType getTokenValueType();
 
-        LightningTokenType.LightningTokenValueFormat getTokenValueFormat();
+        LightningTokenValueFormat getTokenValueFormat();
     }
+
 
     interface LightningRefreshToken extends LightningToken  {
 
@@ -84,6 +89,14 @@ public interface LightningToken {
         }
     }
 
+    /**
+     * 稍微复杂一点的,区分 {@code PlainToken},为了获取 {@code LightningTokenValueType} ..
+     *
+     * 目前{@code LightningAccessToken} 或者 {@code LightningRefreshToken} 都继承于这个Token ..
+     *
+     * 在自签名的情况下,访问Token 最终是 {@code LightningJwt} 但不是一个 LightningAccessToken,
+     * 但是在某些情况下,我们可能需要 {@code LightningTokenValueType} - 那么我们需要强转到这个类型上 ..
+     */
     class ComplexToken extends DefaultAbstractToken {
 
         private final LightningTokenValueType tokenValueType;

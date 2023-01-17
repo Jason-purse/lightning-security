@@ -1,4 +1,4 @@
-package com.generatera.authorization.application.server.config;
+package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
 import com.nimbusds.jose.jwk.source.JWKSource;

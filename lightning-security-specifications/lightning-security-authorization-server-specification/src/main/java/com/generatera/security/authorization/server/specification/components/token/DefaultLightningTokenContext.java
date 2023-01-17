@@ -9,8 +9,11 @@ import java.util.Map;
  * @date 2023/1/16
  * @time 14:47
  * @Description 默认的TokenContext
+ *
+ * 其他的token 上下文以它 进行扩展 ...
  */
 public class DefaultLightningTokenContext implements LightningTokenContext {
+
     private final Map<Object, Object> context;
 
     protected DefaultLightningTokenContext(Map<Object, Object> context) {

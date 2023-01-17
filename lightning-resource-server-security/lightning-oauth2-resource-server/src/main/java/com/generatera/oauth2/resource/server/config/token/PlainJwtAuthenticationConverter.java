@@ -1,6 +1,6 @@
 package com.generatera.oauth2.resource.server.config.token;
 
-import com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper;
+import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwt;

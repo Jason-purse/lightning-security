@@ -3,7 +3,7 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.repository.OAuth2AuthorizationRepository;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.service.*;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningUserPrincipalConverter;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

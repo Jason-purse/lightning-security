@@ -1,9 +1,14 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
+import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization;
+import com.generatera.authorization.server.common.configuration.model.entity.DefaultAuthenticationTokenEntity;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
+import com.jianyue.lightning.boot.starter.util.BeanUtils;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,18 +20,42 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2023/1/4
  * @time 15:11
  * @Description 基于内存的 AuthenticationTokenService
- *
+ * <p>
  * 默认不需要 {@link LightningUserPrincipalConverter}, 但是你也可以覆盖 ...
  */
 public class DefaultAuthenticationTokenService extends AbstractAuthenticationTokenService {
 
     public DefaultAuthenticationTokenService() {
-        super(
-                // 默认不做任何事情 ..
-new LightningUserPrincipalConverter() {
+        super(defaultConverter());
+
+        setEntityConverter(new OptimizedAuthenticationTokenEntityConverter(defaultConverter()) {
+            @Override
+            public LightningAuthenticationTokenEntity convert(DefaultLightningAuthorization source) {
+                LightningAuthenticationTokenEntity tokenEntity = super.convert(source);
+                DefaultAuthenticationTokenEntity entity
+                        = BeanUtils.transformFrom(tokenEntity, DefaultAuthenticationTokenEntity.class);
+
+                assert entity != null;
+                // 直接放入
+                entity.setUserPrincipal(source.getAttribute(LightningAuthorization.USER_INFO_ATTRIBUTE_NAME));
+
+                return entity;
+            }
+        });
+    }
+
+    private final Map<String, LightningAuthenticationTokenEntity> cache = new ConcurrentHashMap<>();
+
+    private final Map<String, Map<String, LightningAuthenticationTokenEntity>> fastTokenCache = new ConcurrentHashMap<>();
+
+
+    public static LightningUserPrincipalConverter defaultConverter() {
+        return // 默认不做任何事情 ..
+                new LightningUserPrincipalConverter() {
                     @NotNull
                     @Override
                     public LightningUserPrincipal convert(@NotNull Object value) {
+                        //
                         return ((LightningUserPrincipal) value);
                     }
 
@@ -34,13 +63,8 @@ new LightningUserPrincipalConverter() {
                     public Object serialize(LightningUserPrincipal userPrincipal) {
                         return userPrincipal;
                     }
-                });
+                };
     }
-
-    private final Map<String, LightningAuthenticationTokenEntity> cache = new ConcurrentHashMap<>();
-
-    private final Map<String, Map<String, LightningAuthenticationTokenEntity>> fastTokenCache = new ConcurrentHashMap<>();
-
 
     @Override
     protected void doSave(LightningAuthenticationTokenEntity entity) {

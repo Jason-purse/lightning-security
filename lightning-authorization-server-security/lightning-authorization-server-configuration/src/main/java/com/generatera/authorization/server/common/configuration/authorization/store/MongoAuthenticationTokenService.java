@@ -1,6 +1,7 @@
 package com.generatera.authorization.server.common.configuration.authorization.store;
 
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;

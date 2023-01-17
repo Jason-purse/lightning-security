@@ -2,6 +2,7 @@ package com.generatera.authorization.server.common.configuration.authorization.s
 
 import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.beans.factory.InitializingBean;
@@ -23,10 +24,10 @@ import org.springframework.util.Assert;
 public abstract class AbstractAuthenticationTokenService implements LightningAuthenticationTokenService, InitializingBean {
 
 
-    private Converter<DefaultLightningAuthorization, LightningAuthenticationTokenEntity> entityConverter
-            ;
+    private Converter<DefaultLightningAuthorization, LightningAuthenticationTokenEntity> entityConverter;
 
     private Converter<LightningAuthenticationTokenEntity, DefaultLightningAuthorization> tokenConverter;
+
 
     public AbstractAuthenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter) {
         Assert.notNull(userPrincipalConverter, "userPrincipalConverter must not be null !!!");

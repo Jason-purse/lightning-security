@@ -1,11 +1,10 @@
 package com.generatera.central.oauth2.authorization.server.configuration;
 
 
-import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
-import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
-import com.generatera.authorization.application.server.form.login.config.ApplicationFormLoginConfiguration;
 import com.generatera.authorization.application.server.form.login.config.FormLoginProperties;
+import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
+import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.DefaultOpaqueAwareOAuth2TokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.DefaultTokenDetailAwareOAuth2TokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.DelegateCentralOauth2TokenCustomizer;
@@ -43,11 +42,9 @@ import java.util.List;
  *
  * 也就是作为中央 oauth2 授权服务器 提供额外的配置
  * 首先就是它包含了已经注册的客户端列表信息(需要一个仓库,但是普通的授权服务器不可能存在此东西) ...
- * 4. 也就是自己的 token 自定义器(暂时,先分离配置,后续通过 lightning-token-generator 兼容到  oauth2 token -generator)
+ * 4. 也就是自己的 token 自定义器(普通的token生成 和 oauth2 token生成存在差异性) ...
  * 5. 同样也需要授权协商仓库(保留授权协商信息)
  *
- *
- * // TODO: 2023/1/16  通过 lightning-security-authorization-server-specification 的规定信息进行 oauth2 兼容 ..
  *
  *
  * @see org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
@@ -59,12 +56,15 @@ import java.util.List;
 @Slf4j
 @Configuration
 @AutoConfiguration
-@AutoConfigureBefore({ApplicationAuthServerConfig.class, ApplicationFormLoginConfiguration.class})
+@AutoConfigureBefore({AuthorizationServerCommonComponentsConfiguration.class})
 @EnableConfigurationProperties({OAuth2CentralAuthorizationServerProperties.class, FormLoginProperties.class})
 @Import(OAuth2CentralAuthorizationServerCCImportSelector.class)
 public class OAuth2CentralAuthorizationServerConfiguration {
 
-
+    /**
+     * 需要进行补充 ...
+     * @param provider provider ..
+     */
     @Bean
     public ProviderSettings providerSettings(ProviderSettingsProvider provider) {
         com.generatera.security.authorization.server.specification.components.provider.ProviderSettings
@@ -76,6 +76,8 @@ public class OAuth2CentralAuthorizationServerConfiguration {
 
 
     // -------------------------- token customizer -----------------------------------------------------------------
+    // ------------------------ access token 定制器 --------------------------
+    // 重写,不需要 authorization-server提供的 token 定制器的默认配置 ...
 
     @Bean
     @ConditionalOnBean(LightningCentralOAuth2AccessTokenCustomizer.class)
@@ -96,23 +98,7 @@ public class OAuth2CentralAuthorizationServerConfiguration {
             AuthorizationServerComponentProperties properties
     ) {
         DefaultOpaqueAwareOAuth2TokenCustomizer defaultOpaqueAwareOAuth2TokenCustomizer = new DefaultOpaqueAwareOAuth2TokenCustomizer();
-        defaultOpaqueAwareOAuth2TokenCustomizer.setValueTypeFormat(properties.getTokenSettings().getTokenValueFormat());
 
-        return new DelegateCentralOauth2TokenCustomizer<>(
-                // 顺序很重要
-                new DefaultTokenDetailAwareOAuth2TokenCustomizer(properties.getTokenSettings())::customize,
-                defaultOpaqueAwareOAuth2TokenCustomizer::customize
-        );
-    }
-
-
-    @Bean
-    @ConditionalOnMissingBean(LightningCentralOAuth2JwtTokenCustomizer.class)
-    public LightningCentralOAuth2TokenCustomizer<JwtEncodingContext> centralOAuth2JwtTokenCustomizer(
-            AuthorizationServerComponentProperties properties
-    ) {
-        DefaultOpaqueAwareOAuth2TokenCustomizer defaultOpaqueAwareOAuth2TokenCustomizer = new DefaultOpaqueAwareOAuth2TokenCustomizer();
-        defaultOpaqueAwareOAuth2TokenCustomizer.setValueTypeFormat(properties.getTokenSettings().getTokenValueFormat());
         return new DelegateCentralOauth2TokenCustomizer<>(
                 // 顺序很重要
                 new DefaultTokenDetailAwareOAuth2TokenCustomizer(properties.getTokenSettings())::customize,
@@ -133,6 +119,22 @@ public class OAuth2CentralAuthorizationServerConfiguration {
     }
 
 
+
+
+    @Bean
+    @ConditionalOnMissingBean(LightningCentralOAuth2JwtTokenCustomizer.class)
+    public LightningCentralOAuth2TokenCustomizer<JwtEncodingContext> centralOAuth2JwtTokenCustomizer(
+            AuthorizationServerComponentProperties properties
+    ) {
+        DefaultOpaqueAwareOAuth2TokenCustomizer defaultOpaqueAwareOAuth2TokenCustomizer = new DefaultOpaqueAwareOAuth2TokenCustomizer();
+        return new DelegateCentralOauth2TokenCustomizer<>(
+                // 顺序很重要
+                new DefaultTokenDetailAwareOAuth2TokenCustomizer(properties.getTokenSettings())::customize,
+                defaultOpaqueAwareOAuth2TokenCustomizer::customize
+        );
+    }
+
+
     /**
      * 支持 oauth2 authorization server configurer ..
      * 并且支持 oauth2 授权服务器的额外配置且扩展,通过{@link LightningOAuth2CentralAuthorizationServerExtConfigurer} 进行配置,
@@ -145,15 +147,14 @@ public class OAuth2CentralAuthorizationServerConfiguration {
     @Bean
     @SuppressWarnings("unchecked")
     public LightningAppAuthServerConfigurer configurer(
-            @Autowired(required = false)
-                    List<LightningOAuth2CentralAuthorizationServerExtConfigurer> extConfigurers
+        @Autowired(required = false)
+        List<LightningOAuth2CentralAuthorizationServerExtConfigurer> extConfigurers
     ) {
         return new LightningAppAuthServerConfigurer() {
             @Override
             public void configure(HttpSecurity securityBuilder) throws Exception {
 
                 OAuth2AuthorizationServerConfigurer<HttpSecurity> configurer = securityBuilder.getConfigurer(OAuth2AuthorizationServerConfigurer.class);
-
                 // 启动这个配置 ..
                 if (configurer == null) {
                     configurer
@@ -170,5 +171,6 @@ public class OAuth2CentralAuthorizationServerConfiguration {
             }
         };
     }
+
 
 }

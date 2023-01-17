@@ -11,8 +11,8 @@ import java.util.Map;
  *
  * oauth2 ProviderSettings copy ...
  */
-public final class ProviderSettings extends AbstractSettings {
-    private ProviderSettings(Map<String, Object> settings) {
+public  class ProviderSettings extends AbstractSettings {
+    protected ProviderSettings(Map<String, Object> settings) {
         super(settings);
     }
 
@@ -20,13 +20,6 @@ public final class ProviderSettings extends AbstractSettings {
         return (String)this.getSetting(ConfigurationSettingNames.Provider.ISSUER);
     }
 
-    public String getAuthorizationEndpoint() {
-        return (String)this.getSetting(ConfigurationSettingNames.Provider.AUTHORIZATION_ENDPOINT);
-    }
-
-    public String getTokenEndpoint() {
-        return (String)this.getSetting(ConfigurationSettingNames.Provider.TOKEN_ENDPOINT);
-    }
 
     public String getJwkSetEndpoint() {
         return (String)this.getSetting(ConfigurationSettingNames.Provider.JWK_SET_ENDPOINT);
@@ -40,13 +33,6 @@ public final class ProviderSettings extends AbstractSettings {
         return (String)this.getSetting(ConfigurationSettingNames.Provider.TOKEN_INTROSPECTION_ENDPOINT);
     }
 
-    public String getOidcClientRegistrationEndpoint() {
-        return (String)this.getSetting(ConfigurationSettingNames.Provider.OIDC_CLIENT_REGISTRATION_ENDPOINT);
-    }
-
-    public String getOidcUserInfoEndpoint() {
-        return (String)this.getSetting(ConfigurationSettingNames.Provider.OIDC_USER_INFO_ENDPOINT);
-    }
 
     public static Builder builder() {
         return (new Builder()).authorizationEndpoint("/oauth2/authorize").tokenEndpoint("/oauth2/token").jwkSetEndpoint("/oauth2/jwks").tokenRevocationEndpoint("/oauth2/revoke").tokenIntrospectionEndpoint("/oauth2/introspect").oidcClientRegistrationEndpoint("/connect/register").oidcUserInfoEndpoint("/userinfo");
@@ -60,7 +46,7 @@ public final class ProviderSettings extends AbstractSettings {
     }
 
     public static class Builder extends AbstractBuilder<ProviderSettings, Builder> {
-        private Builder() {
+        protected Builder() {
         }
 
         public Builder issuer(String issuer) {

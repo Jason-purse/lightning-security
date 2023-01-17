@@ -5,19 +5,10 @@ import com.generatera.authorization.server.common.configuration.authorization.Li
 import com.generatera.authorization.server.common.configuration.authorization.store.*;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService.AbstractAuthenticationTokenServiceHandlerProvider;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
-import com.generatera.security.authorization.server.specification.HandlerFactory;
-import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
-import com.generatera.security.authorization.server.specification.TokenSettings;
-import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
+import com.generatera.security.authorization.server.specification.*;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
-import com.generatera.security.authorization.server.specification.components.token.*;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.DefaultLightningJwtGenerator;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwtEncoder;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.LightningJwtCustomizer;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
-import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.jianyue.lightning.util.JsonUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +17,24 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -93,7 +93,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                             public LightningAuthenticationTokenService getService(Object... args) {
                                 LightningUserPrincipalConverter userPrincipalConverter = (LightningUserPrincipalConverter) args[1];
                                 DefaultAuthenticationTokenService authenticationTokenService = new DefaultAuthenticationTokenService();
-                                if(userPrincipalConverter != null) {
+                                if (userPrincipalConverter != null) {
                                     authenticationTokenService.setTokenConverter(new OptimizedAuthenticationTokenConverter(userPrincipalConverter));
                                 }
                                 return authenticationTokenService;
@@ -170,7 +170,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                                 AuthorizationServerComponentProperties properties = (AuthorizationServerComponentProperties) args[0];
                                 LightningUserPrincipalConverter userPrincipalConverter = (LightningUserPrincipalConverter) args[1];
                                 AuthorizationServerComponentProperties.Redis redis = properties.getAuthorizationStoreConfig().getRedis();
-                                return new RedisAuthenticationTokenService(redis.getKeyPrefix(), redis.getExpiredTimeDuration(),userPrincipalConverter);
+                                return new RedisAuthenticationTokenService(redis.getKeyPrefix(), redis.getExpiredTimeDuration(), userPrincipalConverter);
                             }
                         };
                     }
@@ -202,7 +202,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
     @ConditionalOnMissingBean(LightningAuthorizationService.class)
     public LightningAuthenticationTokenService authorizationService(AuthorizationServerComponentProperties properties,
                                                                     @Autowired(required = false)
-                                                                    LightningUserPrincipalConverter userPrincipalConverter) {
+                                                                            LightningUserPrincipalConverter userPrincipalConverter) {
 
 
         HandlerFactory.HandlerProvider provider
@@ -212,7 +212,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
         Assert.notNull(provider, "provider must not be null !!!");
         return ((AbstractAuthenticationTokenServiceHandlerProvider.LightningAuthenticationTokenServiceHandler)
                 provider.getHandler())
-                .getService(properties,userPrincipalConverter);
+                .getService(properties, userPrincipalConverter);
 
     }
 
@@ -252,6 +252,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
      * @return ProviderSettingsProvider
      */
     @Bean
+    @Primary
     public ProviderSettingsProvider provider(AuthorizationServerComponentProperties properties) {
         ProviderSettingProperties settingProperties = properties.getProviderSettingProperties();
         final ProviderSettings.Builder builder = ProviderSettings
@@ -275,63 +276,75 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
     }
 
 
-    // --------------------------- token 生成器 ---------------------------------------
-    // 当使用oauth2 central  authorization server的时候,token生成器,根本不会使用到这些Token 生成器 ...
-    // 因为 oauth2 是基于 client认证的方式来提供 token
-    // 除非需要根据直接使用表单登录进行 用户token 颁发 ...
-    // 那么这个token 生成器将可以用于 token 颁发 ...
+    @Bean
+    @Primary
+    public AuthExtSecurityConfigurer oAuth2ExtSecurityConfigurer(List<LightningAppAuthServerConfigurer> configurers) {
+        return new AuthExtSecurityConfigurer(configurers);
+    }
 
-    // 后续修改为 统一 到 oauth2 的一部分公共规范上
-    // // TODO: 2023/1/11  例如让表单增加token 端点,便于 token 刷新 / token 颁发 ...
+
 
     @Bean
-    @ConditionalOnBean(LightningJwtEncoder.class)
-    @ConditionalOnMissingBean(LightningTokenGenerator.class)
-    public LightningTokenGenerator<LightningToken> tokenGenerator(
-            AuthorizationServerComponentProperties properties,
-            LightningJwtEncoder jwtEncoder,
-            @Autowired(required = false)
-                    LightningJwtCustomizer jwtCustomizer) {
-        DefaultLightningJwtGenerator jwtGenerator = new DefaultLightningJwtGenerator(jwtEncoder);
-        ElvisUtil.isNotEmptyConsumer(jwtCustomizer, jwtGenerator::setJwtCustomizer);
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain httpSecurity(HttpSecurity httpSecurity,
+                                            AuthExtSecurityConfigurer configurer,
+                                            @Autowired(required = false)
+                                                    List<LightningPermissionConfigurer> permissionConfigurers) throws Exception {
+        HttpSecurity builder = httpSecurity
+                .apply(configurer)
+                .and();
 
-        // opaque token 生成器 判断条件
-        return new DelegatingLightningTokenGenerator(
-                new DefaultLightningAccessTokenGenerator(
-                        Optional.ofNullable(properties.getTokenSettings().getTokenValueFormat())
-                                .map(ele -> ele == LightningTokenType.LightningTokenValueFormat.OPAQUE)
-                                .orElse(false)
-                ),
-                new DefaultLightningRefreshTokenGenerator(),
-                jwtGenerator);
+
+        // permission configuration ..
+        if(permissionConfigurers != null) {
+            for (LightningPermissionConfigurer permissionConfigurer : permissionConfigurers) {
+                AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry
+                        = builder.authorizeHttpRequests();
+                permissionConfigurer.configure(registry);
+            }
+        }
+
+
+        return builder
+                .apply(permissionHandle())
+                .and()
+                .build();
     }
 
 
     /**
-     * token 名称不能一样,否则当一个bean 方法被跳过时,它也将被跳过 ...
+     * 白名单放行(默认处理)
      */
-    @Bean
-    @ConditionalOnMissingBean({LightningTokenGenerator.class, LightningJwtEncoder.class})
-    public LightningTokenGenerator<LightningToken> defaultTokenGenerator(
-            AuthorizationServerComponentProperties properties,
-            JWKSourceProvider jwkSourceProvider,
-            @Autowired(required = false)
-                    LightningJwtCustomizer jwtCustomizer
-    ) {
-        DefaultLightningJwtGenerator jwtGenerator = new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSourceProvider.getJWKSource()));
-        ElvisUtil.isNotEmptyConsumer(jwtCustomizer, jwtGenerator::setJwtCustomizer);
+    @NotNull
+    private SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> permissionHandle() {
+        return new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
+            @Override
+            public void init(HttpSecurity builder) throws Exception {
 
-        return new DelegatingLightningTokenGenerator(
-                new DefaultLightningAccessTokenGenerator(
-                        Optional.ofNullable(properties.getTokenSettings().getTokenValueFormat())
-                                .map(ele -> ele == LightningTokenType.LightningTokenValueFormat.OPAQUE)
-                                .orElse(false)
-                ),
-                new DefaultLightningRefreshTokenGenerator(),
-                jwtGenerator
-        );
+                // 最后添加这个
+                AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+                        authorizationManagerRequestMatcherRegistry = builder
+                        .authorizeHttpRequests();
+                if (!CollectionUtils.isEmpty(properties.getPermission().getUrlWhiteList())) {
+                    authorizationManagerRequestMatcherRegistry
+                            .mvcMatchers(
+                                    properties.getPermission().getUrlWhiteList().toArray(String[]::new)
+                            )
+                            .permitAll();
+                }
+
+
+                authorizationManagerRequestMatcherRegistry
+                        .anyRequest()
+                        .authenticated()
+                        .and()
+                        .csrf()
+                        .disable();
+            }
+        };
     }
-    // --------------------------------------------------------------------------------
+
+
 
 
     @Override

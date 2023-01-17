@@ -1,11 +1,10 @@
 package com.generatera.security.authorization.server.specification.components.token.format.jwt;
 
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
-import com.generatera.security.authorization.server.specification.SignatureAlgorithm;
+import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
 import com.generatera.security.authorization.server.specification.TokenIssueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenContext;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.JwtEncodingContext;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.LightningJwtCustomizer;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.JwsHeader;
 import org.springframework.security.core.GrantedAuthority;

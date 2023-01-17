@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.application.server.config.PropertiesBindImportSelector;
+import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +12,7 @@ import java.util.LinkedList;
 
 public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBindImportSelector<OAuth2LoginProperties> {
     public ApplicationOAuth2LoginComponentsImportSelector(BeanFactory beanFactory, Environment environment) {
-        super(beanFactory, environment,OAuth2LoginProperties.class);
+        super(beanFactory, environment);
     }
 
     @NotNull

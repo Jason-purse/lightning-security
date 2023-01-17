@@ -21,13 +21,12 @@ import java.io.Serializable;
  *
  * 目前主要包含了访问 token  / 刷新 token的内容
  */
-@Table(name = "lightning_token")
-@Entity
 @Document("lightning_authentication_token")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@MappedSuperclass
 public class LightningAuthenticationTokenEntity implements Serializable {
 
     @Id
@@ -82,10 +81,4 @@ public class LightningAuthenticationTokenEntity implements Serializable {
     @Field(name = "refresh_token_type_format")
     private String refreshTokenTypeFormat;
 
-
-    /**
-     * 用户信息,用来更新令牌 ..(如果是 opaque) ..
-     * 通过LightningUserPrincipalConverter 处理 ..
-     */
-    private Object userPrincipal;
 }

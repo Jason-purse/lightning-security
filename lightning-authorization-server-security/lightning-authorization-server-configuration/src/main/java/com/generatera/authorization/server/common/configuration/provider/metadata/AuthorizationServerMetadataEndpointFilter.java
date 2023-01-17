@@ -30,6 +30,9 @@ import java.util.function.Consumer;
  * 1. token 撤销
  * 2. token 自省
  * 3. 基于授权中心获取 jwk set 进一步配置自己
+ *
+ *
+ * todo 还有需要配置的 ...
  */
 public final class AuthorizationServerMetadataEndpointFilter extends OncePerRequestFilter {
     private static final String DEFAULT_AUTH_AUTHORIZATION_SERVER_METADATA_ENDPOINT_URI = "/.well-known/oauth-authorization-server";
@@ -51,8 +54,6 @@ public final class AuthorizationServerMetadataEndpointFilter extends OncePerRequ
             AuthorizationServerMetadata authorizationServerMetadata =
                     AuthorizationServerMetadata.builder()
                             .issuer(issuer)
-                            .authorizationEndpoint(asUrl(issuer, this.providerSettings.getAuthorizationEndpoint()))
-                            .tokenEndpoint(asUrl(issuer, this.providerSettings.getTokenEndpoint()))
                             .jwkSetUrl(asUrl(issuer, this.providerSettings.getJwkSetEndpoint()))
                             .tokenEndpointAuthenticationMethods(clientAuthenticationMethods())
                             .tokenRevocationEndpoint(asUrl(issuer, this.providerSettings.getTokenRevocationEndpoint()))

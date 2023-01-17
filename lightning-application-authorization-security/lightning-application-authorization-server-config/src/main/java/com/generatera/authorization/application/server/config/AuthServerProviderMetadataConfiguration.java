@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config;
 
+import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.provider.metadata.oidc.OidcProviderConfigurationEndpointFilter;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

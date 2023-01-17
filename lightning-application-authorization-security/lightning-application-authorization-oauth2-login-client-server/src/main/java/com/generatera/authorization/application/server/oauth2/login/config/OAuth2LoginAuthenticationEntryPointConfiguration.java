@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
 import com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;

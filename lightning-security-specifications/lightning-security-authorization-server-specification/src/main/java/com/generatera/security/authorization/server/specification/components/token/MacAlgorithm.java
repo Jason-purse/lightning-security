@@ -1,7 +1,10 @@
-package com.generatera.security.authorization.server.specification.components.token.format.jwt.jose;
-
-import com.generatera.security.authorization.server.specification.JwsAlgorithm;
-
+package com.generatera.security.authorization.server.specification.components.token;
+/**
+ * @author FLJ
+ * @date 2023/1/17
+ * @time 10:30
+ * @Description mac 算法 ..
+ */
 public enum MacAlgorithm implements JwsAlgorithm {
     HS256("HS256"),
     HS384("HS384"),

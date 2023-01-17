@@ -10,6 +10,8 @@ import com.generatera.security.authorization.server.specification.components.tok
  * @date 2023/1/6
  * @time 13:03
  * @Description 直接通过 UUID 生成一个简单Token
+ *
+ * todo   目前并没有选择使用这种简单的token 生成器 ..
  */
 public class DefaultAuthorizationServerPlainTokenGenerator implements LightningTokenGenerator<LightningToken> {
 

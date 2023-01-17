@@ -13,6 +13,9 @@ import java.util.Optional;
  * @Description lightning user context 上下文
  *
  * 通过此接口进行 spring SecurityContext 上下文解耦 ...
+ *
+ * 主要核心就是从{@code SecurityContext}中获取 {@code Authentication},从而获取到
+ * 应用系统中使用的 {@code LightningUserContext}
  */
 public interface LightningUserContext {
 

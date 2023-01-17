@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.form.login.config;
 
-import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
 import com.generatera.authorization.application.server.config.securityContext.DefaultSecurityContextRepository;
 import com.generatera.authorization.application.server.form.login.config.authentication.DefaultLightningFormLoginAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.form.login.config.authentication.LightningFormLoginAuthenticationEntryPoint;

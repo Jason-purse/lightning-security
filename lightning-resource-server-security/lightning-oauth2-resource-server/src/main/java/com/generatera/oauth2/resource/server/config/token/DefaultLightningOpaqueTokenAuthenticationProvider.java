@@ -19,6 +19,8 @@ import org.springframework.util.Assert;
  * @date 2023/1/12
  * @time 17:00
  * @Description bearer 类型的opaque token 的认证解析提供器
+ *
+ * 重写,为了兼容到  LightningUserPrincipal
  */
 public class DefaultLightningOpaqueTokenAuthenticationProvider implements AuthenticationProvider {
 

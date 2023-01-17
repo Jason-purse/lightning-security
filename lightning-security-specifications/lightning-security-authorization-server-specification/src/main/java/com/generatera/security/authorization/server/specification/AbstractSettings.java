@@ -10,6 +10,10 @@ import java.util.function.Consumer;
 
 /**
  * 抽象配置 .. 类似于map
+ *
+ * 为配置集提供的一个基础模板配置抽象
+ * @see com.generatera.security.authorization.server.specification.components.provider.ProviderSettings
+ * @see TokenSettings
  */
 public abstract class AbstractSettings implements Serializable {
     private final Map<String, Object> settings;

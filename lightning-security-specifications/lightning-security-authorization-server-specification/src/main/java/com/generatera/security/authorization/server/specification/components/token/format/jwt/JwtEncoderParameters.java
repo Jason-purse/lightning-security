@@ -5,7 +5,14 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.JwsHeader;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.util.Assert;
-
+/**
+ * @author FLJ
+ * @date 2023/1/17
+ * @time 10:28
+ * @Description jwt 编码器需要的一些参数 ..
+ *
+ * 这里包括了额外的信息,例如 token 类型 / token value 类型..
+ */
 public final class JwtEncoderParameters {
     private final JwsHeader jwsHeader;
     private final JwtClaimsSet claims;

@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
  */
 public interface LightningCentralOAuth2TokenCustomizer<T extends OAuth2TokenContext> extends OAuth2TokenCustomizer<T> {
 
+
     /**
      * oauth2 access token customizer ..
      */

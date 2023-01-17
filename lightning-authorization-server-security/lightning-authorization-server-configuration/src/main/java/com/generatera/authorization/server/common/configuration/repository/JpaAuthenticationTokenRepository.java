@@ -1,9 +1,9 @@
 package com.generatera.authorization.server.common.configuration.repository;
 
-import com.generatera.authorization.server.common.configuration.model.entity.LightningAuthenticationTokenEntity;
+import com.generatera.authorization.server.common.configuration.model.entity.ForDBAuthenticationTokenEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface JpaAuthenticationTokenRepository extends JpaRepository<LightningAuthenticationTokenEntity,Long> {
+public interface JpaAuthenticationTokenRepository extends JpaRepository<ForDBAuthenticationTokenEntity,Long> {
 
-    LightningAuthenticationTokenEntity findFirstByAccessTokenValueIsOrRefreshTokenValueIs(String accessTokenValue, String refreshTokenValue);
+    ForDBAuthenticationTokenEntity findFirstByAccessTokenValueIsOrRefreshTokenValueIs(String accessTokenValue, String refreshTokenValue);
 }

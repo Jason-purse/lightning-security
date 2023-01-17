@@ -2,6 +2,7 @@ package com.generatera.security.authorization.server.specification;
 
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType;
+import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
 import org.springframework.util.Assert;
 
 import java.time.Duration;
@@ -15,6 +16,9 @@ import java.util.Map;
  * @Description Token 的基本配置 ..
  *
  * 对于 oauth2 授权服务器来说, 这个token 仅仅是作为 兜底策略 ...
+ *
+ * 所以还有待修改
+ * TODO: 2023/1/17  oauth2 和普通授权服务器的分别处理 ..
  */
 public final class TokenSettings extends AbstractSettings {
 

@@ -4,6 +4,9 @@ package com.generatera.security.authorization.server.specification;
  * @date 2023/1/16
  * @time 16:41
  * @Description 配置设置的名称, spring-oauth2 -copys
+ *
+ * 包括Token的一些基本配置名称 ..
+ * 以及提供者的一些基本配置名称 ..
  */
 public final class ConfigurationSettingNames {
     private static final String SETTINGS_NAMESPACE = "settings.";

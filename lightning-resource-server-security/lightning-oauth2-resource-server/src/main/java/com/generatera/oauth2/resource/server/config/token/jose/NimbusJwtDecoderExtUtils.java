@@ -86,18 +86,18 @@ public class NimbusJwtDecoderExtUtils {
 
         JWSKeySelector<SecurityContext> jwsKeySelector(JWKSource<SecurityContext> jwkSource) {
             if (this.signatureAlgorithms.isEmpty()) {
-                return new JWSVerificationKeySelector(JWSAlgorithm.RS256, jwkSource);
+                return new JWSVerificationKeySelector<>(JWSAlgorithm.RS256, jwkSource);
             } else {
-                Set<JWSAlgorithm> jwsAlgorithms = new HashSet();
-                Iterator var3 = this.signatureAlgorithms.iterator();
+                Set<JWSAlgorithm> jwsAlgorithms = new HashSet<>();
+                Iterator<SignatureAlgorithm> var3 = this.signatureAlgorithms.iterator();
 
                 while (var3.hasNext()) {
-                    SignatureAlgorithm signatureAlgorithm = (SignatureAlgorithm) var3.next();
+                    SignatureAlgorithm signatureAlgorithm = var3.next();
                     JWSAlgorithm jwsAlgorithm = JWSAlgorithm.parse(signatureAlgorithm.getName());
                     jwsAlgorithms.add(jwsAlgorithm);
                 }
 
-                return new JWSVerificationKeySelector(jwsAlgorithms, jwkSource);
+                return new JWSVerificationKeySelector<>(jwsAlgorithms, jwkSource);
             }
         }
 

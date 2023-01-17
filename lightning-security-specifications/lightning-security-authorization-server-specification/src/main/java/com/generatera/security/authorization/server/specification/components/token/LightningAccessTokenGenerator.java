@@ -12,18 +12,25 @@ import com.generatera.security.authorization.server.specification.components.tok
 public interface LightningAccessTokenGenerator extends LightningTokenGenerator<LightningToken.LightningAccessToken> {
 
 
+    /**
+     * 基于代理Token 实现,不管Token 它本身存在什么东西 ..
+     * 组成部分其实也就是 基础token信息 加上当前访问token 需要的一些信息 ...
+     *
+     * 例如token value 类型 ->  Bearer
+     * 例如token value 格式 -> jwt / opaque
+     */
     class LightningAuthenticationAccessToken extends DelegateLightningToken implements LightningToken.LightningAccessToken {
 
         private final LightningTokenValueType tokenValueType;
 
-        private final LightningTokenValueFormat tokenValueTypeFormat;
+        private final LightningTokenValueFormat tokenValueFormat;
 
         public LightningAuthenticationAccessToken(LightningToken delegate,
                                                   LightningTokenValueType tokenValueType,
-                                                  LightningTokenValueFormat tokenValueTypeFormat) {
+                                                  LightningTokenValueFormat tokenValueFormat) {
             super(delegate);
             this.tokenValueType = tokenValueType;
-            this.tokenValueTypeFormat = tokenValueTypeFormat;
+            this.tokenValueFormat = tokenValueFormat;
         }
 
         public LightningTokenValueType getTokenValueType() {
@@ -32,7 +39,7 @@ public interface LightningAccessTokenGenerator extends LightningTokenGenerator<L
 
         @Override
         public LightningTokenValueFormat getTokenValueFormat() {
-            return tokenValueTypeFormat;
+            return tokenValueFormat;
         }
     }
 }

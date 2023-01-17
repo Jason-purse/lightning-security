@@ -1,5 +1,7 @@
 package com.generatera.authorization.application.server.config;
 
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
+import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
@@ -18,7 +20,7 @@ import java.util.List;
  */
 public class ApplicationServerImportSelector extends PropertiesBindImportSelector<ApplicationAuthServerProperties> {
     public ApplicationServerImportSelector(BeanFactory beanFactory, Environment environment) {
-        super(beanFactory, environment, ApplicationAuthServerProperties.class);
+        super(beanFactory, environment);
     }
 
     @NotNull

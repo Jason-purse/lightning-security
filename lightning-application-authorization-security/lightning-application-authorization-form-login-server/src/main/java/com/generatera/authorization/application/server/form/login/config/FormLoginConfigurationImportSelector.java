@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.form.login.config;
 
-import com.generatera.authorization.application.server.config.PropertiesBindImportSelector;
+import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.env.Environment;
@@ -11,7 +11,7 @@ import org.springframework.core.type.AnnotationMetadata;
  */
 public class FormLoginConfigurationImportSelector extends PropertiesBindImportSelector<FormLoginProperties> {
     public FormLoginConfigurationImportSelector(BeanFactory beanFactory, Environment environment) {
-        super(beanFactory, environment, FormLoginProperties.class);
+        super(beanFactory, environment);
     }
 
     @NotNull

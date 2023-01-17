@@ -1,8 +1,9 @@
 package com.generatera.oauth2.resource.server.config.token;
 
 import com.generatera.oauth2.resource.server.config.LightningOpaqueOAuth2UserPrincipal;
-import com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper;
+import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
+import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -51,6 +52,8 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
     private final RestOperations restOperations;
     private Converter<String, RequestEntity<?>> requestEntityConverter;
 
+    private List<String> authoritiesName = Arrays.asList(JwtExtClaimNames.SCOPE_CLAIM,JwtExtClaimNames.SCOPE_SHORT_CLAIM);
+
     /**
      * 用来将 jwt claims 转换为 userPrincipal的 映射器 ..
      */
@@ -77,6 +80,11 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
     public void setAuthorityPrefix(String authorityPrefix) {
         Assert.hasText(authorityPrefix,"authorityPrefix must not be null !!!");
         this.authorityPrefix = authorityPrefix;
+    }
+
+    public void setAuthoritiesName(List<String> authoritiesName) {
+        Assert.notEmpty(authoritiesName,"authoritiesName must not be null !!!");
+        this.authoritiesName = authoritiesName;
     }
 
     public void setJwtClaimsToUserPrincipalMapper(JwtClaimsToUserPrincipalMapper jwtClaimsToUserPrincipalMapper) {
@@ -186,30 +194,31 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
         });
         claims.computeIfPresent("nbf", (k, v) -> Instant.ofEpochSecond(((Number) v).longValue()));
         Collection<GrantedAuthority> authorities = new LinkedList<>();
-        claims.computeIfPresent("scope", (k, v) -> {
-            if (!(v instanceof String)) {
-                return v;
-            } else {
-                Collection<String> scopes = Arrays.asList(((String)v).split(" "));
+        for (String authorityName : authoritiesName) {
+            claims.computeIfPresent(authorityName, (k, v) -> {
+                if (!(v instanceof String)) {
+                    return v;
+                } else {
+                    Collection<String> scopes = Arrays.asList(((String)v).split(" "));
 
-                for (String scope : scopes) {
-                    authorities.add(new SimpleGrantedAuthority(authorityPrefix + scope));
+                    for (String scope : scopes) {
+                        authorities.add(new SimpleGrantedAuthority(authorityPrefix + scope));
+                    }
+
+                    return scopes;
                 }
+            });
+        }
 
-                return scopes;
-            }
-        });
-
-
-        // 能够让 jwtClaimsToUserPrincipalMapper 使用到这个属性 ...
-        claims.put("authorities",authorities);
 
         if(jwtClaimsToUserPrincipalMapper != null) {
            return jwtClaimsToUserPrincipalMapper.convert(claims);
         }
-        // 移除掉 scope
-        claims.remove("scope");
-        claims.remove("authorities");
+
+        for (String authorityName : authoritiesName) {
+            claims.remove(authorityName);
+        }
+
 
         return new LightningOpaqueOAuth2UserPrincipal(
                 new OAuth2IntrospectionAuthenticatedPrincipal(

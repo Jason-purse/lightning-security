@@ -1,6 +1,7 @@
 package com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer;
 
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenCustomizer;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtEncodingContext;
 
 /**
  * @author FLJ

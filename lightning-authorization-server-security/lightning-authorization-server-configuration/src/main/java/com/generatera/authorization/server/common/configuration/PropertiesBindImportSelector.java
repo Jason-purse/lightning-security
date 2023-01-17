@@ -1,4 +1,4 @@
-package com.generatera.authorization.application.server.config;
+package com.generatera.authorization.server.common.configuration;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -7,6 +7,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBindingPostProcessor;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
@@ -26,12 +27,19 @@ public abstract class PropertiesBindImportSelector<T> implements ImportSelector 
 
     private final T properties;
 
+    @SuppressWarnings("unchecked")
     public PropertiesBindImportSelector(
             BeanFactory beanFactory,
-            Environment environment,
-            Class<T> propertiesClass
+            Environment environment
     ) {
-        this.properties = ConfigurationPropertiesBindingAssist.bindProperties(propertiesClass, beanFactory,environment);
+
+        ResolvableType type =
+                ResolvableType.forClass(this.getClass())
+                .as(PropertiesBindImportSelector.class)
+                .getGeneric();
+        Assert.isTrue(type != ResolvableType.NONE,"Please inherit this class instead of using it directly !!!");
+
+        this.properties = ConfigurationPropertiesBindingAssist.bindProperties(((Class<T>) type.resolve()), beanFactory,environment);
         Assert.notNull(properties,"properties must not be null !!!");
     }
 

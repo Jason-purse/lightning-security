@@ -1,6 +1,6 @@
-package com.generatera.authorization.server.common.configuration.authorization.store;
+package com.generatera.security.authorization.server.specification;
 
-import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
+import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -11,12 +11,12 @@ import org.jetbrains.annotations.NotNull;
  *
  * 必须提供(memory authorization store 默认不需要提供,当然 - 你可以选择覆盖),需要根据字符串形式转换为  一个实际的LightningUserPrincipal ...
  *
- * 一般来说,你需要保证{@link com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper} 产生的
+ * 一般来说,你需要保证{@link JwtClaimsToUserPrincipalMapper} 产生的
  * {@link LightningUserPrincipal} 是和此转换器使用的 是一致的,
- * 当然 {@link com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper}
+ * 当然 {@link JwtClaimsToUserPrincipalMapper}
  * 产生的 {@link LightningUserPrincipal} 也可以是这个转换器使用的{@code LightningUserPrincipal}的子类 / 子集 ...
  *
- * 因为此转换器使用在授权服务器端, 而 {@link com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper}
+ * 因为此转换器使用在授权服务器端, 而 {@link JwtClaimsToUserPrincipalMapper}
  * 使用在资源服务器端 ...
  *
  * @see com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.service.RedisOAuth2AuthorizationService

@@ -1,7 +1,11 @@
-package com.generatera.security.authorization.server.specification;
+package com.generatera.security.authorization.server.specification.components.token;
 
 /**
  * 参考oauth2-jose copy
+ *
+ * 关注 spring-oauth2-jose 的签名算法的更新
+ *
+ * @see org.springframework.security.oauth2.jose.jws.SignatureAlgorithm
  */
 public enum SignatureAlgorithm implements JwsAlgorithm {
     RS256("RS256"),

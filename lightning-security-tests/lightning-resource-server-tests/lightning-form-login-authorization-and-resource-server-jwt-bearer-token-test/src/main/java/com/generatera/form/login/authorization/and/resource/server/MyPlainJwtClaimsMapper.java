@@ -1,7 +1,7 @@
 package com.generatera.form.login.authorization.and.resource.server;
 
 import com.generatera.authorization.application.server.config.DefaultLightningUserDetails;
-import com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper;
+import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;

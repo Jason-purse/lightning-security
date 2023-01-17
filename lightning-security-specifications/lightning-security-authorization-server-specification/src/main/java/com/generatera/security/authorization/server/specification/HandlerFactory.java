@@ -11,6 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2023/1/9
  * @time 12:44
  * @Description Handler 工厂...
+ *
+ * 实现基于工厂形式的 对应bean 获取 ..
+ * 并不保证 bean的单例性,取决于 provider的处理形式 以及 handler的扩展性 ..
  */
 public class HandlerFactory {
 

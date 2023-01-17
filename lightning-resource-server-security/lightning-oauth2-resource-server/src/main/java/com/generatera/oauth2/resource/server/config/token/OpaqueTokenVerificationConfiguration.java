@@ -5,7 +5,7 @@ import com.generatera.resource.server.config.LightningResourceServerConfigurer;
 import com.generatera.resource.server.config.LogUtil;
 import com.generatera.security.authorization.server.specification.ClientAuthenticationMethod;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
-import com.generatera.security.authorization.server.specification.JwtClaimsToUserPrincipalMapper;
+import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

@@ -2,6 +2,7 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
+import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
@@ -17,10 +18,6 @@ import java.util.function.Consumer;
  * @Description 添加了 token value type 以及 token value format 类型 ...
  */
 public class DefaultTokenDetailAwareOAuth2TokenCustomizer implements LightningCentralOAuth2TokenCustomizer<OAuth2TokenContext> {
-
-    public static final String TOKEN_VALUE_TYPE_CLAIM_NAME = "tokenValueType";
-
-    public static final String TOKEN_VALUE_FORMAT_TYPE_CLAIM_NAME = "tokenValueTypeFormat";
 
     private final AuthorizationServerComponentProperties.TokenSettings tokenSettings;
 
@@ -45,9 +42,9 @@ public class DefaultTokenDetailAwareOAuth2TokenCustomizer implements LightningCe
     private Consumer<Map<String, Object>> claimsHandle() {
         return claims -> {
             LightningTokenType.LightningTokenValueType tokenValueType = tokenSettings.getTokenValueType();
-            claims.put(TOKEN_VALUE_TYPE_CLAIM_NAME,tokenValueType.value());
+            claims.put(JwtExtClaimNames.TOKEN_VALUE_TYPE_CLAIM,tokenValueType.value());
             LightningTokenType.LightningTokenValueFormat tokenValueFormat = tokenSettings.getTokenValueFormat();
-            claims.put(TOKEN_VALUE_FORMAT_TYPE_CLAIM_NAME,tokenValueFormat.value());
+            claims.put(JwtExtClaimNames.TOKEN_VALUE_FORMAT_CLAIM,tokenValueFormat.value());
         };
     }
 }

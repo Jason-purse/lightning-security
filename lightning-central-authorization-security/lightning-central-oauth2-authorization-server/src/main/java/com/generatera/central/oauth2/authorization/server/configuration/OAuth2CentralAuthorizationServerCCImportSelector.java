@@ -1,7 +1,7 @@
 package com.generatera.central.oauth2.authorization.server.configuration;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
-import com.generatera.authorization.application.server.config.PropertiesBindImportSelector;
+import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import com.generatera.authorization.application.server.form.login.config.FormLoginProperties;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties.StoreKind;
@@ -34,7 +34,7 @@ import java.util.List;
 @Slf4j
 public class OAuth2CentralAuthorizationServerCCImportSelector extends PropertiesBindImportSelector<OAuth2CentralAuthorizationServerProperties> {
     public OAuth2CentralAuthorizationServerCCImportSelector(BeanFactory beanFactory, Environment environment) {
-        super(beanFactory, configEnvironment(environment), OAuth2CentralAuthorizationServerProperties.class);
+        super(beanFactory, configEnvironment(environment));
     }
 
     private static Environment configEnvironment(Environment environment) {

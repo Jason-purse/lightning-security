@@ -2,6 +2,7 @@ package com.generatera.security.authorization.server.specification.components.to
 
 import com.generatera.security.authorization.server.specification.TokenIssueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
+import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.ClaimAccessor;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.DefaultPlainToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -25,22 +26,19 @@ import java.util.UUID;
  */
 public class DefaultLightningAccessTokenGenerator implements LightningAccessTokenGenerator {
     private final StringKeyGenerator accessTokenGenerator = new Base64StringKeyGenerator(Base64.getUrlEncoder().withoutPadding(), 96);
+    /**
+     * 详情可以查看
+     * {@link JwtExtClaimNames}
+     */
     private final String authoritiesName;
-    private final boolean isOpaque;
 
     private LightningTokenCustomizer<LightningTokenClaimsContext> accessTokenCustomizer;
 
-
     public DefaultLightningAccessTokenGenerator() {
-        this(false);
+        this(JwtExtClaimNames.SCOPE_CLAIM);
     }
 
-    public DefaultLightningAccessTokenGenerator(boolean isOpaque) {
-        this(isOpaque, "scope");
-    }
-
-    public DefaultLightningAccessTokenGenerator(boolean isOpaque, String authoritiesName) {
-        this.isOpaque = isOpaque;
+    public DefaultLightningAccessTokenGenerator(String authoritiesName) {
         this.authoritiesName = authoritiesName;
     }
 
@@ -68,15 +66,9 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
                     .audience(context.getTokenSettings().getAudiences())
                     .issuedAt(issuedAt).expiresAt(expiresAt).notBefore(issuedAt).id(UUID.randomUUID().toString());
 
-            if (!isOpaque) {
-                if (!CollectionUtils.isEmpty(context.getPrincipal().getAuthorities())) {
-                    claimsBuilder.claim(authoritiesName, context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new));
-                }
+            if (!CollectionUtils.isEmpty(context.getPrincipal().getAuthorities())) {
+                claimsBuilder.claim(authoritiesName, Boolean.TRUE);
             }
-
-            // 是否为 不透明token ..
-            claimsBuilder.claim("isOpaque", isOpaque);
-
 
             // 访问 token 自定义器 ...
             if (this.accessTokenCustomizer != null) {
@@ -87,6 +79,11 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
 
                 LightningTokenClaimsContext accessTokenContext = accessTokenContextBuilder.build();
                 this.accessTokenCustomizer.customize(accessTokenContext);
+            }
+
+            // lazy resolve
+            if (claimsBuilder.hasClaim(authoritiesName)) {
+                claimsBuilder.claim(authoritiesName, context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new));
             }
 
             LightningTokenClaimsSet accessTokenClaimsSet = claimsBuilder.build();

@@ -1,5 +1,6 @@
 package com.generatera.security.authorization.server.specification.components.token;
 
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtClaimAccessor;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.converter.ClaimConversionService;
 import org.springframework.util.Assert;
 
@@ -8,14 +9,14 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+
 /**
  * @author FLJ
  * @date 2023/1/16
  * @time 14:24
  * @Description 基础的 Token claims Set ..
  */
-public final class LightningTokenClaimsSet implements LightningTokenClaimAccessor {
+public final class LightningTokenClaimsSet implements JwtClaimAccessor {
     private final Map<String, Object> claims;
 
     private LightningTokenClaimsSet(Map<String, Object> claims) {
@@ -30,7 +31,7 @@ public final class LightningTokenClaimsSet implements LightningTokenClaimAccesso
         return new Builder();
     }
 
-    public static final class Builder {
+    public static final class Builder implements JwtClaimAccessor {
         private final Map<String, Object> claims = new HashMap<>();
 
         private Builder() {
@@ -64,18 +65,6 @@ public final class LightningTokenClaimsSet implements LightningTokenClaimAccesso
             return this.claim("jti", jti);
         }
 
-        public Builder claim(String name, Object value) {
-            Assert.hasText(name, "name cannot be empty");
-            Assert.notNull(value, "value cannot be null");
-            this.claims.put(name, value);
-            return this;
-        }
-
-        public Builder claims(Consumer<Map<String, Object>> claimsConsumer) {
-            claimsConsumer.accept(this.claims);
-            return this;
-        }
-
         public LightningTokenClaimsSet build() {
             Assert.notEmpty(this.claims, "claims cannot be empty");
             Object issuer = this.claims.get("iss");
@@ -87,6 +76,11 @@ public final class LightningTokenClaimsSet implements LightningTokenClaimAccesso
             }
 
             return new LightningTokenClaimsSet(this.claims);
+        }
+
+        @Override
+        public Map<String, Object> getClaims() {
+            return claims;
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.generatera.security.authorization.server.specification.components.token.format.jwt.jose;
 
-import com.generatera.security.authorization.server.specification.SignatureAlgorithm;
+import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtClaimsSet;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtEncoderParameters;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwt;

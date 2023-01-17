@@ -6,13 +6,14 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.core.convert.converter.Converter;
 
-import static com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization.USER_INFO_ATTRIBUTE_NAME;
-
 /**
  * @author FLJ
  * @date 2023/1/4
  * @time 14:10
  * @Description Authentication Token Entity converter
+ *
+ * 子类应该继承 {@link OptimizedAuthenticationTokenEntityConverter} 而不是当前类,因为妥善处理了
+ * {@link com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization#USER_INFO_ATTRIBUTE_NAME}
  */
 public class AuthenticationTokenEntityConverter implements Converter<DefaultLightningAuthorization, LightningAuthenticationTokenEntity> {
     @Override
@@ -37,9 +38,7 @@ public class AuthenticationTokenEntityConverter implements Converter<DefaultLigh
             builder.refreshIssuedAt(refreshToken.getIssuedAt().toEpochMilli());
             builder.refreshExpiredAt(refreshToken.getExpiresAt().toEpochMilli());
         });
-
-        Object userPrincipal = source.getAttribute(USER_INFO_ATTRIBUTE_NAME);
-        builder.userPrincipal(userPrincipal);
+        // 需要处理 userPrincipal..
 
         return builder.build();
     }

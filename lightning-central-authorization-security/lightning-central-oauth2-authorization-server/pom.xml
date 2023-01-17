@@ -26,6 +26,13 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
+<!--        本身作为认证服务器,需要这些配置-->
+        <dependency>
+            <groupId>com.generatera</groupId>
+            <artifactId>lightning-authorization-server-configuration</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-authorization-server</artifactId>

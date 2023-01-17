@@ -13,10 +13,10 @@ import java.util.Map;
  * 能够用来定制 token
  * @see LightningTokenCustomizer
  */
-public final class LightningTokenClaimsContext implements LightningTokenContext {
+public class LightningTokenClaimsContext implements LightningTokenContext {
     private final Map<Object, Object> context;
 
-    private LightningTokenClaimsContext(Map<Object, Object> context) {
+    protected LightningTokenClaimsContext(Map<Object, Object> context) {
         this.context = Map.copyOf(context);
     }
 

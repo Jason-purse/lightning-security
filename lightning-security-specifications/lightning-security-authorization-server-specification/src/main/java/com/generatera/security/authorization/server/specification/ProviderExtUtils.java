@@ -13,16 +13,22 @@ import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
-
+/**
+ * @author FLJ
+ * @date 2023/1/17
+ * @time 9:47
+ * @Description 强依赖 nimbus jwt 工具包 ..
+ */
 public final class ProviderExtUtils {
     private ProviderExtUtils() {
     }
 
     public static <B extends HttpSecurityBuilder<B>> JWKSource<SecurityContext> getJwkSource(B builder) {
-        JWKSource<SecurityContext> jwkSource = (JWKSource) builder.getSharedObject(JWKSource.class);
+        @SuppressWarnings("unchecked")
+        JWKSource<SecurityContext> jwkSource = (JWKSource<SecurityContext>) builder.getSharedObject(JWKSource.class);
         if (jwkSource == null) {
-            ResolvableType type = ResolvableType.forClassWithGenerics(JWKSource.class, new Class[]{SecurityContext.class});
-            jwkSource = (JWKSource) getOptionalBean(builder, type);
+            ResolvableType type = ResolvableType.forClassWithGenerics(JWKSource.class, SecurityContext.class);
+            jwkSource = getOptionalBean(builder, type);
             if (jwkSource != null) {
                 builder.setSharedObject(JWKSource.class, jwkSource);
             }
@@ -33,9 +39,9 @@ public final class ProviderExtUtils {
 
 
     public static <B extends HttpSecurityBuilder<B>> ProviderSettingsProvider getProviderSettings(B builder) {
-        ProviderSettingsProvider providerSettings = (ProviderSettingsProvider) builder.getSharedObject(ProviderSettingsProvider.class);
+        ProviderSettingsProvider providerSettings = builder.getSharedObject(ProviderSettingsProvider.class);
         if (providerSettings == null) {
-            providerSettings = (ProviderSettingsProvider) getBean(builder, ProviderSettingsProvider.class);
+            providerSettings = getBean(builder, ProviderSettingsProvider.class);
             builder.setSharedObject(ProviderSettingsProvider.class, providerSettings);
         }
 
@@ -43,7 +49,7 @@ public final class ProviderExtUtils {
     }
 
     static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, Class<T> type) {
-        return ((ApplicationContext) builder.getSharedObject(ApplicationContext.class)).getBean(type);
+        return builder.getSharedObject(ApplicationContext.class).getBean(type);
     }
 
     static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, ResolvableType type) {

@@ -2,7 +2,7 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.DefaultOAuth2Authorization;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningUserPrincipalConverter;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization.OAuth2AuthorizationRequestEntity;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization.RedisOAuth2AuthorizationEntity;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;

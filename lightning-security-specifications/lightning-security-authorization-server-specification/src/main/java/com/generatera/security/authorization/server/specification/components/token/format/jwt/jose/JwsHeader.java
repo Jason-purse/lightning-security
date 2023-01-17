@@ -1,6 +1,6 @@
 package com.generatera.security.authorization.server.specification.components.token.format.jwt.jose;
 
-import com.generatera.security.authorization.server.specification.JwsAlgorithm;
+import com.generatera.security.authorization.server.specification.components.token.JwsAlgorithm;
 import org.springframework.util.Assert;
 
 import java.util.Map;
