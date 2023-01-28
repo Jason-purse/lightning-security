@@ -13,7 +13,7 @@ import java.util.function.Consumer;
  *
  * 为配置集提供的一个基础模板配置抽象
  * @see com.generatera.security.authorization.server.specification.components.provider.ProviderSettings
- * @see TokenSettings
+ * @see TokenSettingsProperties
  */
 public abstract class AbstractSettings implements Serializable {
     private final Map<String, Object> settings;

@@ -16,6 +16,8 @@ import java.util.function.Consumer;
  * @date 2023/1/13
  * @time 14:31
  * @Description 添加了 token value type 以及 token value format 类型 ...
+ *
+ * 应该仅仅处理 access token / 或者自签名 jwt ..
  */
 public class DefaultTokenDetailAwareOAuth2TokenCustomizer implements LightningCentralOAuth2TokenCustomizer<OAuth2TokenContext> {
 
@@ -41,9 +43,9 @@ public class DefaultTokenDetailAwareOAuth2TokenCustomizer implements LightningCe
     @NotNull
     private Consumer<Map<String, Object>> claimsHandle() {
         return claims -> {
-            LightningTokenType.LightningTokenValueType tokenValueType = tokenSettings.getTokenValueType();
+            LightningTokenType.LightningTokenValueType tokenValueType = tokenSettings.getAccessToken().getTokenValueType();
             claims.put(JwtExtClaimNames.TOKEN_VALUE_TYPE_CLAIM,tokenValueType.value());
-            LightningTokenType.LightningTokenValueFormat tokenValueFormat = tokenSettings.getTokenValueFormat();
+            LightningTokenType.LightningTokenValueFormat tokenValueFormat = tokenSettings.getAccessToken().getTokenValueFormat();
             claims.put(JwtExtClaimNames.TOKEN_VALUE_FORMAT_CLAIM,tokenValueFormat.value());
         };
     }

@@ -51,17 +51,17 @@ public class LightningOpaqueOAuth2UserPrincipal implements LightningOAuth2UserPr
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-       return false;
+       return true;
     }
 
     @Override

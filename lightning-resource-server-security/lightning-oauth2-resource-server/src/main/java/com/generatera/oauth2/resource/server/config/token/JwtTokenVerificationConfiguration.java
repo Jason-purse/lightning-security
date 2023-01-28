@@ -1,8 +1,8 @@
 package com.generatera.oauth2.resource.server.config.token;
 
-import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.oauth2.resource.server.config.token.jose.NimbusJwtDecoderExtUtils;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
+import com.generatera.resource.server.config.LogUtil;
 import com.generatera.resource.server.config.ResourceServerProperties;
 import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;

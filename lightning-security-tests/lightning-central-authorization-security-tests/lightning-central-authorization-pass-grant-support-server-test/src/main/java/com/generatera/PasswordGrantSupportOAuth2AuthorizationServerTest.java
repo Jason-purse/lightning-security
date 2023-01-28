@@ -33,6 +33,11 @@ public class PasswordGrantSupportOAuth2AuthorizationServerTest {
         SpringApplication.run(PasswordGrantSupportOAuth2AuthorizationServerTest.class, args);
     }
 
+    /**
+     * user principal converter ..
+     *
+     * 测试使用
+     */
     @Bean
     public LightningUserPrincipalConverter userPrincipalConverter() {
 

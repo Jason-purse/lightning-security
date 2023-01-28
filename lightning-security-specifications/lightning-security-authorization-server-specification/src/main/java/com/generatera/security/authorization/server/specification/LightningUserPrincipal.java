@@ -29,4 +29,8 @@ public interface LightningUserPrincipal extends UserDetails, Serializable {
         return getUsername();
     }
 
+
+    default boolean isAuthenticated() {
+        return isEnabled() && isAccountNonExpired() && isAccountNonLocked() && isCredentialsNonExpired();
+    }
 }

@@ -40,4 +40,12 @@ public class ApplicationAuthorizationRequestConfiguration {
         }
     }
 
+
+    public static class DefaultAuthorizationRequestConfiguration {
+        @Bean
+        public LightningAuthorizationRequestRepository authorizationRequestRepository() {
+            return new DefaultAuthorizationRequestRepository();
+        }
+    }
+
 }

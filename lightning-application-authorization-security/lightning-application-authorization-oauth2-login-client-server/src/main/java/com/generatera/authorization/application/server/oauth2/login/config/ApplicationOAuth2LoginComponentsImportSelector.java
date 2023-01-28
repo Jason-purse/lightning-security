@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
+import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
@@ -72,6 +72,9 @@ public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBi
             }
             else if(storeKind == OAuth2LoginProperties.OAuthorizationRequestEndpoint.AuthorizationRequestStoreKind.MONGO) {
                 candidates.add(ApplicationAuthorizationRequestConfiguration.MongoAuthorizationRequestConfiguration.class.getName());
+            }
+            else if(storeKind == OAuth2LoginProperties.OAuthorizationRequestEndpoint.AuthorizationRequestStoreKind.IN_MEMORY) {
+                candidates.add(ApplicationAuthorizationRequestConfiguration.DefaultAuthorizationRequestConfiguration.class.getName());
             }
         }
     }

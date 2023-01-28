@@ -1,5 +1,6 @@
 package com.generatera.authorization.server.common.configuration.authorization;
 
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningRefreshToken;
@@ -41,6 +42,8 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
      * 属性
      */
     private Map<String, Object> attributes;
+
+    private LightningUserPrincipal userPrincipal;
 
     protected DefaultLightningAuthorization() {
     }
@@ -101,7 +104,9 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
     }
 
 
-
+    public LightningUserPrincipal getPrincipal() {
+        return userPrincipal;
+    }
 
     public static Builder from(DefaultLightningAuthorization authorization) {
         Assert.notNull(authorization, "authorization cannot be null");
@@ -117,6 +122,9 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
     public static class Builder implements Serializable {
         private String id;
         private String principalName;
+
+        private LightningUserPrincipal princinpal;
+
         private Map<Class<? extends LightningToken>, Token<?>> tokens = new HashMap<>();
         private final Map<String, Object> attributes = new HashMap<>();
 
@@ -128,6 +136,11 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
 
         public Builder principalName(String principalName) {
             this.principalName = principalName;
+            return this;
+        }
+
+        public Builder principal(LightningUserPrincipal userPrincipal) {
+            this.princinpal = userPrincipal;
             return this;
         }
 
@@ -146,6 +159,10 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
         public <T extends LightningToken> Builder token(T token,Class<? extends LightningToken> clazz) {
             return this.token(token,clazz, (metadata) -> {
             });
+        }
+
+        public <T extends LightningToken> Builder token(T token,Consumer<Map<String,Object>> metadataConsumer) {
+            return this.token(token,token.getClass(),metadataConsumer);
         }
 
         public <T extends LightningToken> Builder token(T token,Class<? extends LightningToken> tokenClass, Consumer<Map<String, Object>> metadataConsumer) {
@@ -189,6 +206,7 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
             authorization.principalName = this.principalName;
             authorization.tokens = Collections.unmodifiableMap(this.tokens);
             authorization.attributes = Collections.unmodifiableMap(this.attributes);
+            authorization.userPrincipal = this.princinpal;
             return authorization;
         }
 

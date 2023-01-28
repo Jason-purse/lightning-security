@@ -4,6 +4,7 @@ import com.generatera.authorization.server.common.configuration.authorization.Li
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.DefaultOAuth2Authorization;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.DefaultOpaqueAwareOAuth2TokenCustomizer;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
+import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationCode;
@@ -88,7 +89,7 @@ public class DefaultOpaqueSupportOAuth2AuthorizationService implements Lightning
         if (accessToken != null) {
             Map<String, Object> claims = accessToken.getClaims();
             if (claims != null) {
-                Object isOpaque = claims.get("isOpaque");
+                Object isOpaque = claims.get(JwtExtClaimNames.OPAQUE_CLAIM);
                 boolean flag = Boolean.parseBoolean(isOpaque.toString());
                 if (flag) {
                     Object authoritiesObj = DefaultOpaqueAwareOAuth2TokenCustomizer.scopeThreadLocal.get();
@@ -106,13 +107,13 @@ public class DefaultOpaqueSupportOAuth2AuthorizationService implements Lightning
                                                 metaMap -> {
                                                     Object claimsMap = accessToken.getMetadata(OAuth2Authorization.Token.CLAIMS_METADATA_NAME);
                                                     LinkedHashMap<String, Object> claimsData = new LinkedHashMap<>();
-                                                    if(claimsMap != null) {
-                                                        claimsData = new LinkedHashMap<>((Map<String, Object>)claimsMap);
+                                                    if (claimsMap != null) {
+                                                        claimsData = new LinkedHashMap<>((Map<String, Object>) claimsMap);
 
                                                     }
                                                     // 保存信息
-                                                    claimsData.put(authoritiesClaimName,authoritiesObj);
-                                                    metaMap.put(OAuth2Authorization.Token.CLAIMS_METADATA_NAME,claimsData);
+                                                    claimsData.put(authoritiesClaimName, authoritiesObj);
+                                                    metaMap.put(OAuth2Authorization.Token.CLAIMS_METADATA_NAME, claimsData);
                                                 }
                                         ).build()
                         );
@@ -159,10 +160,12 @@ public class DefaultOpaqueSupportOAuth2AuthorizationService implements Lightning
         return unWrapHandle(authorization);
     }
 
-    private  OAuth2Authorization unWrapHandle(OAuth2Authorization oAuth2Authorization) {
-        if(oAuth2Authorization != null) {
-            if(oAuth2Authorization instanceof DefaultOAuth2Authorization delegate) {
-                return delegate.getWrappedAuthorization();
+    private OAuth2Authorization unWrapHandle(OAuth2Authorization oAuth2Authorization) {
+        if (oAuth2Authorization != null) {
+
+            // 存在循环套入的问题
+            while (oAuth2Authorization instanceof DefaultOAuth2Authorization delegate) {
+                oAuth2Authorization = delegate.getWrappedAuthorization();
             }
         }
         return oAuth2Authorization;

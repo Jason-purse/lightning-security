@@ -1,7 +1,8 @@
 package com.generatera.central.oauth2.authorization.server.configuration.components.provider;
 
-import com.generatera.security.authorization.server.specification.ConfigurationSettingNames;
+import com.generatera.central.oauth2.authorization.server.configuration.OAuth2ConfigurationSettingNames;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
+import org.springframework.util.Assert;
 
 import java.util.Map;
 /**
@@ -16,26 +17,32 @@ import java.util.Map;
  */
 public class OAuth2ProviderSettings extends ProviderSettings {
 
-    protected OAuth2ProviderSettings(Map<String, Object> settings) {
+    private OAuth2ProviderSettings(Map<String, Object> settings) {
         super(settings);
     }
 
     public String getAuthorizationEndpoint() {
-        return this.getSetting(ConfigurationSettingNames.Provider.AUTHORIZATION_ENDPOINT);
+        return this.getSetting(OAuth2ConfigurationSettingNames.Provider.AUTHORIZATION_ENDPOINT);
     }
 
     public String getTokenEndpoint() {
-        return this.getSetting(ConfigurationSettingNames.Provider.TOKEN_ENDPOINT);
+        return this.getSetting(OAuth2ConfigurationSettingNames.Provider.TOKEN_ENDPOINT);
     }
 
     public String getOidcClientRegistrationEndpoint() {
-        return this.getSetting(ConfigurationSettingNames.Provider.OIDC_CLIENT_REGISTRATION_ENDPOINT);
+        return this.getSetting(OAuth2ConfigurationSettingNames.Provider.OIDC_CLIENT_REGISTRATION_ENDPOINT);
     }
 
     public String getOidcUserInfoEndpoint() {
-        return this.getSetting(ConfigurationSettingNames.Provider.OIDC_USER_INFO_ENDPOINT);
+        return this.getSetting(OAuth2ConfigurationSettingNames.Provider.OIDC_USER_INFO_ENDPOINT);
     }
 
+    public static OAuth2ProviderSettings.Builder withSettings(Map<String, Object> settings) {
+        Assert.notEmpty(settings, "settings cannot be empty");
+        return (OAuth2ProviderSettings.Builder)(new Builder()).settings((s) -> {
+            s.putAll(settings);
+        });
+    }
 
     public static class Builder extends ProviderSettings.Builder {
 
@@ -63,19 +70,19 @@ public class OAuth2ProviderSettings extends ProviderSettings {
         }
 
         public Builder authorizationEndpoint(String authorizationEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.AUTHORIZATION_ENDPOINT, authorizationEndpoint);
+            return (Builder)this.setting(OAuth2ConfigurationSettingNames.Provider.AUTHORIZATION_ENDPOINT, authorizationEndpoint);
         }
 
         public Builder tokenEndpoint(String tokenEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.TOKEN_ENDPOINT, tokenEndpoint);
+            return (Builder)this.setting(OAuth2ConfigurationSettingNames.Provider.TOKEN_ENDPOINT, tokenEndpoint);
         }
 
         public Builder oidcClientRegistrationEndpoint(String oidcClientRegistrationEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.OIDC_CLIENT_REGISTRATION_ENDPOINT, oidcClientRegistrationEndpoint);
+            return (Builder)this.setting(OAuth2ConfigurationSettingNames.Provider.OIDC_CLIENT_REGISTRATION_ENDPOINT, oidcClientRegistrationEndpoint);
         }
 
         public Builder oidcUserInfoEndpoint(String oidcUserInfoEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.OIDC_USER_INFO_ENDPOINT, oidcUserInfoEndpoint);
+            return (Builder)this.setting(OAuth2ConfigurationSettingNames.Provider.OIDC_USER_INFO_ENDPOINT, oidcUserInfoEndpoint);
         }
 
         public OAuth2ProviderSettings build() {

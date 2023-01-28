@@ -1,7 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
-import com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenGenerator;
@@ -49,10 +48,10 @@ public class OAuth2LoginAuthenticationEntryPointConfiguration {
     }
 
     @Bean
-    public LightningAppAuthServerConfigurer oauth2LoginAuthenticationEntryPointConfigurer(
+    public LightningAuthServerConfigurer oauth2LoginAuthenticationEntryPointConfigurer(
             LightningOAuth2LoginAuthenticationEntryPoint authenticationEntryPoint
     ) {
-        return new LightningAppAuthServerConfigurer() {
+        return new LightningAuthServerConfigurer() {
             @Override
             public void configure(HttpSecurity securityBuilder) throws Exception {
                 OAuth2LoginConfigurer<HttpSecurity> httpSecurityOAuth2LoginConfigurer = securityBuilder.oauth2Login();

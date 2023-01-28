@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.form.login.config;
 
-import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.application.server.config.securityContext.DefaultSecurityContextRepository;
 import com.generatera.authorization.application.server.form.login.config.authentication.DefaultLightningFormLoginAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.form.login.config.authentication.LightningFormLoginAuthenticationEntryPoint;
@@ -38,11 +38,11 @@ public class BackendSeparationConfiguration {
 
 
     @Bean
-    public LightningAppAuthServerConfigurer FormLoginAuthenticationEntryPointConfigurer(
+    public LightningAuthServerConfigurer FormLoginAuthenticationEntryPointConfigurer(
             DefaultLightningFormLoginAuthenticationEntryPoint formLoginAuthenticationEntryPoint,
             LightningSecurityContextRepository securityContextRepository
     ) {
-        return new LightningAppAuthServerConfigurer() {
+        return new LightningAuthServerConfigurer() {
             @Override
             public void configure(HttpSecurity securityBuilder) throws Exception {
                 FormLoginConfigurer<HttpSecurity> httpSecurityFormLoginConfigurer = securityBuilder.formLogin();

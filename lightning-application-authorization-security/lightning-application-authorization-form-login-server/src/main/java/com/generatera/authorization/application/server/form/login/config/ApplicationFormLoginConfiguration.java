@@ -1,7 +1,8 @@
 package com.generatera.authorization.application.server.form.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
-import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +32,11 @@ import java.util.Objects;
 public class ApplicationFormLoginConfiguration {
 
     private final FormLoginProperties formLoginProperties;
+    private final ApplicationAuthServerProperties authServerProperties;
 
     @Bean
-    public LightningAppAuthServerConfigurer lightningFormLoginConfigurer() {
-        return new LightningAppAuthServerConfigurer() {
+    public LightningAuthServerConfigurer lightningFormLoginConfigurer() {
+        return new LightningAuthServerConfigurer() {
             @Override
             public void configure(HttpSecurity builder) throws Exception {
                 FormLoginConfigurer<HttpSecurity> formLoginConfigurer = builder.formLogin();
@@ -75,8 +77,8 @@ public class ApplicationFormLoginConfiguration {
             formLoginConfigurer.passwordParameter(formLoginProperties.getPasswordParameterName());
         }
 
-        if (StringUtils.hasText(formLoginProperties.getLoginProcessUrl())) {
-            formLoginConfigurer.loginProcessingUrl(formLoginProperties.getLoginProcessUrl());
+        if (StringUtils.hasText(authServerProperties.getProviderSettingProperties().getTokenEndpoint())) {
+            formLoginConfigurer.loginProcessingUrl(authServerProperties.getProviderSettingProperties().getTokenEndpoint());
         }
     }
 

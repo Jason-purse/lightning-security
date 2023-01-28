@@ -1,7 +1,5 @@
 package com.generatera.security.authorization.server.specification.components.token;
 
-import com.generatera.security.authorization.server.specification.TokenIssueFormat;
-
 /**
  * @author FLJ
  * @date 2023/1/16
@@ -13,10 +11,5 @@ import com.generatera.security.authorization.server.specification.TokenIssueForm
 public class LightningRefreshTokenContext extends DefaultLightningTokenContext {
     public LightningRefreshTokenContext(DefaultLightningTokenContext tokenContext) {
         super(tokenContext.getContexts());
-    }
-
-    // todo
-    public TokenIssueFormat getRefreshTokenIssueFormat() {
-        return getTokenSettings().getRefreshTokenIssueFormat();
     }
 }

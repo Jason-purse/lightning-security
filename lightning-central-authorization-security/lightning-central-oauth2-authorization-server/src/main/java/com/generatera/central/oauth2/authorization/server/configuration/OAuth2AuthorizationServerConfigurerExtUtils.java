@@ -4,7 +4,6 @@ import com.generatera.authorization.server.common.configuration.OAuth2Authorizat
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -94,9 +93,9 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
         }
 
         private static <B extends HttpSecurityBuilder<B>> JwtEncoder getJwtEncoder(B builder) {
-            JwtEncoder jwtEncoder = (JwtEncoder)builder.getSharedObject(JwtEncoder.class);
+            JwtEncoder jwtEncoder = builder.getSharedObject(JwtEncoder.class);
             if (jwtEncoder == null) {
-                jwtEncoder = (JwtEncoder)getOptionalBean(builder, JwtEncoder.class);
+                jwtEncoder = getOptionalBean(builder, JwtEncoder.class);
                 if (jwtEncoder == null) {
                     JWKSource<SecurityContext> jwkSource = getJwkSource(builder);
                     if (jwkSource != null) {
@@ -109,14 +108,14 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
                 }
             }
 
-            return (JwtEncoder)jwtEncoder;
+            return jwtEncoder;
         }
 
         static <B extends HttpSecurityBuilder<B>> JWKSource<SecurityContext> getJwkSource(B builder) {
             JWKSource<SecurityContext> jwkSource = (JWKSource)builder.getSharedObject(JWKSource.class);
             if (jwkSource == null) {
-                ResolvableType type = ResolvableType.forClassWithGenerics(JWKSource.class, new Class[]{SecurityContext.class});
-                jwkSource = (JWKSource)getOptionalBean(builder, type);
+                ResolvableType type = ResolvableType.forClassWithGenerics(JWKSource.class, SecurityContext.class);
+                jwkSource = getOptionalBean(builder, type);
                 if (jwkSource != null) {
                     builder.setSharedObject(JWKSource.class, jwkSource);
                 }
@@ -126,22 +125,22 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
         }
 
         private static <B extends HttpSecurityBuilder<B>> OAuth2TokenCustomizer<JwtEncodingContext> getJwtCustomizer(B builder) {
-            ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2TokenCustomizer.class, new Class[]{JwtEncodingContext.class});
-            return (OAuth2TokenCustomizer)getOptionalBean(builder, type);
+            ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2TokenCustomizer.class, JwtEncodingContext.class);
+            return getOptionalBean(builder, type);
         }
 
         private static <B extends HttpSecurityBuilder<B>> OAuth2TokenCustomizer<OAuth2TokenClaimsContext> getAccessTokenCustomizer(B builder) {
-            ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2TokenCustomizer.class, new Class[]{OAuth2TokenClaimsContext.class});
-            return (OAuth2TokenCustomizer)getOptionalBean(builder, type);
+            ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2TokenCustomizer.class, OAuth2TokenClaimsContext.class);
+            return getOptionalBean(builder, type);
         }
 
 
         static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, Class<T> type) {
-            return ((ApplicationContext)builder.getSharedObject(ApplicationContext.class)).getBean(type);
+            return builder.getSharedObject(ApplicationContext.class).getBean(type);
         }
 
         static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, ResolvableType type) {
-            ApplicationContext context = (ApplicationContext)builder.getSharedObject(ApplicationContext.class);
+            ApplicationContext context = builder.getSharedObject(ApplicationContext.class);
             String[] names = context.getBeanNamesForType(type);
             if (names.length == 1) {
                 return (T)context.getBean(names[0]);
@@ -153,7 +152,7 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
         }
 
         static <B extends HttpSecurityBuilder<B>, T> T getOptionalBean(B builder, Class<T> type) {
-            Map<String, T> beansMap = BeanFactoryUtils.beansOfTypeIncludingAncestors((ListableBeanFactory)builder.getSharedObject(ApplicationContext.class), type);
+            Map<String, T> beansMap = BeanFactoryUtils.beansOfTypeIncludingAncestors(builder.getSharedObject(ApplicationContext.class), type);
             if (beansMap.size() > 1) {
                 int var10003 = beansMap.size();
                 String var10004 = type.getName();
@@ -164,7 +163,7 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
         }
 
         static <B extends HttpSecurityBuilder<B>, T> T getOptionalBean(B builder, ResolvableType type) {
-            ApplicationContext context = (ApplicationContext)builder.getSharedObject(ApplicationContext.class);
+            ApplicationContext context = builder.getSharedObject(ApplicationContext.class);
             String[] names = context.getBeanNamesForType(type);
             if (names.length > 1) {
                 throw new NoUniqueBeanDefinitionException(type, names);

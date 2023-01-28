@@ -16,7 +16,7 @@ spring:
             redirect-uri: "http://127.0.0.1:8080/{action}/oauth2/code/{registrationId}"
         provider:
           default:
-            issuer-uri: http://localhost:9000
+            issuer-uri: http://127.0.0.1:9000
   redis:
     host: 192.168.0.210
     port: 16379
@@ -44,5 +44,9 @@ lightning:
           authorization-store-config:
             # redis 存储
             store-kind: redis
+          token-settings:
+            access-token:
+              # 进行 opaque token处理 ..
+              token-value-format: opaque
 server:
   port: 8080

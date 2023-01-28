@@ -61,12 +61,12 @@ public class OidcUserDetails implements OidcUser, LightningOAuth2UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override

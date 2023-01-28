@@ -79,12 +79,12 @@ public class LightningJwtOAuth2UserPrincipal implements LightningOAuth2UserPrinc
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
@@ -99,4 +99,5 @@ public class LightningJwtOAuth2UserPrincipal implements LightningOAuth2UserPrinc
     public boolean isEnabled() {
         return true;
     }
+
 }

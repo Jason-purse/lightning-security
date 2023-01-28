@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.config;
 
-import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.provider.metadata.oidc.OidcProviderConfigurationEndpointFilter;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -42,8 +42,8 @@ public class AuthServerProviderMetadataConfiguration {
     public static class OidcProviderServerMetadataEnabler {
 
         @Bean
-        public LightningAppAuthServerConfigurer appAuthServerConfigurer(ProviderSettingsProvider provider) {
-            return new LightningAppAuthServerConfigurer() {
+        public LightningAuthServerConfigurer appAuthServerConfigurer(ProviderSettingsProvider provider) {
+            return new LightningAuthServerConfigurer() {
                 @Override
                 public void configure(HttpSecurity securityBuilder) throws Exception {
                     securityBuilder.addFilterBefore(

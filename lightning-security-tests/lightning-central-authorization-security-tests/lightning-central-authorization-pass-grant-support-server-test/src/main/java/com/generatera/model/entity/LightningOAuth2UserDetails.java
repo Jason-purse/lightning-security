@@ -89,4 +89,15 @@ public class LightningOAuth2UserDetails implements LightningUserPrincipal,Creden
     public void eraseCredentials() {
 
     }
+
+    @Override
+    public LightningOAuth2UserDetails clone() {
+        try {
+            LightningOAuth2UserDetails clone = (LightningOAuth2UserDetails) super.clone();
+            // TODO: copy mutable state here, so the clone can't change the internals of the original
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

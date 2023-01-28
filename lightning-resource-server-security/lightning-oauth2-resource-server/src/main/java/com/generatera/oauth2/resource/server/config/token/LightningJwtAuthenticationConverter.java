@@ -48,7 +48,8 @@ class LightningJwtAuthenticationConverter implements Converter<Jwt, AbstractAuth
 
     public  AbstractAuthenticationToken convert(@NotNull Jwt jwt) {
         Collection<GrantedAuthority> authorities = this.extractAuthorities(jwt);
-        return new UsernamePasswordAuthenticationToken(new LightningJwtOAuth2UserPrincipal(jwt), authorities);
+        // 保证token 是被认证的 ..
+        return new UsernamePasswordAuthenticationToken(new LightningJwtOAuth2UserPrincipal(jwt),jwt.getTokenValue(), authorities);
     }
 
     /** @deprecated */

@@ -5,14 +5,14 @@ import com.generatera.authorization.server.common.configuration.authorization.Li
 import com.generatera.authorization.server.common.configuration.authorization.store.*;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService.AbstractAuthenticationTokenServiceHandlerProvider;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
-import com.generatera.security.authorization.server.specification.*;
-import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
-import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
+import com.generatera.security.authorization.server.specification.HandlerFactory;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
+import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
+import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
 import com.jianyue.lightning.util.JsonUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -190,6 +190,37 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
         return JWKSourceProvider.rsaJWKSourceProvider();
     }
 
+    /**
+     * 需要配置SettingProvider
+     * <p>
+     * ProviderContextHolder 需要单独处理
+     */
+    @Bean
+    public TokenSettingsProvider settingsProvider(JWKSourceProvider jwkSourceProvider) {
+
+        TokenSettingsProperties.Builder builder = TokenSettingsProperties.builder();
+        AuthorizationServerComponentProperties.TokenSettings.AccessToken accessToken
+                = properties.getTokenSettings().getAccessToken();
+
+        AuthorizationServerComponentProperties.TokenSettings.RefreshToken refreshToken
+                = properties.getTokenSettings().getRefreshToken();
+        return new TokenSettingsProvider(
+                builder
+                        .audience(properties.getTokenSettings().getAudiences())
+                        // issue format
+                        .accessTokenIssueFormat(jwkSourceProvider.getTokenIssueFormat())
+                        .accessTokenValueType(accessToken.getTokenValueType())
+                        .accessTokenValueFormat(accessToken.getTokenValueFormat())
+                        .accessTokenTimeToLive(Duration.ofMillis(accessToken.getTokenTimeToLive()))
+                        .refreshTokenValueFormat(refreshToken.getTokenValueFormat())
+                        .refreshTokenValueType(refreshToken.getTokenValueType())
+                        .refreshTokenTimeToLive(Duration.ofMillis(refreshToken.getTokenTimeToLive()))
+                        .reuseRefreshTokens(refreshToken.getReuseRefreshToken())
+                        .build()
+        );
+    }
+
+
 
     /**
      * 需要 authorization service
@@ -217,68 +248,9 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
     }
 
 
-    /**
-     * 需要配置SettingProvider
-     * <p>
-     * ProviderContextHolder 需要单独处理
-     */
-    @Bean
-    public TokenSettingsProvider settingsProvider(AuthorizationServerComponentProperties properties, JWKSourceProvider jwkSourceProvider) {
-
-        TokenSettings.Builder builder = TokenSettings.builder();
-
-        return new TokenSettingsProvider(
-                builder
-                        .audience(properties.getTokenSettings().getAudiences())
-                        .accessTokenIssueFormat(jwkSourceProvider.getTokenIssueFormat())
-                        .accessTokenValueType(properties.getTokenSettings().getTokenValueType())
-                        .accessTokenValueFormat(properties.getTokenSettings().getTokenValueFormat())
-                        .accessTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getAccessTokenTimeToLive()))
-                        .refreshTokenIssueFormat(jwkSourceProvider.getTokenIssueFormat())
-                        .refreshTokenValueType(properties.getTokenSettings().getTokenValueType())
-                        .refreshTokenTimeToLive(Duration.ofMillis(properties.getTokenSettings().getRefreshTokenTimeToLive()))
-                        .reuseRefreshTokens(properties.getTokenSettings().getReuseRefreshToken())
-                        .build()
-        );
-    }
-
-
-    /**
-     * 这样做,是为了 统一的 token 生成策略 ...
-     * <p>
-     * 例如表单也可以遵循 oauth2 的部分规则进行 jwk url 地址查找,从而进一步配置自身 。。
-     *
-     * @param properties properties ..
-     * @return ProviderSettingsProvider
-     */
     @Bean
     @Primary
-    public ProviderSettingsProvider provider(AuthorizationServerComponentProperties properties) {
-        ProviderSettingProperties settingProperties = properties.getProviderSettingProperties();
-        final ProviderSettings.Builder builder = ProviderSettings
-                .builder();
-
-        // issuer 可以自动生成
-        if (StringUtils.isNotBlank(settingProperties.getIssuer())) {
-            builder.issuer(settingProperties.getIssuer());
-        }
-        ProviderSettings settings = builder
-                .authorizationEndpoint(settingProperties.getAuthorizationEndpoint())
-                .tokenEndpoint(settingProperties.getTokenEndpoint())
-                .jwkSetEndpoint(settingProperties.getJwkSetEndpoint())
-                .tokenRevocationEndpoint(settingProperties.getTokenRevocationEndpoint())
-                .tokenIntrospectionEndpoint(settingProperties.getTokenIntrospectionEndpoint())
-                .oidcClientRegistrationEndpoint(settingProperties.getOidcClientRegistrationEndpoint())
-                .oidcUserInfoEndpoint(settingProperties.getOidcUserInfoEndpoint())
-                .build();
-
-        return new ProviderSettingsProvider(settings);
-    }
-
-
-    @Bean
-    @Primary
-    public AuthExtSecurityConfigurer oAuth2ExtSecurityConfigurer(List<LightningAppAuthServerConfigurer> configurers) {
+    public AuthExtSecurityConfigurer oAuth2ExtSecurityConfigurer(List<LightningAuthServerConfigurer> configurers) {
         return new AuthExtSecurityConfigurer(configurers);
     }
 

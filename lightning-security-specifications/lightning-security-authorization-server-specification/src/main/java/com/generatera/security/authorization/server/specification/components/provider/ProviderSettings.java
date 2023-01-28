@@ -12,35 +12,43 @@ import java.util.Map;
  * oauth2 ProviderSettings copy ...
  */
 public  class ProviderSettings extends AbstractSettings {
+
     protected ProviderSettings(Map<String, Object> settings) {
         super(settings);
     }
 
     public String getIssuer() {
-        return (String)this.getSetting(ConfigurationSettingNames.Provider.ISSUER);
+        return this.getSetting(ConfigurationSettingNames.Provider.ISSUER);
     }
 
 
     public String getJwkSetEndpoint() {
-        return (String)this.getSetting(ConfigurationSettingNames.Provider.JWK_SET_ENDPOINT);
+        return this.getSetting(ConfigurationSettingNames.Provider.JWK_SET_ENDPOINT);
+    }
+
+    public String getTokenEndpoint() {
+        return this.getSetting(ConfigurationSettingNames.Provider.TOKEN_ENDPOINT);
     }
 
     public String getTokenRevocationEndpoint() {
-        return (String)this.getSetting(ConfigurationSettingNames.Provider.TOKEN_REVOCATION_ENDPOINT);
+        return this.getSetting(ConfigurationSettingNames.Provider.TOKEN_REVOCATION_ENDPOINT);
     }
 
     public String getTokenIntrospectionEndpoint() {
-        return (String)this.getSetting(ConfigurationSettingNames.Provider.TOKEN_INTROSPECTION_ENDPOINT);
+        return this.getSetting(ConfigurationSettingNames.Provider.TOKEN_INTROSPECTION_ENDPOINT);
     }
 
 
     public static Builder builder() {
-        return (new Builder()).authorizationEndpoint("/oauth2/authorize").tokenEndpoint("/oauth2/token").jwkSetEndpoint("/oauth2/jwks").tokenRevocationEndpoint("/oauth2/revoke").tokenIntrospectionEndpoint("/oauth2/introspect").oidcClientRegistrationEndpoint("/connect/register").oidcUserInfoEndpoint("/userinfo");
+        return (new Builder())
+                .jwkSetEndpoint(ProviderSettingProperties.JWT_SET_ENDPOINT)
+                .tokenRevocationEndpoint(ProviderSettingProperties.TOKEN_REVOCATION_ENDPOINT)
+                .tokenIntrospectionEndpoint(ProviderSettingProperties.TOKEN_INTROSPECTION_ENDPOINT);
     }
 
     public static Builder withSettings(Map<String, Object> settings) {
         Assert.notEmpty(settings, "settings cannot be empty");
-        return (Builder)(new Builder()).settings((s) -> {
+        return (new Builder()).settings((s) -> {
             s.putAll(settings);
         });
     }
@@ -50,35 +58,24 @@ public  class ProviderSettings extends AbstractSettings {
         }
 
         public Builder issuer(String issuer) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.ISSUER, issuer);
+            return this.setting(ConfigurationSettingNames.Provider.ISSUER, issuer);
         }
 
-        public Builder authorizationEndpoint(String authorizationEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.AUTHORIZATION_ENDPOINT, authorizationEndpoint);
-        }
-
-        public Builder tokenEndpoint(String tokenEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.TOKEN_ENDPOINT, tokenEndpoint);
-        }
 
         public Builder jwkSetEndpoint(String jwkSetEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.JWK_SET_ENDPOINT, jwkSetEndpoint);
+            return this.setting(ConfigurationSettingNames.Provider.JWK_SET_ENDPOINT, jwkSetEndpoint);
         }
 
         public Builder tokenRevocationEndpoint(String tokenRevocationEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.TOKEN_REVOCATION_ENDPOINT, tokenRevocationEndpoint);
+            return this.setting(ConfigurationSettingNames.Provider.TOKEN_REVOCATION_ENDPOINT, tokenRevocationEndpoint);
         }
 
         public Builder tokenIntrospectionEndpoint(String tokenIntrospectionEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.TOKEN_INTROSPECTION_ENDPOINT, tokenIntrospectionEndpoint);
+            return this.setting(ConfigurationSettingNames.Provider.TOKEN_INTROSPECTION_ENDPOINT, tokenIntrospectionEndpoint);
         }
 
-        public Builder oidcClientRegistrationEndpoint(String oidcClientRegistrationEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.OIDC_CLIENT_REGISTRATION_ENDPOINT, oidcClientRegistrationEndpoint);
-        }
-
-        public Builder oidcUserInfoEndpoint(String oidcUserInfoEndpoint) {
-            return (Builder)this.setting(ConfigurationSettingNames.Provider.OIDC_USER_INFO_ENDPOINT, oidcUserInfoEndpoint);
+        public Builder tokenEndpoint(String tokenEndpoint) {
+            return this.setting(ConfigurationSettingNames.Provider.TOKEN_ENDPOINT,tokenEndpoint);
         }
 
         public ProviderSettings build() {

@@ -8,13 +8,13 @@ package com.generatera.security.authorization.server.specification;
  */
 public final  class TokenSettingsProvider {
 
-    private final TokenSettings settings;
+    private final TokenSettingsProperties settings;
 
-    public TokenSettingsProvider(TokenSettings tokenSettings) {
+    public TokenSettingsProvider(TokenSettingsProperties tokenSettings) {
         this.settings = tokenSettings;
     }
 
-    public  TokenSettings getTokenSettings() {
+    public TokenSettingsProperties getTokenSettings() {
         return settings;
     }
 

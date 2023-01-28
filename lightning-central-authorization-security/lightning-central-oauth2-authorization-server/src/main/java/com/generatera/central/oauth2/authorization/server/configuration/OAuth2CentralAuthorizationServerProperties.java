@@ -1,5 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.configuration;
 
+import com.generatera.central.oauth2.authorization.server.configuration.components.provider.OAuth2ProviderSettingProperties;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -17,6 +18,8 @@ public class OAuth2CentralAuthorizationServerProperties {
     private final AuthorizationStoreComponentConfig authorizationStore = new AuthorizationStoreComponentConfig();
 
     private final AuthorizationConsentComponentConfig authorizationConsentStore = new AuthorizationConsentComponentConfig();
+
+    private final OAuth2ProviderSettingProperties provider = new OAuth2ProviderSettingProperties();
 
     public enum StoreKind {
         REDIS,

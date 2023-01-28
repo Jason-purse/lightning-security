@@ -14,7 +14,7 @@ public class OAuth2LoginProperties {
 
     private Boolean isSeparation = false;
 
-    private String loginProcessUrl;
+    //private String loginProcessUrl;
 
     private BackendSeparation backendSeparation = new BackendSeparation();
 

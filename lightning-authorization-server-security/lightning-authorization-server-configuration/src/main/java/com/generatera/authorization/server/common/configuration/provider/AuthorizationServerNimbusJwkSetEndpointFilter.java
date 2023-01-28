@@ -1,5 +1,6 @@
 package com.generatera.authorization.server.common.configuration.provider;
 
+import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.nimbusds.jose.jwk.JWKMatcher;
 import com.nimbusds.jose.jwk.JWKSelector;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -25,13 +26,13 @@ import java.io.PrintWriter;
  * @Description 基于 oauth2  jwk set 规范
  */
 public final class AuthorizationServerNimbusJwkSetEndpointFilter extends OncePerRequestFilter {
-    private static final String DEFAULT_JWK_SET_ENDPOINT_URI = "/oauth2/jwks";
+    private static final String DEFAULT_JWK_SET_ENDPOINT_URI = ProviderSettingProperties.JWT_SET_ENDPOINT;
     private final JWKSource<SecurityContext> jwkSource;
     private final JWKSelector jwkSelector;
     private final RequestMatcher requestMatcher;
 
     public AuthorizationServerNimbusJwkSetEndpointFilter(JWKSource<SecurityContext> jwkSource) {
-        this(jwkSource, "/oauth2/jwks");
+        this(jwkSource, DEFAULT_JWK_SET_ENDPOINT_URI);
     }
 
     public AuthorizationServerNimbusJwkSetEndpointFilter(JWKSource<SecurityContext> jwkSource, String jwkSetEndpointUri) {

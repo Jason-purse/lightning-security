@@ -29,9 +29,9 @@ public interface LightningTokenType {
             super(value);
         }
 
-        public static LightningAuthenticationTokenType ACCESS_TOKEN_TYPE = new LightningAuthenticationTokenType("ACCESS_TOKEN");
+        public final static LightningAuthenticationTokenType ACCESS_TOKEN_TYPE = new LightningAuthenticationTokenType("ACCESS_TOKEN");
 
-        public static LightningAuthenticationTokenType REFRESH_TOKEN_TYPE = new LightningAuthenticationTokenType("REFRESH_TOKE");
+        public final static LightningAuthenticationTokenType REFRESH_TOKEN_TYPE = new LightningAuthenticationTokenType("REFRESH_TOKE");
     }
 
 
@@ -39,7 +39,11 @@ public interface LightningTokenType {
 
          public LightningTokenValueType(String value) {super(value);}
 
+        /**
+         * bearer token
+         */
         public static final LightningTokenValueType BEARER_TOKEN_TYPE = new LightningTokenValueType("Bearer");
+
     }
 
     /**
@@ -62,6 +66,10 @@ public interface LightningTokenType {
          */
         public static final LightningTokenValueFormat OPAQUE = new LightningTokenValueFormat("opaque");
 
+        /**
+         * 随机字符串 ..
+         */
+        public static final LightningTokenValueType PLAIN_TOKEN_TYPE = new LightningTokenValueType("plain");
     }
 
 

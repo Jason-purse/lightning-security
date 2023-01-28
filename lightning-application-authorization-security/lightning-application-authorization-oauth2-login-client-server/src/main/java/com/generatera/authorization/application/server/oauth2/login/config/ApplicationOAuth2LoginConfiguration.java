@@ -1,18 +1,19 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
-import com.generatera.authorization.server.common.configuration.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2GrantedAuthoritiesMapper;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2UserService;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOidcUserService;
-import com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.OAuth2AuthorizationExtRequestResolver;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningAuthorizationRequestRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningOAuth2AuthorizationRequestResolver;
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningAnonymousOAuthorizedClientRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningOAuthorizedClientService;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
 import com.generatera.authorization.application.server.oauth2.login.config.user.OidcUserDetails;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
+import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -29,12 +30,10 @@ import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAut
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.ForwardAuthenticationSuccessHandler;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * 可以 需要 一个token 生成器 (作为oauth2 client 登陆时）
@@ -50,8 +49,6 @@ public class ApplicationOAuth2LoginConfiguration {
     @EnableConfigurationProperties(OAuth2LoginProperties.class)
     @RequiredArgsConstructor
     public static class OAuth2LoginConfiguration {
-        private final AuthorizationExtEndpointConfig authorizationExtEndpointConfig = new AuthorizationExtEndpointConfig();
-
 
         @Bean
         @ConditionalOnMissingBean(LightningOidcUserService.class)
@@ -69,8 +66,9 @@ public class ApplicationOAuth2LoginConfiguration {
 
 
         @Bean
-        public LightningAppAuthServerConfigurer lightningOAuth2LoginConfigurer(
+        public LightningAuthServerConfigurer lightningOAuth2LoginConfigurer(
                 OAuth2LoginProperties properties,
+                ApplicationAuthServerProperties authServerProperties,
                 @Autowired(required = false)
                         LightningAuthorizationRequestRepository repository,
                 @Autowired(required = false)
@@ -87,7 +85,7 @@ public class ApplicationOAuth2LoginConfiguration {
                         LightningAnonymousOAuthorizedClientRepository anonymousOAuthorizedClientRepository,
                 @Autowired(required = false)
                         LightningOAuth2AccessTokenResponseClient accessTokenResponseClient) {
-            return new LightningAppAuthServerConfigurer() {
+            return new LightningAuthServerConfigurer() {
                 @Override
                 public void configure(HttpSecurity securityBuilder) throws Exception {
                     OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer = securityBuilder.oauth2Login();
@@ -98,9 +96,14 @@ public class ApplicationOAuth2LoginConfiguration {
                     // 授权放行url
                     urlWhiteList(oAuth2LoginConfigurer, patterns);
 
-
-                    if (StringUtils.hasText(properties.getLoginProcessUrl())) {
-                        oAuth2LoginConfigurer.loginProcessingUrl(properties.getLoginProcessUrl());
+                    // 使用 token 端点来表示登录处理Url ..
+                    // 不管是否为前后端分离登录,都可以使用token 端点作为登录处理url
+                    //if (StringUtils.hasText(properties.getLoginProcessUrl())) {
+                    //    oAuth2LoginConfigurer.loginProcessingUrl(properties.getLoginProcessUrl());
+                    //}
+                    ProviderSettingProperties providerSettingProperties = authServerProperties.getProviderSettingProperties();
+                    if(StringUtils.hasText(providerSettingProperties.getTokenEndpoint())) {
+                        oAuth2LoginConfigurer.loginProcessingUrl(providerSettingProperties.getTokenEndpoint());
                     }
 
                     oauth2AuthorizationCodeFlowConfig(oAuth2LoginConfigurer, properties, repository, requestResolver);
@@ -193,8 +196,9 @@ public class ApplicationOAuth2LoginConfiguration {
                 }
 
                 private static void noSeparationConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, List<String> patterns, OAuth2LoginProperties properties) {
+
                     OAuth2LoginProperties.NoSeparation noSeparation = properties.getNoSeparation();
-                    if (StringUtils.hasText(properties.getLoginProcessUrl())) {
+                    if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
                         oAuth2LoginConfigurer.loginPage(noSeparation.getLoginPageUrl());
                     }
 
@@ -264,35 +268,7 @@ public class ApplicationOAuth2LoginConfiguration {
                         patterns.add(noSeparation.getFailureUrl());
                     }
                 }
-
             };
-        }
-
-
-        public void authorizationExtEndpoint(Consumer<AuthorizationExtEndpointConfig> configConsumer) {
-            configConsumer.accept(authorizationExtEndpointConfig);
-        }
-
-
-        public static final class AuthorizationExtEndpointConfig {
-            private String authorizationExtRequestBaseUri;
-            private OAuth2AuthorizationExtRequestResolver authorizationExtRequestResolver;
-
-            private AuthorizationExtEndpointConfig() {
-            }
-
-            public AuthorizationExtEndpointConfig baseUri(String authorizationExtRequestBaseUri) {
-                Assert.hasText(authorizationExtRequestBaseUri, "authorizationRequestBaseUri cannot be empty");
-                this.authorizationExtRequestBaseUri = authorizationExtRequestBaseUri;
-                return this;
-            }
-
-            public AuthorizationExtEndpointConfig authorizationExtRequestResolver(OAuth2AuthorizationExtRequestResolver authorizationRequestResolver) {
-                Assert.notNull(authorizationRequestResolver, "authorizationRequestResolver cannot be null");
-                this.authorizationExtRequestResolver = authorizationRequestResolver;
-                return this;
-            }
-
         }
     }
 

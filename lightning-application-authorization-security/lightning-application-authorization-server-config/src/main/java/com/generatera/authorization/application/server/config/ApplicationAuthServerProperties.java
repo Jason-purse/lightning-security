@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.config;
 
 import com.generatera.authorization.server.common.configuration.provider.metadata.oidc.OidcProviderConfigurationEndpointFilter;
+import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -16,6 +17,12 @@ public class ApplicationAuthServerProperties {
     public static final String APPLICATION_AUTH_SERVER_PREFIX = "lightning.auth.app.server.config";
 
     private ServerMetaDataEndpointConfig serverMetaDataEndpointConfig = new ServerMetaDataEndpointConfig();
+
+    /**
+     * 提供者配置属性
+     * 为元数据端点提供属性 为资源服务器 交换公钥 提供机会 ...
+     */
+    private final ProviderSettingProperties providerSettingProperties = new ProviderSettingProperties();
 
 
     @Data

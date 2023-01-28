@@ -1,11 +1,12 @@
 package com.generatera.security.authorization.server.specification.components.token.format.jwt;
 
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
-import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
 import com.generatera.security.authorization.server.specification.TokenIssueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenContext;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenCustomizer;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
-import com.generatera.security.authorization.server.specification.components.token.format.jwt.customizer.LightningJwtCustomizer;
+import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
+import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.JwsHeader;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
@@ -13,6 +14,8 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author FLJ
@@ -24,22 +27,21 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
 
     private final LightningJwtEncoder jwtEncoder;
 
+    private List<String> authoritiesName = Arrays.asList(JwtExtClaimNames.SCOPE_CLAIM,JwtExtClaimNames.SCOPE_SHORT_CLAIM);
+
+    public void setAuthoritiesName(List<String> authoritiesName) {
+        Assert.notNull(authoritiesName,"authoritiesName must not be null !!!");
+        this.authoritiesName = authoritiesName;
+    }
+
     /**
      * lightning jwt customizer ...
      */
-    private LightningJwtCustomizer jwtCustomizer;
-
-    private final Boolean isOpaque;
+    private LightningTokenCustomizer<JwtEncodingContext> jwtCustomizer;
 
     public DefaultLightningJwtGenerator(LightningJwtEncoder jwtEncoder) {
-       this(jwtEncoder,false);
-    }
-
-    public DefaultLightningJwtGenerator(LightningJwtEncoder jwtEncoder,Boolean isOpaque) {
         Assert.notNull(jwtEncoder, "jwtEncoder cannot be null");
-        Assert.notNull(isOpaque,"isOpaque cannot be null");
         this.jwtEncoder = jwtEncoder;
-        this.isOpaque = false;
     }
 
     @Override
@@ -69,16 +71,22 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
             // 访问Token
             if (context.getTokenType() == LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE) {
                 claimsBuilder.notBefore(issuedAt);
-                if(!isOpaque) {
-                    if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
-                        claimsBuilder.claim("scope", org.apache.commons.lang3.StringUtils.joinWith(",",principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new)));
-                    }
+                if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
+                    // 取第一个 ...
+                    claimsBuilder.claim(authoritiesName.get(0), org.apache.commons.lang3.StringUtils.joinWith(",",principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new)));
                 }
             } else {
-                // 刷新token 配置
+                // oidc 处理 ...
+                // 但是没有,所以不需要 ..
+                //claimsBuilder.claim("azp", registeredClient.getClientId());
+                //if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(context.getAuthorizationGrantType())) {
+                //    OAuth2AuthorizationRequest authorizationRequest = (OAuth2AuthorizationRequest)context.getAuthorization().getAttribute(OAuth2AuthorizationRequest.class.getName());
+                //    String nonce = (String)authorizationRequest.getAdditionalParameters().get("nonce");
+                //    if (StringUtils.hasText(nonce)) {
+                //        claimsBuilder.claim("nonce", nonce);
+                //    }
+                //}
             }
-
-            claimsBuilder.claim("isOpaque",isOpaque);
 
             // 加密算法可以定制 ...
             JwsHeader.Builder headersBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
@@ -89,7 +97,7 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
                         .context(contextMap -> contextMap.putAll(context.getContexts()));
 
                 JwtEncodingContext jwtContext = jwtContextBuilder.build();
-                this.jwtCustomizer.customizeToken(jwtContext);
+                this.jwtCustomizer.customize(jwtContext);
             }
 
             JwsHeader headers = headersBuilder.build();
@@ -98,7 +106,7 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
         }
     }
 
-    public void setJwtCustomizer(LightningJwtCustomizer jwtCustomizer) {
+    public void setJwtCustomizer(LightningTokenCustomizer<JwtEncodingContext> jwtCustomizer) {
         Assert.notNull(jwtCustomizer, "jwtCustomizer cannot be null");
         this.jwtCustomizer = jwtCustomizer;
     }

@@ -2,7 +2,7 @@ package com.generatera.security.authorization.server.specification.components.to
 
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.TokenIssueFormat;
-import com.generatera.security.authorization.server.specification.TokenSettings;
+import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContext;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType;
 import org.springframework.security.core.Authentication;
@@ -34,8 +34,8 @@ public interface LightningTokenContext extends Context {
         return this.get(ProviderContext.class);
     }
 
-    default TokenSettings getTokenSettings() {
-        return this.get(TokenSettings.class);
+    default TokenSettingsProperties getTokenSettings() {
+        return this.get(TokenSettingsProperties.class);
     }
 
     default LightningTokenValueType getTokenValueType() {
@@ -100,8 +100,8 @@ public interface LightningTokenContext extends Context {
             return this.put(LightningTokenType.LightningAuthenticationTokenType.class, tokenType);
         }
 
-        public B tokenSettings(TokenSettings tokenSettings) {
-            return this.put(TokenSettings.class, tokenSettings);
+        public B tokenSettings(TokenSettingsProperties tokenSettings) {
+            return this.put(TokenSettingsProperties.class, tokenSettings);
         }
 
 

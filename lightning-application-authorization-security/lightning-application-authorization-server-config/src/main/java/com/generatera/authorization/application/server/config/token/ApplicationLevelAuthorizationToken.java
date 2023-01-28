@@ -1,6 +1,8 @@
 package com.generatera.authorization.application.server.config.token;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
+import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningRefreshToken;
 import lombok.AllArgsConstructor;
 
 import java.io.Serializable;
@@ -17,15 +19,15 @@ public interface ApplicationLevelAuthorizationToken extends Serializable {
      * 获取OAuth2 访问 token
       */
 
-    Object accessToken();
+    LightningAccessToken accessToken();
 
     /**
      * 获取OAuth2 刷新Token
      */
-    Object refreshToken();
+    LightningRefreshToken refreshToken();
 
 
-    public static ApplicationLevelAuthorizationToken of(Object oAuth2AccessToken,Object oAuth2RefreshToken) {
+    public static ApplicationLevelAuthorizationToken of(LightningAccessToken oAuth2AccessToken,LightningRefreshToken oAuth2RefreshToken) {
         return new DefaultApplicationLevelAuthorizationToken(oAuth2AccessToken,oAuth2RefreshToken);
     }
 }
@@ -33,19 +35,19 @@ public interface ApplicationLevelAuthorizationToken extends Serializable {
 @AllArgsConstructor
 class DefaultApplicationLevelAuthorizationToken implements ApplicationLevelAuthorizationToken {
 
-    private final Object auth2AccessToken;
+    private final LightningAccessToken auth2AccessToken;
 
-    private final Object auth2RefreshToken;
+    private final LightningRefreshToken auth2RefreshToken;
 
     @Override
     @JsonGetter
-    public Object accessToken() {
+    public LightningAccessToken accessToken() {
         return auth2AccessToken;
     }
 
     @Override
     @JsonGetter
-    public Object refreshToken() {
+    public LightningRefreshToken refreshToken() {
         return auth2RefreshToken;
     }
 }

@@ -1,4 +1,5 @@
 package com.generatera.authorization.server.common.configuration.authorization;
+
 /**
  * @author FLJ
  * @date 2023/1/9
@@ -8,4 +9,6 @@ package com.generatera.authorization.server.common.configuration.authorization;
 public interface LightningAuthorization {
 
     public static final String USER_INFO_ATTRIBUTE_NAME = "userinfo";
+
+
 }

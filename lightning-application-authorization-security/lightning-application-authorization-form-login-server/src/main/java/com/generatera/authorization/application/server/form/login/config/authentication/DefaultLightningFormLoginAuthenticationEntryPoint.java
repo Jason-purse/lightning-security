@@ -164,14 +164,14 @@ public class DefaultLightningFormLoginAuthenticationEntryPoint implements Lightn
                 );
         LightningToken refreshToken = tokenGenerator.
                 generate(
-                        new LightningAccessTokenContext(
+                        new LightningRefreshTokenContext(
                                 DefaultLightningTokenContext.builder()
                                         .authentication(authentication)
                                         .providerContext(ProviderContextHolder.getProviderContext())
                                         .tokenSettings(tokenSettingsProvider.getTokenSettings())
                                         .tokenValueType(tokenSettingsProvider.getTokenSettings().getRefreshTokenValueType())
-                                        .tokenIssueFormat(tokenSettingsProvider.getTokenSettings().getRefreshTokenIssueFormat())
-                                        .tokenValueFormat(tokenSettingsProvider.getTokenSettings().getAccessTokenValueFormat())
+                                        .tokenIssueFormat(tokenSettingsProvider.getTokenSettings().getAccessTokenIssueFormat())
+                                        .tokenValueFormat(tokenSettingsProvider.getTokenSettings().getRefreshTokenValueFormat())
                                         .tokenType(LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE)
                                         .build())
                 );
@@ -208,7 +208,7 @@ public class DefaultLightningFormLoginAuthenticationEntryPoint implements Lightn
                 JsonUtil.getDefaultJsonUtil().asJSON(
                         Result.success(200, loginSuccessMessage,
                                 ApplicationLevelAuthorizationToken
-                                        .of(token.getTokenValue(), refreshToken.getTokenValue())
+                                        .of(accessToken, ((LightningToken.LightningRefreshToken) refreshToken))
                         )
                 )
         );

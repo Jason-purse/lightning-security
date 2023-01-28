@@ -11,6 +11,8 @@ public interface JwtExtClaimNames {
      */
     public static final String OPAQUE_CLAIM = "opaque";
 
+    // -------- scope 和 authorities 简单来说都可以用作 AUTHORITIES
+    // 如果需要细化,那么scope 和 authorties 代表不同的东西 ..
     public static final String SCOPE_CLAIM = "scope";
 
     public static final String SCOPE_SHORT_CLAIM = "scp";
