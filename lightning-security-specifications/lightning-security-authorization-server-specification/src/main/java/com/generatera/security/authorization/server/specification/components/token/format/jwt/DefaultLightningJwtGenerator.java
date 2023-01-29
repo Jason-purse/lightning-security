@@ -46,64 +46,67 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
 
     @Override
     public LightningJwt generate(LightningTokenContext context) {
-        if (!TokenIssueFormat.SELF_CONTAINED.equals(context.getTokenSettings().getAccessTokenIssueFormat())) {
-            return null;
-        } else {
-            String issuer = null;
-            if (context.getProviderContext() != null) {
-                issuer = context.getProviderContext().getIssuer();
-            }
-
-            Instant issuedAt = Instant.now();
-            Instant expiresAt = issuedAt.plus(context.getTokenSettings().getAccessTokenTimeToLive());
-
-            JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder();
-            if (StringUtils.hasText(issuer)) {
-                claimsBuilder.issuer(issuer);
-            }
-
-            LightningUserPrincipal principal = context.getPrincipal();
-            claimsBuilder
-                    .subject(principal.getUsername())
-                    .audience(context.getTokenSettings().getAudiences())
-                    .issuedAt(issuedAt)
-                    .expiresAt(expiresAt);
-            // 访问Token
-            if (context.getTokenType() == LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE) {
-                claimsBuilder.notBefore(issuedAt);
-                if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
-                    // 取第一个 ...
-                    claimsBuilder.claim(authoritiesName.get(0), org.apache.commons.lang3.StringUtils.joinWith(",",principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new)));
-                }
+        if(context.getTokenType() != null && (LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE.value().equals(context.getTokenType().value()))) {
+            if (!TokenIssueFormat.SELF_CONTAINED.equals(context.getTokenSettings().getAccessTokenIssueFormat())) {
+                return null;
             } else {
-                // oidc 处理 ...
-                // 但是没有,所以不需要 ..
-                //claimsBuilder.claim("azp", registeredClient.getClientId());
-                //if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(context.getAuthorizationGrantType())) {
-                //    OAuth2AuthorizationRequest authorizationRequest = (OAuth2AuthorizationRequest)context.getAuthorization().getAttribute(OAuth2AuthorizationRequest.class.getName());
-                //    String nonce = (String)authorizationRequest.getAdditionalParameters().get("nonce");
-                //    if (StringUtils.hasText(nonce)) {
-                //        claimsBuilder.claim("nonce", nonce);
-                //    }
-                //}
+                String issuer = null;
+                if (context.getProviderContext() != null) {
+                    issuer = context.getProviderContext().getIssuer();
+                }
+
+                Instant issuedAt = Instant.now();
+                Instant expiresAt = issuedAt.plus(context.getTokenSettings().getAccessTokenTimeToLive());
+
+                JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder();
+                if (StringUtils.hasText(issuer)) {
+                    claimsBuilder.issuer(issuer);
+                }
+
+                LightningUserPrincipal principal = context.getPrincipal();
+                claimsBuilder
+                        .subject(principal.getUsername())
+                        .audience(context.getTokenSettings().getAudiences())
+                        .issuedAt(issuedAt)
+                        .expiresAt(expiresAt);
+                // 访问Token
+                if (context.getTokenType() == LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE) {
+                    claimsBuilder.notBefore(issuedAt);
+                    if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
+                        // 取第一个 ...
+                        claimsBuilder.claim(authoritiesName.get(0), org.apache.commons.lang3.StringUtils.joinWith(" ",principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new)));
+                    }
+                } else {
+                    // oidc 处理 ...
+                    // 但是没有,所以不需要 ..
+                    //claimsBuilder.claim("azp", registeredClient.getClientId());
+                    //if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(context.getAuthorizationGrantType())) {
+                    //    OAuth2AuthorizationRequest authorizationRequest = (OAuth2AuthorizationRequest)context.getAuthorization().getAttribute(OAuth2AuthorizationRequest.class.getName());
+                    //    String nonce = (String)authorizationRequest.getAdditionalParameters().get("nonce");
+                    //    if (StringUtils.hasText(nonce)) {
+                    //        claimsBuilder.claim("nonce", nonce);
+                    //    }
+                    //}
+                }
+
+                // 加密算法可以定制 ...
+                JwsHeader.Builder headersBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
+                if (this.jwtCustomizer != null) {
+                    JwtEncodingContext.Builder jwtContextBuilder
+                            = JwtEncodingContext.with(headersBuilder, claimsBuilder)
+                            // 直接尝试 context 复制即可 ..
+                            .context(contextMap -> contextMap.putAll(context.getContexts()));
+
+                    JwtEncodingContext jwtContext = jwtContextBuilder.build();
+                    this.jwtCustomizer.customize(jwtContext);
+                }
+
+                JwsHeader headers = headersBuilder.build();
+                JwtClaimsSet claims = claimsBuilder.build();
+                return this.jwtEncoder.encode(JwtEncoderParameters.from(headers, claims, context.getTokenType(), context.getTokenValueType()));
             }
-
-            // 加密算法可以定制 ...
-            JwsHeader.Builder headersBuilder = JwsHeader.with(SignatureAlgorithm.RS256);
-            if (this.jwtCustomizer != null) {
-                JwtEncodingContext.Builder jwtContextBuilder
-                        = JwtEncodingContext.with(headersBuilder, claimsBuilder)
-                        // 直接尝试 context 复制即可 ..
-                        .context(contextMap -> contextMap.putAll(context.getContexts()));
-
-                JwtEncodingContext jwtContext = jwtContextBuilder.build();
-                this.jwtCustomizer.customize(jwtContext);
-            }
-
-            JwsHeader headers = headersBuilder.build();
-            JwtClaimsSet claims = claimsBuilder.build();
-            return this.jwtEncoder.encode(JwtEncoderParameters.from(headers, claims, context.getTokenType(), context.getTokenValueType()));
         }
+        return null;
     }
 
     public void setJwtCustomizer(LightningTokenCustomizer<JwtEncodingContext> jwtCustomizer) {

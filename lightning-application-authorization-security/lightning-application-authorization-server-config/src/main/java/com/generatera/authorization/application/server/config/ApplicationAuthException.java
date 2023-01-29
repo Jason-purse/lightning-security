@@ -50,7 +50,16 @@ public class ApplicationAuthException extends AbstractApplicationException {
         return of(ApplicationAuthErrorConstant.AUTH_OAUTH2_AUTHENTICATION_EXCEPTION);
     }
 
+    public static ApplicationAuthException authenticationServiceException() {
+        return of(ApplicationAuthErrorConstant.AUTH_SERVICE_EXCEPTION);
+    }
+
+    public static ApplicationAuthException authenticationFailureException() {
+        return of(ApplicationAuthErrorConstant.AUTH_COMMON_FAILURE_EXCEPTION);
+    }
+
     public static ApplicationAuthException of(ApplicationAuthErrorConstant errorConstant) {
         return new ApplicationAuthException(errorConstant.getValue(), errorConstant.getIdentify());
     }
+
 }

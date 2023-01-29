@@ -17,7 +17,11 @@ import java.util.Map;
  */
 public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationToken {
     private final Authentication userPrincipal;
+
+    @Nullable
     private final LightningAccessToken accessToken;
+
+    @Nullable
     private final LightningRefreshToken refreshToken;
     private final Map<String, Object> additionalParameters;
 
@@ -25,14 +29,13 @@ public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationTo
         this(userPrincipal, accessToken, null);
     }
 
-    public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, LightningAccessToken accessToken, @Nullable LightningRefreshToken refreshToken) {
+    public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, @Nullable LightningAccessToken accessToken, @Nullable LightningRefreshToken refreshToken) {
         this(userPrincipal, accessToken, refreshToken, Collections.emptyMap());
     }
 
-    public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, LightningAccessToken accessToken, @Nullable LightningRefreshToken refreshToken, Map<String, Object> additionalParameters) {
+    public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, @Nullable LightningAccessToken accessToken, @Nullable LightningRefreshToken refreshToken, Map<String, Object> additionalParameters) {
         super(Collections.emptyList());
         Assert.notNull(userPrincipal, "userPrincipal cannot be null");
-        Assert.notNull(accessToken, "accessToken cannot be null");
         Assert.notNull(additionalParameters, "additionalParameters cannot be null");
         this.userPrincipal = userPrincipal;
         this.accessToken = accessToken;
@@ -41,11 +44,11 @@ public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationTo
     }
 
     public Object getPrincipal() {
-        return this.userPrincipal;
+        return this.userPrincipal.getPrincipal();
     }
 
     public Object getCredentials() {
-        return "";
+        return this.userPrincipal.getCredentials();
     }
 
 
@@ -62,4 +65,7 @@ public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationTo
         return this.additionalParameters;
     }
 
+    public Authentication getAuthentication() {
+        return userPrincipal;
+    }
 }

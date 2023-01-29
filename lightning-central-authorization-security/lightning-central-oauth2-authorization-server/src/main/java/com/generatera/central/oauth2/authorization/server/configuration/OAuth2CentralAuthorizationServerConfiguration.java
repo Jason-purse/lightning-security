@@ -12,6 +12,7 @@ import com.generatera.security.authorization.server.specification.TokenSettingsP
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -20,7 +21,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
@@ -73,7 +73,7 @@ public class OAuth2CentralAuthorizationServerConfiguration {
      * 增加了额外的provider 信息
      */
     @Bean
-    @Primary
+    @Qualifier("oauth2_token_setting_provider")
     public TokenSettingsProvider oauth2TokenSettingProvider(TokenSettingsProvider tokenSettingsProvider) {
         TokenSettingsProperties tokenSettings = tokenSettingsProvider.getTokenSettings();
         return new TokenSettingsProvider(

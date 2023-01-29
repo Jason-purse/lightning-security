@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
@@ -196,6 +197,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
      * ProviderContextHolder 需要单独处理
      */
     @Bean
+    @Qualifier("token_settings_provider")
     public TokenSettingsProvider settingsProvider(JWKSourceProvider jwkSourceProvider) {
 
         TokenSettingsProperties.Builder builder = TokenSettingsProperties.builder();
@@ -216,6 +218,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                         .refreshTokenValueType(refreshToken.getTokenValueType())
                         .refreshTokenTimeToLive(Duration.ofMillis(refreshToken.getTokenTimeToLive()))
                         .reuseRefreshTokens(refreshToken.getReuseRefreshToken())
+                        .grantTypes(properties.getTokenSettings().getGrantTypes())
                         .build()
         );
     }

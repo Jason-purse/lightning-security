@@ -40,13 +40,11 @@ class DefaultApplicationLevelAuthorizationToken implements ApplicationLevelAutho
     private final LightningRefreshToken auth2RefreshToken;
 
     @Override
-    @JsonGetter
     public LightningAccessToken accessToken() {
         return auth2AccessToken;
     }
 
     @Override
-    @JsonGetter
     public LightningRefreshToken refreshToken() {
         return auth2RefreshToken;
     }

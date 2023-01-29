@@ -1,7 +1,9 @@
 package com.generatera.authorization.application.server.config.token;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthException;
 import com.generatera.authorization.server.common.configuration.provider.metadata.HttpMessageConverters;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthError;
+import com.jianyue.lightning.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
@@ -21,11 +23,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 /**
  * @author FLJ
  * @date 2023/1/28
  * @time 16:37
  * @Description 认证错误的http 消息转换器 ...
+ *
+ * 主要为了转换{@link com.generatera.security.authorization.server.specification.components.authorization.LightningAuthenticationException}
+ * 但是它的工作主要被{@link com.generatera.authorization.application.server.config.authentication.DefaultLightningAbstractAuthenticationEntryPoint}
+ * 代替了 ...
+ *
+ * 保留它仅仅是为了{@link AuthTokenEndpointFilter}的完整性
+ *
+ * 其次它的反序列化动作,并没有得到验证和使用
+ *
+ * // TODO: 2023/1/29  后续修改反序列化动作
  */
 public class AuthErrorHttpMessageConverter extends AbstractHttpMessageConverter<LightningAuthError> {
     private static final Charset DEFAULT_CHARSET;
@@ -46,7 +59,7 @@ public class AuthErrorHttpMessageConverter extends AbstractHttpMessageConverter<
     @SuppressWarnings("unchecked")
     protected LightningAuthError readInternal(@NotNull Class<? extends LightningAuthError> clazz, @NotNull HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
         try {
-            Map<String, Object> errorParameters = (Map<String,Object>)this.jsonMessageConverter.read(STRING_OBJECT_MAP.getType(), null, inputMessage);
+            Map<String, Object> errorParameters = (Map<String, Object>) this.jsonMessageConverter.read(STRING_OBJECT_MAP.getType(), null, inputMessage);
             LightningAuthError convert = this.errorConverter.convert(errorParameters.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, (entry) -> String.valueOf(entry.getValue()))));
             assert convert != null;
             return convert;
@@ -57,8 +70,8 @@ public class AuthErrorHttpMessageConverter extends AbstractHttpMessageConverter<
 
     protected void writeInternal(@NotNull LightningAuthError authError, @NotNull HttpOutputMessage outputMessage) throws HttpMessageNotWritableException {
         try {
-            Map<String, String> errorParameters = this.errorParametersConverter.convert(authError);
-            this.jsonMessageConverter.write(errorParameters, STRING_OBJECT_MAP.getType(), MediaType.APPLICATION_JSON, outputMessage);
+            this.jsonMessageConverter.write(Result.error(ApplicationAuthException.authenticationFailureException().getCode(),
+                    authError.getDescription()), STRING_OBJECT_MAP.getType(), MediaType.APPLICATION_JSON, outputMessage);
         } catch (Exception var4) {
             throw new HttpMessageNotWritableException("An error occurred writing the Auth  Error: " + var4.getMessage(), var4);
         }

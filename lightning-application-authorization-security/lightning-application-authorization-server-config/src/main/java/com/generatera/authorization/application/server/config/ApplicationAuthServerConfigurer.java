@@ -95,6 +95,11 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
         return this;
     }
 
+    public ApplicationAuthServerConfigurer<B> tokenEndpoint(Customizer<AuthTokenEndpointConfigurer> tokenEndpointConfigurerCustomizer) {
+        tokenEndpointConfigurerCustomizer.customize(this.getConfigurer(AuthTokenEndpointConfigurer.class));
+        return this;
+    }
+
 
     public RequestMatcher getEndpointsMatcher() {
         return this.endpointsMatcher;
@@ -108,6 +113,7 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
         this.configurers.values().forEach((configurer) -> {
             configurer.init(builder);
         });
+
 
         // 异常处理机制 ..
         // 如果没有,则直接给出401 ...

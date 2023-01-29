@@ -12,9 +12,10 @@ import static com.generatera.authorization.application.server.oauth2.login.confi
 public class OAuth2LoginProperties {
     public static final String OAUTH2_LOGIN_AUTH_SERVER_PREFIX = "lightning.auth.app.server.oauth2.login.config";
 
-    private Boolean isSeparation = false;
-
-    //private String loginProcessUrl;
+    /**
+     * 可能存在多个,所以使用 "*"
+     */
+    private String loginProcessUrl = "/auth/v1/oauth2/login/code/*";
 
     private BackendSeparation backendSeparation = new BackendSeparation();
 

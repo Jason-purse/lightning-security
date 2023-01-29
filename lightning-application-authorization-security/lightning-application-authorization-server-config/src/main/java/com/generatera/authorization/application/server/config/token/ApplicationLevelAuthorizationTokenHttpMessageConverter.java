@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.server.common.configuration.provider.metadata.HttpMessageConverters;
+import com.jianyue.lightning.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
@@ -17,7 +18,19 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Objects;
-
+/**
+ * @author FLJ
+ * @date 2023/1/29
+ * @time 15:49
+ * @Description 默认支持 {@link ApplicationLevelAuthorizationToken}的正确序列化 ...
+ *
+ * 但是它的工作被{@link com.generatera.authorization.application.server.config.authentication.DefaultLightningAbstractAuthenticationEntryPoint} 替代了,
+ * 留下它仅仅是为了保留{@link AuthTokenEndpointConfigurer}的完整性 ..
+ *
+ * 目前它的反序列化动作并没有进行测试和使用{@link #readInternal(Class, HttpInputMessage)}
+ *
+ * // TODO: 2023/1/29 后续修改它的反序列化动作
+ */
 public class ApplicationLevelAuthorizationTokenHttpMessageConverter extends AbstractHttpMessageConverter<ApplicationLevelAuthorizationToken> {
     private static final Charset DEFAULT_CHARSET;
     private static final ParameterizedTypeReference<Map<String, Object>> STRING_OBJECT_MAP;
@@ -39,9 +52,9 @@ public class ApplicationLevelAuthorizationTokenHttpMessageConverter extends Abst
     @SuppressWarnings("unchecked")
     protected ApplicationLevelAuthorizationToken readInternal(@NotNull Class<? extends ApplicationLevelAuthorizationToken> clazz, @NotNull HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
         try {
-            Map<String, Object> tokenResponseParameters = (Map<String,Object>)this.jsonMessageConverter.read(STRING_OBJECT_MAP.getType(), null, inputMessage);
+            Map<String, Object> tokenResponseParameters = (Map<String, Object>) this.jsonMessageConverter.read(STRING_OBJECT_MAP.getType(), null, inputMessage);
             ApplicationLevelAuthorizationToken convert = this.accessTokenResponseConverter.convert(tokenResponseParameters);
-            assert  convert != null;
+            assert convert != null;
             return convert;
         } catch (Exception var5) {
             throw new HttpMessageNotReadableException("An error occurred reading the OAuth 2.0 Access Token Response: " + var5.getMessage(), var5, inputMessage);
@@ -52,7 +65,7 @@ public class ApplicationLevelAuthorizationTokenHttpMessageConverter extends Abst
         try {
             Object tokenResponseParameters = this.accessTokenResponseParametersConverter.convert(tokenResponse);
             assert tokenResponseParameters != null;
-            this.jsonMessageConverter.write(tokenResponseParameters, STRING_OBJECT_MAP.getType(), MediaType.APPLICATION_JSON, outputMessage);
+            this.jsonMessageConverter.write(Result.success(200, "LOGIN_SUCCESS", tokenResponseParameters), STRING_OBJECT_MAP.getType(), MediaType.APPLICATION_JSON, outputMessage);
         } catch (Exception var4) {
             throw new HttpMessageNotWritableException("An error occurred writing the OAuth 2.0 Access Token Response: " + var4.getMessage(), var4);
         }

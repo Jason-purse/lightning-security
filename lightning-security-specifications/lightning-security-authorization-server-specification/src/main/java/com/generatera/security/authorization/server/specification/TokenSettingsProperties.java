@@ -137,6 +137,9 @@ public class TokenSettingsProperties extends AbstractSettings {
         public Builder grantTypes(LightningTokenType.LightningAuthenticationTokenType... types) {
             return this.setting(ConfigurationSettingNames.Token.GRANT_TYPES, Arrays.asList(types));
         }
+        public Builder grantTypes(List<LightningTokenType.LightningAuthenticationTokenType> types) {
+            return this.setting(ConfigurationSettingNames.Token.GRANT_TYPES, types);
+        }
 
 
         public Builder audience(String... audiences) {

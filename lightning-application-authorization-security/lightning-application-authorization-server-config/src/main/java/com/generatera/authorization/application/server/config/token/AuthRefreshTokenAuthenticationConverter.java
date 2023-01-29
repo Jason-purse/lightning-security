@@ -1,8 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
-import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthError;
-import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthenticationException;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +10,9 @@ import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+
+import static com.generatera.authorization.application.server.config.util.AuthEndPointUtils.throwError;
+
 /**
  * @author FLJ
  * @date 2023/1/28
@@ -57,8 +58,4 @@ public final class AuthRefreshTokenAuthenticationConverter implements Authentica
         }
     }
 
-    public static void throwError(String errorCode, String parameterName, String errorUri) {
-        LightningAuthError error = new LightningAuthError(errorCode, "OAuth 2.0 Parameter: " + parameterName, errorUri);
-        throw new LightningAuthenticationException(error);
-    }
 }

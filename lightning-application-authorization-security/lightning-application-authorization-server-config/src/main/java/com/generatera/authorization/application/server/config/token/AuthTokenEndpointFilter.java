@@ -31,12 +31,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
 /**
  * @author FLJ
  * @date 2023/1/28
  * @time 16:35
  * @Description 进行 token 端点拦截,实现 刷新token获取新token ....
- *
+ * <p>
  * 后续修改,普通认证服务器使用token 端点进行token派发 ...
  */
 public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
@@ -66,7 +67,9 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
         this.authenticationManager = authenticationManager;
         this.tokenEndpointMatcher = new AntPathRequestMatcher(tokenEndpointUri, HttpMethod.POST.name());
         this.authenticationConverter = new DelegatingAuthenticationConverter(
-                List.of(new AuthRefreshTokenAuthenticationConverter()));
+                List.of(
+                        new AuthLoginRequestAuthenticationConverter(),
+                        new AuthRefreshTokenAuthenticationConverter()));
     }
 
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
@@ -85,12 +88,12 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
                 }
 
                 if (authorizationGrantAuthentication instanceof AbstractAuthenticationToken) {
-                    ((AbstractAuthenticationToken)authorizationGrantAuthentication).setDetails(this.authenticationDetailsSource.buildDetails(request));
+                    ((AbstractAuthenticationToken) authorizationGrantAuthentication).setDetails(this.authenticationDetailsSource.buildDetails(request));
                 }
 
-                AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken)this.authenticationManager.authenticate(authorizationGrantAuthentication);
+                AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken) this.authenticationManager.authenticate(authorizationGrantAuthentication);
                 this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, accessTokenAuthentication);
-            } catch (LightningAuthenticationException var7) {
+            } catch (AuthenticationException var7) { // 只要是认证异常 都接收 ...
                 SecurityContextHolder.clearContext();
                 this.authenticationFailureHandler.onAuthenticationFailure(request, response, var7);
             }
@@ -119,7 +122,7 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
     }
 
     private void sendAccessTokenResponse(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken)authentication;
+        AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken) authentication;
         LightningAccessToken accessToken = accessTokenAuthentication.getAccessToken();
         var refreshToken = accessTokenAuthentication.getRefreshToken();
         Map<String, Object> additionalParameters = accessTokenAuthentication.getAdditionalParameters();
@@ -132,10 +135,30 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
     }
 
     private void sendErrorResponse(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
-        LightningAuthError error = ((LightningAuthenticationException)exception).getError();
+
         ServletServerHttpResponse httpResponse = new ServletServerHttpResponse(response);
         httpResponse.setStatusCode(HttpStatus.BAD_REQUEST);
-        this.errorHttpResponseConverter.write(error, null, httpResponse);
+        if (exception instanceof LightningAuthenticationException lightningAuthenticationException) {
+            LightningAuthError error = lightningAuthenticationException.getError();
+            this.errorHttpResponseConverter.write(error, null, httpResponse);
+        } else {
+            if (exception.getCause() != null) {
+                if (exception.getCause() instanceof AuthenticationException value) {
+                    sendErrorResponse(request, response, value);
+                }
+            }
+            else {
+                // 否则就是普通异常..
+                this.errorHttpResponseConverter.write(
+                        new LightningAuthError(
+                                "invalid_request",
+                                exception.getMessage(), ""
+                        ),
+                        null, httpResponse
+                );
+            }
+        }
+
     }
 
     private static void throwError(String errorCode, String parameterName) {

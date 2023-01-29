@@ -207,6 +207,9 @@ public class DefaultLightningAuthorization implements LightningAuthorization, Se
             authorization.tokens = Collections.unmodifiableMap(this.tokens);
             authorization.attributes = Collections.unmodifiableMap(this.attributes);
             authorization.userPrincipal = this.princinpal;
+
+            // 必须存在 ..
+            attribute(USER_INFO_ATTRIBUTE_NAME, princinpal);
             return authorization;
         }
 

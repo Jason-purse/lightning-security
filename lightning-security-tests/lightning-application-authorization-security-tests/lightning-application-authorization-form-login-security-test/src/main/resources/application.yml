@@ -1,16 +1,10 @@
 lightning:
-  auth:
-    app:
+  app:
+    auth:
       server:
         form:
           login:
             config:
-              is-separation: true
-              backend-separation:
-                login-success-message: "登陆成功了呀，亲!"
-                login-failure-message: "登陆失败了呀，亲!"
-                enable-account-status-inform: true
-                bad-credential-message: "请检查账户密码呀，亲!"
               no-separation:
                 enable-saved-request-forward: true
                 enable-forward: false
@@ -19,6 +13,12 @@ lightning:
         config:
           server-meta-data-endpoint-config:
             enable-oidc: false
+          is-separation: true
+          backend-separation:
+            login-success-message: "登陆成功了呀，亲!"
+            login-failure-message: "登陆失败了呀，亲!"
+            bad-credential-message: "请检查账户密码呀，亲!"
+            enable-account-status-details: true
 #              no-separation:
 #                success-forward-url: /login.html
 #                failure-forward-url: /failure.html

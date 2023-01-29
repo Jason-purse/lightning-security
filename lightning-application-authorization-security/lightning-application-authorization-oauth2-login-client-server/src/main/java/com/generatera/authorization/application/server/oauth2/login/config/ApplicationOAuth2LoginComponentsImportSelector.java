@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import org.apache.commons.lang3.ObjectUtils;
@@ -11,8 +12,10 @@ import org.springframework.core.type.AnnotationMetadata;
 import java.util.LinkedList;
 
 public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBindImportSelector<OAuth2LoginProperties> {
+   private final ApplicationAuthServerProperties authServerProperties;
     public ApplicationOAuth2LoginComponentsImportSelector(BeanFactory beanFactory, Environment environment) {
         super(beanFactory, environment);
+       this.authServerProperties = bind(ApplicationAuthServerProperties.class,beanFactory,environment);
     }
 
     @NotNull
@@ -30,12 +33,17 @@ public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBi
 
         authorizationRequestConfig(properties, candidates);
 
-        // entry point handled
-        if(ObjectUtils.isNotEmpty(properties.getIsSeparation()) && properties.getIsSeparation()) {
-            candidates.add(OAuth2LoginAuthenticationEntryPointConfiguration.class.getName());
-        }
+
+        isSeparationForEntryPoint(candidates);
 
         return candidates.size() > 0 ? candidates.toArray(String[]::new) : new String[0];
+    }
+
+    private void isSeparationForEntryPoint(LinkedList<String> candidates) {
+        // entry point handled
+        if(ObjectUtils.isNotEmpty(authServerProperties.getIsSeparation()) && authServerProperties.getIsSeparation()) {
+            candidates.add(OAuth2LoginAuthenticationEntryPointConfiguration.class.getName());
+        }
     }
 
     private void authorizedClientConfig(OAuth2LoginProperties properties, LinkedList<String> candidates) {

@@ -46,6 +46,10 @@ public abstract class PropertiesBindImportSelector<T> implements ImportSelector 
     public T getProperties() {
         return properties;
     }
+
+    public static <T> T bind(Class<T> tClass,BeanFactory beanFactory,Environment environment) {
+        return ConfigurationPropertiesBindingAssist.bindProperties(tClass,beanFactory,environment);
+    }
 }
 
 
@@ -63,7 +67,7 @@ class ConfigurationPropertiesBindingAssist {
     private final static ConfigurationPropertiesBindingPostProcessor postProcessor =
             new ConfigurationPropertiesBindingPostProcessor();
 
-    private static void init(BeanFactory beanFactory,Environment environment) throws Exception {
+    private static void init(BeanFactory beanFactory, Environment environment) throws Exception {
         Assert.isTrue(beanFactory instanceof DefaultListableBeanFactory, "beanFactory must be DefaultListableBeanFactory !!!");
         Assert.isTrue(environment instanceof ConfigurableEnvironment, "environment must be ConfigurableEnvironment !!!");
         EmptyApplicationContext emptyApplicationContext = new EmptyApplicationContext(((DefaultListableBeanFactory) beanFactory), ((ConfigurableEnvironment) environment));
@@ -103,8 +107,8 @@ class ConfigurationPropertiesBindingAssist {
  * empty application context
  */
 class EmptyApplicationContext extends GenericApplicationContext {
-    private final  ConfigurableEnvironment environment;
-    public EmptyApplicationContext(DefaultListableBeanFactory beanFactory,ConfigurableEnvironment environment) {
+    private final ConfigurableEnvironment environment;
+    public EmptyApplicationContext(DefaultListableBeanFactory beanFactory, ConfigurableEnvironment environment) {
         super(beanFactory);
         Assert.notNull(environment,"environment must not be null !!!");
         this.environment = environment;
@@ -122,3 +126,4 @@ class EmptyApplicationContext extends GenericApplicationContext {
     }
 
 }
+

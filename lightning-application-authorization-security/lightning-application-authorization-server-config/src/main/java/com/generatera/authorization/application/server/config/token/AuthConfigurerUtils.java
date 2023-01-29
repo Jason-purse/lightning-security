@@ -1,9 +1,12 @@
 package com.generatera.authorization.application.server.config.token;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.application.server.config.authentication.DefaultLightningAbstractAuthenticationEntryPoint;
 import com.generatera.authorization.server.common.configuration.authorization.store.DefaultAuthenticationTokenService;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
+import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import com.generatera.security.authorization.server.specification.components.token.*;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.DefaultLightningJwtGenerator;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtEncodingContext;
@@ -12,13 +15,17 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 import org.springframework.core.ResolvableType;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
@@ -31,7 +38,64 @@ import java.util.List;
 import java.util.Map;
 
 public final class AuthConfigurerUtils {
+
+    public static final ContextAnnotationAutowireCandidateResolver resolver = new ContextAnnotationAutowireCandidateResolver();
     private AuthConfigurerUtils() {
+    }
+
+
+    public static <B extends HttpSecurityBuilder<B>> LightningAuthenticationEntryPoint getAuthenticationEntryPoint(B builder) {
+        LightningAuthenticationEntryPoint authenticationEntryPoint = builder.getSharedObject(LightningAuthenticationEntryPoint.class);
+        if (authenticationEntryPoint == null) {
+            // 尝试从bean 工厂中获取
+            LightningAuthenticationEntryPoint bean = getOptionalBean(builder, LightningAuthenticationEntryPoint.class);
+            authenticationEntryPoint = bean;
+            if (bean == null) {
+
+                ApplicationAuthServerProperties loginProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
+
+                // todo ...
+                DefaultLightningAbstractAuthenticationEntryPoint entryPoint = new DefaultLightningAbstractAuthenticationEntryPoint(
+                        loginProperties.getBackendSeparation().getEnableAuthFailureDetails(),
+                        loginProperties.getBackendSeparation().getEnableAccountStatusDetails()
+                );
+                entryPointConfig(entryPoint, loginProperties);
+                builder.setSharedObject(LightningAuthenticationEntryPoint.class, entryPoint);
+                authenticationEntryPoint = entryPoint;
+            }
+        }
+
+        // 认证entry point
+        return authenticationEntryPoint;
+    }
+
+    private static void entryPointConfig(DefaultLightningAbstractAuthenticationEntryPoint point, ApplicationAuthServerProperties properties) {
+        ApplicationAuthServerProperties.BackendSeparation backendSeparation = properties.getBackendSeparation();
+
+        if (StringUtils.hasText(backendSeparation.getLoginSuccessMessage())) {
+            point.setLoginSuccessMessage(backendSeparation.getLoginSuccessMessage());
+        }
+
+        if (ObjectUtils.isNotEmpty(backendSeparation.getEnableAccountStatusDetails()) && backendSeparation.getEnableAccountStatusDetails()) {
+            if (StringUtils.hasText(backendSeparation.getAccountLockedMessage())) {
+                point.setAccountLockedMessage(backendSeparation.getAccountLockedMessage());
+            }
+            if (StringUtils.hasText(backendSeparation.getAccountExpiredMessage())) {
+                point.setAccountExpiredMessage(backendSeparation.getAccountExpiredMessage());
+            }
+        }
+
+        if (StringUtils.hasText(backendSeparation.getAccountStatusMessage())) {
+            point.setAccountStatusMessage(backendSeparation.getAccountStatusMessage());
+        }
+
+        if (StringUtils.hasText(backendSeparation.getBadCredentialMessage())) {
+            point.setBadCredentialsMessage(backendSeparation.getBadCredentialMessage());
+        }
+
+        if (StringUtils.hasText(backendSeparation.getLoginFailureMessage())) {
+            point.setLoginFailureMessage(backendSeparation.getLoginFailureMessage());
+        }
     }
 
     public static <B extends HttpSecurityBuilder<B>> LightningAuthenticationTokenService getAuthorizationService(B builder) {
@@ -249,5 +313,23 @@ public final class AuthConfigurerUtils {
         } else {
             return names.length == 1 ? (T) context.getBean(names[0]) : null;
         }
+    }
+
+    static <B extends HttpSecurityBuilder<B>,T> List<T> getBeansForType(B builder,ResolvableType type) {
+        ApplicationContext context = builder.getSharedObject(ApplicationContext.class);
+        String[] beanNamesForType = context.getBeanNamesForType(type);
+        if(beanNamesForType.length > 0) {
+            if (context instanceof ConfigurableApplicationContext configurableApplicationContext) {
+                for (String s : beanNamesForType) {
+                    BeanDefinition beanDefinition = configurableApplicationContext.getBeanFactory()
+                            .getBeanDefinition(s);
+                    AbstractBeanDefinition abstractBeanDefinition = (AbstractBeanDefinition) beanDefinition;
+
+                }
+
+            }
+        }
+
+        return Collections.emptyList();
     }
 }

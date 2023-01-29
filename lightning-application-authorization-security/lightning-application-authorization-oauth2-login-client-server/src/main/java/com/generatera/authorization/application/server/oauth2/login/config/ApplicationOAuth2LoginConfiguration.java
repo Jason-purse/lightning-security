@@ -3,17 +3,15 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
+import com.generatera.authorization.application.server.oauth2.login.config.authority.DefaultLightningOidcUserService;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2GrantedAuthoritiesMapper;
-import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2UserService;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOidcUserService;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningAuthorizationRequestRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningOAuth2AuthorizationRequestResolver;
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningAnonymousOAuthorizedClientRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningOAuthorizedClientService;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
-import com.generatera.authorization.application.server.oauth2.login.config.user.OidcUserDetails;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
-import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -50,19 +48,22 @@ public class ApplicationOAuth2LoginConfiguration {
     @RequiredArgsConstructor
     public static class OAuth2LoginConfiguration {
 
+
+        /**
+         * 由于默认使用的是 oidc
+         * @return
+         */
         @Bean
         @ConditionalOnMissingBean(LightningOidcUserService.class)
         public LightningOidcUserService oidcUserService() {
-            return new LightningOidcUserService() {
-                private final OidcUserService oidcUserService = new OidcUserService();
-
+            return new DefaultLightningOidcUserService(new LightningOidcUserService() {
+                private final OidcUserService delegate = new OidcUserService();
                 @Override
                 public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
-                    return new OidcUserDetails(oidcUserService.loadUser(userRequest));
+                    return delegate.loadUser(userRequest);
                 }
-            };
+            });
         }
-
 
 
         @Bean
@@ -76,10 +77,6 @@ public class ApplicationOAuth2LoginConfiguration {
                 @Autowired(required = false)
                         LightningOAuth2AuthorizationRequestResolver requestResolver,
                 @Autowired(required = false)
-                        LightningOAuth2UserService oAuth2UserService,
-                @Autowired(required = false)
-                        LightningOidcUserService oidcUserService,
-                @Autowired(required = false)
                         LightningOAuthorizedClientService oAuthorizedClientService,
                 @Autowired(required = false)
                         LightningAnonymousOAuthorizedClientRepository anonymousOAuthorizedClientRepository,
@@ -90,25 +87,21 @@ public class ApplicationOAuth2LoginConfiguration {
                 public void configure(HttpSecurity securityBuilder) throws Exception {
                     OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer = securityBuilder.oauth2Login();
                     List<String> patterns = new LinkedList<>();
-                    if (!properties.getIsSeparation()) {
+                    if (!authServerProperties.getIsSeparation()) {
                         noSeparationConfig(oAuth2LoginConfigurer, patterns, properties);
                     }
                     // 授权放行url
                     urlWhiteList(oAuth2LoginConfigurer, patterns);
 
-                    // 使用 token 端点来表示登录处理Url ..
-                    // 不管是否为前后端分离登录,都可以使用token 端点作为登录处理url
-                    //if (StringUtils.hasText(properties.getLoginProcessUrl())) {
-                    //    oAuth2LoginConfigurer.loginProcessingUrl(properties.getLoginProcessUrl());
-                    //}
-                    ProviderSettingProperties providerSettingProperties = authServerProperties.getProviderSettingProperties();
-                    if(StringUtils.hasText(providerSettingProperties.getTokenEndpoint())) {
-                        oAuth2LoginConfigurer.loginProcessingUrl(providerSettingProperties.getTokenEndpoint());
+                     //使用 token 端点来表示登录处理Url ..
+                     //不管是否为前后端分离登录,都可以使用token 端点作为登录处理url
+                    if (StringUtils.hasText(properties.getLoginProcessUrl())) {
+                        oAuth2LoginConfigurer.loginProcessingUrl(properties.getLoginProcessUrl());
                     }
 
                     oauth2AuthorizationCodeFlowConfig(oAuth2LoginConfigurer, properties, repository, requestResolver);
 
-                    userInfoEndpointConfig(oAuth2LoginConfigurer, authoritiesMapper, oAuth2UserService, oidcUserService, oAuthorizedClientService, anonymousOAuthorizedClientRepository);
+                    userInfoEndpointConfig(securityBuilder,oAuth2LoginConfigurer, authoritiesMapper, oAuthorizedClientService, anonymousOAuthorizedClientRepository);
 
                     redirectConfig(oAuth2LoginConfigurer, properties);
 
@@ -135,7 +128,12 @@ public class ApplicationOAuth2LoginConfiguration {
                     }
                 }
 
-                private static void userInfoEndpointConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, LightningOAuth2GrantedAuthoritiesMapper authoritiesMapper, LightningOAuth2UserService oAuth2UserService, LightningOidcUserService oidcUserService, LightningOAuthorizedClientService oAuthorizedClientService, LightningAnonymousOAuthorizedClientRepository anonymousOAuthorizedClientRepository) {
+                private static void userInfoEndpointConfig(
+                        HttpSecurity securityBuilder,
+                        OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer,
+                                                           LightningOAuth2GrantedAuthoritiesMapper authoritiesMapper,
+                                                           LightningOAuthorizedClientService oAuthorizedClientService,
+                                                           LightningAnonymousOAuthorizedClientRepository anonymousOAuthorizedClientRepository) {
                     // userinfo endpoint com.generatera.oauth2.resource.server.config
                     OAuth2LoginConfigurer<HttpSecurity>.UserInfoEndpointConfig userInfoEndpointConfig
                             = oAuth2LoginConfigurer.userInfoEndpoint();
@@ -143,12 +141,8 @@ public class ApplicationOAuth2LoginConfiguration {
                         userInfoEndpointConfig.userAuthoritiesMapper(authoritiesMapper);
                     }
 
-                    if (oAuth2UserService != null) {
-                        userInfoEndpointConfig.userService(oAuth2UserService);
-                    }
-                    if (oidcUserService != null) {
-                        userInfoEndpointConfig.oidcUserService(oidcUserService);
-                    }
+                    userInfoEndpointConfig.userService(OAuth2LoginUtils.getOauth2UserService(securityBuilder));
+                    userInfoEndpointConfig.oidcUserService(OAuth2LoginUtils.getOidcUserService(securityBuilder));
 
                     if (oAuthorizedClientService != null) {
                         AuthenticatedPrincipalOAuth2AuthorizedClientRepository authorizedClientRepository

@@ -2,13 +2,17 @@ package com.generatera.authorization.application.server.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties.ServerMetaDataEndpointConfig;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.LightningPermissionConfigurer;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,9 +22,17 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 /**
  * 此配置作为 整个授权服务器的控制中心(模板配置)
@@ -182,24 +194,66 @@ public class ApplicationAuthServerConfig {
     //}
     // --------------------------------------------------------------------------------
 
+    @Bean
+    @Qualifier("userAuthenticationProvider")
+    public DaoAuthenticationProvider daoAuthenticationProvider(
+            UserDetailsService userDetailsService,
+            @Autowired(required = false)
+                    PasswordEncoder passwordEncoder,
+            @Autowired(required = false)
+                    UserDetailsPasswordService passwordManager
+    ) {
+        UserDetailsService finalUserDetailsService = userDetailsService;
+        userDetailsService = username -> {
+            UserDetails userDetails = finalUserDetailsService.loadUserByUsername(username);
+            if (!LightningUserPrincipal.class.isAssignableFrom(userDetails.getClass())) {
+                return new DefaultLightningUserDetails(userDetails);
+            }
+            return userDetails;
+        };
+
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        if (passwordEncoder != null) {
+            provider.setPasswordEncoder(passwordEncoder);
+        }
+
+        if (passwordManager != null) {
+            provider.setUserDetailsPasswordService(passwordManager);
+        }
+        return provider;
+    }
 
     /**
      * 引导 通用组件的配置 ..
      */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public LightningAppAuthServerConfigurer bootstrapAppAuthServer() {
-        return new LightningAppAuthServerConfigurer() {
+    public LightningAuthServerConfigurer bootstrapAppAuthServer(
+            @Autowired(required = false) List<LightningAppAuthServerConfigurer> configurers) {
+        return new LightningAuthServerConfigurer() {
             @Override
-            public void configure(ApplicationAuthServerConfigurer<HttpSecurity> applicationAuthServerConfigurer) throws Exception {
+            public void configure(HttpSecurity securityBuilder) throws Exception {
+                ApplicationAuthServerConfigurer<HttpSecurity> authServerConfigurer = new ApplicationAuthServerConfigurer<>();
+                securityBuilder.apply(authServerConfigurer);
+                // 设置为共享对象 ..
+                securityBuilder.setSharedObject(ApplicationAuthServerConfigurer.class, authServerConfigurer);
+                // 共享对象存储
+                securityBuilder
+                        .setSharedObject(ApplicationAuthServerProperties.class, properties);
+
                 // pass,仅仅只是提供这个配置器
                 // 应用还可以提供此类LightningAppAuthServerConfigurer 进行进一步配置 ...
                 // 放行端点uri
-                applicationAuthServerConfigurer
-                        .and()
+                securityBuilder
                         .authorizeHttpRequests()
-                        .requestMatchers(applicationAuthServerConfigurer.getEndpointsMatcher())
+                        .requestMatchers(authServerConfigurer.getEndpointsMatcher())
                         .permitAll();
+                if (!CollectionUtils.isEmpty(configurers)) {
+                    for (LightningAppAuthServerConfigurer configurer : configurers) {
+                        configurer.configure(authServerConfigurer);
+                    }
+                }
             }
         };
     }

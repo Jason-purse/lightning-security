@@ -13,7 +13,10 @@ import org.springframework.util.StringUtils;
 import java.time.Instant;
 import java.util.*;
 
-// TODO: 2023/1/28
+/**
+ * // TODO: 2023/1/29
+ * 负责{@link ApplicationLevelAuthorizationToken} 的反序列化,但是目前没有使用 ..
+ */
 public final class DefaultMapAuthAccessTokenResponseConverter implements Converter<Map<String, Object>, ApplicationLevelAuthorizationToken> {
     private static final Set<String> TOKEN_RESPONSE_PARAMETER_NAMES = new HashSet<>(Arrays.asList("access_token", "expires_in", "refresh_token", "scope", JwtExtClaimNames.AUTHORITIES_CLAIM, "access_token_type", "refresh_token"));
 

@@ -1,5 +1,7 @@
 package com.generatera.authorization.application.server.form.login.config;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.application.server.form.login.config.components.BackendSeparationConfiguration;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
@@ -10,8 +12,11 @@ import org.springframework.core.type.AnnotationMetadata;
  * 表单登陆 选择配置 ..
  */
 public class FormLoginConfigurationImportSelector extends PropertiesBindImportSelector<FormLoginProperties> {
+    private final ApplicationAuthServerProperties authServerProperties;
+
     public FormLoginConfigurationImportSelector(BeanFactory beanFactory, Environment environment) {
         super(beanFactory, environment);
+        this.authServerProperties = bind(ApplicationAuthServerProperties.class, beanFactory, environment);
     }
 
     @NotNull
@@ -19,7 +24,8 @@ public class FormLoginConfigurationImportSelector extends PropertiesBindImportSe
     public String[] selectImports(@NotNull AnnotationMetadata importingClassMetadata) {
 
         FormLoginProperties properties = getProperties();
-        if (properties.getIsSeparation()) {
+
+        if (authServerProperties.getIsSeparation()) {
             return new String[]{BackendSeparationConfiguration.class.getName()};
         }
         return new String[0];

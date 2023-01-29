@@ -1,13 +1,17 @@
 package com.generatera.security.authorization.server.specification.components.token;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType;
+import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * @author FLJ
@@ -30,17 +34,42 @@ public interface LightningToken {
     }
 
 
-
     interface LightningAccessToken extends LightningToken {
 
         LightningTokenValueType getTokenValueType();
 
         LightningTokenValueFormat getTokenValueFormat();
+
+        default Map<String, Object> serialize() {
+            return new LinkedHashMap<>() {
+                {
+                    put(JwtExtClaimNames.ACCESS_TOKEN_CLAIM, new LinkedHashMap<>() {{
+                        put(JwtExtClaimNames.TOKEN_VALUE_TYPE_CLAIM, getTokenValueType().value());
+                        put(JwtExtClaimNames.TOKEN_VALUE_FORMAT_CLAIM, getTokenValueFormat().value());
+                        put(JwtExtClaimNames.TOKEN_VALUE_CLAIM, getTokenValue());
+                    }});
+
+                }
+            };
+        }
+
+        ;
     }
 
 
-    interface LightningRefreshToken extends LightningToken  {
+    interface LightningRefreshToken extends LightningToken {
 
+        default Map<String, Object> serialize() {
+            return new LinkedHashMap<>() {
+                {
+                    put(JwtExtClaimNames.REFRESH_TOKEN_CLAIM, new LinkedHashMap<>() {{
+                        put(JwtExtClaimNames.TOKEN_VALUE_CLAIM, getTokenValue());
+                    }});
+                }
+            };
+        }
+
+        ;
     }
 
     /**
@@ -91,9 +120,9 @@ public interface LightningToken {
 
     /**
      * 稍微复杂一点的,区分 {@code PlainToken},为了获取 {@code LightningTokenValueType} ..
-     *
+     * <p>
      * 目前{@code LightningAccessToken} 或者 {@code LightningRefreshToken} 都继承于这个Token ..
-     *
+     * <p>
      * 在自签名的情况下,访问Token 最终是 {@code LightningJwt} 但不是一个 LightningAccessToken,
      * 但是在某些情况下,我们可能需要 {@code LightningTokenValueType} - 那么我们需要强转到这个类型上 ..
      */
@@ -101,15 +130,15 @@ public interface LightningToken {
 
         private final LightningTokenValueType tokenValueType;
 
-        public ComplexToken(LightningTokenValueType tokenValueType,String tokenValue, Instant issuedAt, Instant expiresAt) {
+        public ComplexToken(LightningTokenValueType tokenValueType, String tokenValue, Instant issuedAt, Instant expiresAt) {
 
             super(tokenValue, issuedAt, assertExpiredAt(expiresAt));
-            Assert.notNull(tokenValueType,"tokenValueType must not be null !!!");
+            Assert.notNull(tokenValueType, "tokenValueType must not be null !!!");
             this.tokenValueType = tokenValueType;
         }
 
         private static Instant assertExpiredAt(Instant expiresAt) {
-            Assert.notNull(expiresAt,"expiredAt cannot be empty");
+            Assert.notNull(expiresAt, "expiredAt cannot be empty");
             return expiresAt;
         }
 

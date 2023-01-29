@@ -3,6 +3,7 @@ package com.generatera.authorization.application.server.form.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
+import com.generatera.authorization.application.server.form.login.config.components.UserDetailsServiceAutoConfiguration;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import java.util.Objects;
 @AutoConfiguration
 @AutoConfigureAfter(ApplicationAuthServerConfig.class)
 @EnableConfigurationProperties(FormLoginProperties.class)
-@Import({FormLoginConfigurationImportSelector.class,UserDetailsServiceAutoConfiguration.class})
+@Import({FormLoginConfigurationImportSelector.class, UserDetailsServiceAutoConfiguration.class})
 @RequiredArgsConstructor
 public class ApplicationFormLoginConfiguration {
 
@@ -45,7 +46,7 @@ public class ApplicationFormLoginConfiguration {
 
                 List<String> patterns = new LinkedList<>();
                 // 如果是前后端分离的 ..
-                if (!Objects.requireNonNullElse(formLoginProperties.getIsSeparation(), Boolean.FALSE)) {
+                if (!Objects.requireNonNullElse(authServerProperties.getIsSeparation(), Boolean.FALSE)) {
                     // 前后端不分离配置 ..
                     FormLoginProperties.NoSeparation noSeparation = formLoginProperties.getNoSeparation();
                     if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
@@ -79,8 +80,8 @@ public class ApplicationFormLoginConfiguration {
             formLoginConfigurer.passwordParameter(formLoginProperties.getPasswordParameterName());
         }
 
-        if (StringUtils.hasText(authServerProperties.getProviderSettingProperties().getTokenEndpoint())) {
-            formLoginConfigurer.loginProcessingUrl(authServerProperties.getProviderSettingProperties().getTokenEndpoint());
+        if (StringUtils.hasText(formLoginProperties.getLoginProcessUrl())) {
+            formLoginConfigurer.loginProcessingUrl(formLoginProperties.getLoginProcessUrl());
         }
     }
 
