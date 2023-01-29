@@ -12,21 +12,29 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.ResolvableType;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
-final class AuthConfigurerUtils {
+public final class AuthConfigurerUtils {
     private AuthConfigurerUtils() {
     }
 
-    static <B extends HttpSecurityBuilder<B>> LightningAuthenticationTokenService getAuthorizationService(B builder) {
+    public static <B extends HttpSecurityBuilder<B>> LightningAuthenticationTokenService getAuthorizationService(B builder) {
         LightningAuthenticationTokenService authorizationService = builder.getSharedObject(LightningAuthenticationTokenService.class);
         if (authorizationService == null) {
             authorizationService = getOptionalBean(builder, LightningAuthenticationTokenService.class);
@@ -41,7 +49,7 @@ final class AuthConfigurerUtils {
     }
 
 
-    static <B extends HttpSecurityBuilder<B>> LightningTokenGenerator<? extends LightningToken> getTokenGenerator(B builder) {
+    public static <B extends HttpSecurityBuilder<B>> LightningTokenGenerator<? extends LightningToken> getTokenGenerator(B builder) {
         LightningTokenGenerator<? extends LightningToken> tokenGenerator = (LightningTokenGenerator<? extends LightningToken>) builder.getSharedObject(LightningTokenGenerator.class);
         TokenSettingsProvider settingsProvider = builder.getSharedObject(TokenSettingsProvider.class);
         if (tokenGenerator == null) {
@@ -84,7 +92,7 @@ final class AuthConfigurerUtils {
                     defaultLightningJwtGenerator.setJwtCustomizer(
                             new DelegateLightningTokenCustomizer<>(
                                     jwtCustomizer,
-                                    new DefaultTokenDetailAwareTokenCustomizer(builder.getSharedObject(TokenSettingsProvider.class))::customize,
+                                    new DefaultTokenDetailAwareTokenCustomizer(getTokenSettingProvider(builder))::customize,
                                     new DefaultOpaqueAwareTokenCustomizer()::customize
                             )
                     );
@@ -141,6 +149,68 @@ final class AuthConfigurerUtils {
             }
         }
         return sharedObject;
+    }
+
+    /**
+     * 获取 共享对象或者 容器中的 AppAuthServerForTokenAuthenticationProvider ..
+     */
+    public static <B extends HttpSecurityBuilder<B>> AppAuthServerForTokenAuthenticationProvider getAppAuthServerForTokenAuthenticationProvider(B builder) {
+        AppAuthServerForTokenAuthenticationProvider serverForTokenAuthenticationProvider = builder.getSharedObject(AppAuthServerForTokenAuthenticationProvider.class);
+        if(serverForTokenAuthenticationProvider == null) {
+            serverForTokenAuthenticationProvider = getBean(builder, AppAuthServerForTokenAuthenticationProvider.class);
+            builder.setSharedObject(AppAuthServerForTokenAuthenticationProvider.class,serverForTokenAuthenticationProvider);
+        }
+        return serverForTokenAuthenticationProvider;
+    }
+
+    private static  <T> T lazyBean(ApplicationContext context, ObjectPostProcessor<Object> objectPostProcessor,Class<T> interfaceName) {
+        LazyInitTargetSource lazyTargetSource = new LazyInitTargetSource();
+        String[] beanNamesForType = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(context, interfaceName);
+        if (beanNamesForType.length == 0) {
+            return null;
+        } else {
+            String beanName = getBeanName(interfaceName, context,beanNamesForType);
+            lazyTargetSource.setTargetBeanName(beanName);
+            lazyTargetSource.setBeanFactory(context);
+            ProxyFactoryBean proxyFactory = new ProxyFactoryBean();
+            proxyFactory = objectPostProcessor.postProcess(proxyFactory);
+            proxyFactory.setTargetSource(lazyTargetSource);
+            return (T)proxyFactory.getObject();
+        }
+    }
+
+    private static <T> String getBeanName(Class<T> interfaceName, ApplicationContext applicationContext,String[] beanNamesForType) {
+        if (beanNamesForType.length == 1) {
+            return beanNamesForType[0];
+        } else {
+            List<String> primaryBeanNames = getPrimaryBeanNames(applicationContext,beanNamesForType);
+            Assert.isTrue(primaryBeanNames.size() != 0, () -> {
+                return "Found " + beanNamesForType.length + " beans for type " + interfaceName + ", but none marked as primary";
+            });
+            Assert.isTrue(primaryBeanNames.size() == 1, () -> {
+                return "Found " + primaryBeanNames.size() + " beans for type " + interfaceName + " marked as primary";
+            });
+            return (String)primaryBeanNames.get(0);
+        }
+    }
+
+    private static List<String> getPrimaryBeanNames(ApplicationContext applicationContext,String[] beanNamesForType) {
+        List<String> list = new ArrayList<>();
+        if (!(applicationContext instanceof ConfigurableApplicationContext)) {
+            return Collections.emptyList();
+        } else {
+            String[] var3 = beanNamesForType;
+            int var4 = beanNamesForType.length;
+
+            for(int var5 = 0; var5 < var4; ++var5) {
+                String beanName = var3[var5];
+                if (((ConfigurableApplicationContext)applicationContext).getBeanFactory().getBeanDefinition(beanName).isPrimary()) {
+                    list.add(beanName);
+                }
+            }
+
+            return list;
+        }
     }
 
 

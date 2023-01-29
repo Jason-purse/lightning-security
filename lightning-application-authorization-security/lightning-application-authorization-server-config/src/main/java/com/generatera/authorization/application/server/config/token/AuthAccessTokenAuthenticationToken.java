@@ -21,12 +21,12 @@ public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationTo
     private final LightningRefreshToken refreshToken;
     private final Map<String, Object> additionalParameters;
 
-    public AuthAccessTokenAuthenticationToken(Authentication clientPrincipal, LightningAccessToken accessToken) {
-        this(clientPrincipal, accessToken, null);
+    public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, LightningAccessToken accessToken) {
+        this(userPrincipal, accessToken, null);
     }
 
-    public AuthAccessTokenAuthenticationToken(Authentication clientPrincipal, LightningAccessToken accessToken, @Nullable LightningRefreshToken refreshToken) {
-        this(clientPrincipal, accessToken, refreshToken, Collections.emptyMap());
+    public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, LightningAccessToken accessToken, @Nullable LightningRefreshToken refreshToken) {
+        this(userPrincipal, accessToken, refreshToken, Collections.emptyMap());
     }
 
     public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, LightningAccessToken accessToken, @Nullable LightningRefreshToken refreshToken, Map<String, Object> additionalParameters) {

@@ -188,14 +188,15 @@ public class ApplicationAuthServerConfig {
      */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public LightningAppAuthServerConfigurer bootstrapAppAuthServer(ProviderSettingsProvider provider) {
+    public LightningAppAuthServerConfigurer bootstrapAppAuthServer() {
         return new LightningAppAuthServerConfigurer() {
             @Override
             public void configure(ApplicationAuthServerConfigurer<HttpSecurity> applicationAuthServerConfigurer) throws Exception {
                 // pass,仅仅只是提供这个配置器
                 // 应用还可以提供此类LightningAppAuthServerConfigurer 进行进一步配置 ...
                 // 放行端点uri
-                applicationAuthServerConfigurer.and()
+                applicationAuthServerConfigurer
+                        .and()
                         .authorizeHttpRequests()
                         .requestMatchers(applicationAuthServerConfigurer.getEndpointsMatcher())
                         .permitAll();

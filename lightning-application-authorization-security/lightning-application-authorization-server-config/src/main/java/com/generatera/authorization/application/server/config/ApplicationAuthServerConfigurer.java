@@ -145,6 +145,7 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
 
     private Map<Class<? extends AbstractAuthConfigurer>, AbstractAuthConfigurer> createConfigurers() {
         Map<Class<? extends AbstractAuthConfigurer>, AbstractAuthConfigurer> configurers = new LinkedHashMap<>();
+        configurers.put(AuthTokenEndpointConfigurer.class,new AuthTokenEndpointConfigurer(this::postProcess));
         configurers.put(AuthTokenIntrospectionEndpointConfigurer.class, new AuthTokenIntrospectionEndpointConfigurer(this::postProcess));
         configurers.put(AuthTokenRevocationEndpointConfigurer.class, new AuthTokenRevocationEndpointConfigurer(this::postProcess));
         return configurers;

@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -36,7 +37,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     private AuthenticationSuccessHandler accessTokenResponseHandler;
     private AuthenticationFailureHandler errorResponseHandler;
 
-    AuthTokenEndpointConfigurer(ObjectPostProcessor<Object> objectPostProcessor) {
+    public AuthTokenEndpointConfigurer(ObjectPostProcessor<Object> objectPostProcessor) {
         super(objectPostProcessor);
     }
 
@@ -73,9 +74,34 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     public <B extends HttpSecurityBuilder<B>> void configure(B builder) {
         AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
         ProviderSettings providerSettings = ProviderExtUtils.getProviderSettings(builder).getProviderSettings();
-        // 配置
 
+        AppAuthServerForTokenAuthenticationProvider tokenAuthenticationProvider = builder.getSharedObject(AppAuthServerForTokenAuthenticationProvider.class);
+        // 默认配置,认证提供器需要提前创建 .. 填坑
+        if(tokenAuthenticationProvider instanceof AuthAccessTokenAuthenticationProvider accessTokenAuthenticationProvider) {
+            accessTokenAuthenticationProvider.setAuthenticationManager(builder.getSharedObject(AuthenticationManager.class));
+        }
 
+        AuthTokenEndpointFilter tokenEndpointFilter = new AuthTokenEndpointFilter(authenticationManager, providerSettings.getTokenEndpoint());
+        // 访问token 请求转换器
+        if (this.accessTokenRequestConverter != null) {
+            tokenEndpointFilter.setAuthenticationConverter(this.accessTokenRequestConverter);
+        }
+
+        /**
+         * 访问token响应处理器
+         */
+        if (this.accessTokenResponseHandler != null) {
+            tokenEndpointFilter.setAuthenticationSuccessHandler(this.accessTokenResponseHandler);
+        }
+
+        /**
+         * 错误响应处理器
+         */
+        if (this.errorResponseHandler != null) {
+            tokenEndpointFilter.setAuthenticationFailureHandler(this.errorResponseHandler);
+        }
+
+        builder.addFilterAfter(this.postProcess(tokenEndpointFilter), FilterSecurityInterceptor.class);
     }
 
     public RequestMatcher getRequestMatcher() {
@@ -89,13 +115,21 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         LightningTokenGenerator<? extends LightningToken> tokenGenerator = AuthConfigurerUtils.getTokenGenerator(builder);
         TokenSettingsProvider tokenSettingProvider = AuthConfigurerUtils.getTokenSettingProvider(builder);
 
-        // 这里目前没有访问token的生成 ...
-        AuthRefreshTokenAuthenticationProvider refreshTokenAuthenticationProvider = new AuthRefreshTokenAuthenticationProvider(
+        AuthAccessTokenAuthenticationProvider accessTokenAuthenticationProvider = new AuthAccessTokenAuthenticationProvider(
                 authorizationService,
                 tokenGenerator,
                 tokenSettingProvider
         );
 
+        // 为了获取 AppAuthServerForTokenAuthenticationProvider
+        builder.setSharedObject(AppAuthServerForTokenAuthenticationProvider.class,accessTokenAuthenticationProvider);
+
+        AuthRefreshTokenAuthenticationProvider refreshTokenAuthenticationProvider = new AuthRefreshTokenAuthenticationProvider(
+                authorizationService,
+                tokenGenerator,
+                tokenSettingProvider
+        );
+        authenticationProviders.add(accessTokenAuthenticationProvider);
         authenticationProviders.add(refreshTokenAuthenticationProvider);
         return authenticationProviders;
     }

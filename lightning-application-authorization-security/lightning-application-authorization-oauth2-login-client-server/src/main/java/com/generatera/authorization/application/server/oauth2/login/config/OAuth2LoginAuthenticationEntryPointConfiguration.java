@@ -1,5 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
+import com.generatera.authorization.application.server.oauth2.login.config.authentication.DefaultLightningOAuth2LoginAuthenticationEntryPoint;
+import com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
@@ -25,10 +27,10 @@ public class OAuth2LoginAuthenticationEntryPointConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(LightningOAuth2LoginAuthenticationEntryPoint.class)
-    public LightningOAuth2LoginAuthenticationEntryPoint entryPoint(
+    public DefaultLightningOAuth2LoginAuthenticationEntryPoint entryPoint(
             LightningTokenGenerator<LightningToken> tokenGenerator
     ) {
-        LightningOAuth2LoginAuthenticationEntryPoint point = new LightningOAuth2LoginAuthenticationEntryPoint();
+        DefaultLightningOAuth2LoginAuthenticationEntryPoint point = new DefaultLightningOAuth2LoginAuthenticationEntryPoint();
         OAuth2LoginProperties.BackendSeparation backendSeparation = oAuth2LoginProperties.getBackendSeparation();
         if (StringUtils.hasText(backendSeparation.getLoginSuccessMessage())) {
             point.setLoginSuccessMessage(backendSeparation.getLoginSuccessMessage());
@@ -49,7 +51,7 @@ public class OAuth2LoginAuthenticationEntryPointConfiguration {
 
     @Bean
     public LightningAuthServerConfigurer oauth2LoginAuthenticationEntryPointConfigurer(
-            LightningOAuth2LoginAuthenticationEntryPoint authenticationEntryPoint
+            DefaultLightningOAuth2LoginAuthenticationEntryPoint authenticationEntryPoint
     ) {
         return new LightningAuthServerConfigurer() {
             @Override

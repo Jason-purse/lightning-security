@@ -2,12 +2,12 @@ package com.generatera.authorization.application.server.form.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
-import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +25,7 @@ import java.util.Objects;
  */
 @Configuration
 @AutoConfiguration
-@AutoConfigureBefore(ApplicationAuthServerConfig.class)
+@AutoConfigureAfter(ApplicationAuthServerConfig.class)
 @EnableConfigurationProperties(FormLoginProperties.class)
 @Import({FormLoginConfigurationImportSelector.class,UserDetailsServiceAutoConfiguration.class})
 @RequiredArgsConstructor
@@ -40,6 +40,8 @@ public class ApplicationFormLoginConfiguration {
             @Override
             public void configure(HttpSecurity builder) throws Exception {
                 FormLoginConfigurer<HttpSecurity> formLoginConfigurer = builder.formLogin();
+                // 实现 认证provider 处理  LightningAppAuthServerDaoLoginAuthenticationProvider
+                builder.setSharedObject(ApplicationAuthServerProperties.class,authServerProperties);
 
                 List<String> patterns = new LinkedList<>();
                 // 如果是前后端分离的 ..

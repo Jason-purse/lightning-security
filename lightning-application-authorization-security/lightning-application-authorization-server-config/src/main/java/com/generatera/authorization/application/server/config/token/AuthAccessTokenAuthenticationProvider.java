@@ -10,7 +10,8 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningRefreshToken;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.ClaimAccessor;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,13 +31,17 @@ import static com.generatera.security.authorization.server.specification.compone
  * 其实这个就是 password-grant 支持的授权(类似于 oauth2 -password-grant)
  *
  * 不需要交换授权码(所以 如果需要进行登录限制的话,需要做额外的事情)
+ *
+ * 本质上通过 增强DaoAuthenticationProvider委托它进行 token 生成 ..
  */
-public final class AuthAccessTokenAuthenticationProvider implements AuthenticationProvider {
+public final class AuthAccessTokenAuthenticationProvider implements AppAuthServerForTokenAuthenticationProvider {
     private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
     private static final LightningTokenType.LightningAuthenticationTokenType AUTHORIZATION_GRANT_TYPE = ACCESS_TOKEN_TYPE;
     private final LightningAuthenticationTokenService authorizationService;
     private final LightningTokenGenerator<? extends LightningToken> tokenGenerator;
     private final TokenSettingsProvider tokenSettingsProvider;
+
+    private AuthenticationManager authenticationManager;
 
     public AuthAccessTokenAuthenticationProvider(
             LightningAuthenticationTokenService authorizationService,
@@ -50,11 +55,19 @@ public final class AuthAccessTokenAuthenticationProvider implements Authenticati
         this.tokenSettingsProvider = tokenSettingsProvider;
     }
 
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        AuthUsernamePasswordAuthenticationToken accessAuthenticationToken = (AuthUsernamePasswordAuthenticationToken) authentication;
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        Assert.notNull(authenticationManager,"authenticationManager must not be null !!!");
+        this.authenticationManager = authenticationManager;
+    }
 
+    public AuthAccessTokenAuthenticationToken authenticate(Authentication authentication) throws AuthenticationException {
+
+        // 需要进行认证 ..
+        Authentication passwordAuthentication = getUsernamePasswordAuthentication(((AuthAccessTokenAuthenticationToken) authentication));
+
+        // 不关心authentication中是什么
         DefaultLightningTokenContext.Builder builder = DefaultLightningTokenContext.builder()
-                .authentication(authentication)
+                .authentication(passwordAuthentication)
                 .providerContext(ProviderContextHolder.getProviderContext())
                 .tokenSettings(tokenSettingsProvider.getTokenSettings())
                 .tokenValueType(tokenSettingsProvider.getTokenSettings().getAccessTokenValueType())
@@ -129,7 +142,21 @@ public final class AuthAccessTokenAuthenticationProvider implements Authenticati
         }
     }
 
+    private Authentication getUsernamePasswordAuthentication(AuthAccessTokenAuthenticationToken authenticationToken) {
+
+        Map<String, Object> additionalParameters = authenticationToken.getAdditionalParameters();
+
+        String username = (String) additionalParameters.get(AuthParameterNames.USERNAME);
+        String password = (String) additionalParameters.get(AuthParameterNames.PASSWORD);
+
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+
+        Assert.notNull(authenticationManager,"authenticationManager must not be null !!!");
+        return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+    }
+
     public boolean supports(Class<?> authentication) {
-        return AuthUsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
+        // 通过这个判断,绕过此提供器处理,让父认证提供器处理,然而,在让自己处理 ..
+        return AuthAccessTokenAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
