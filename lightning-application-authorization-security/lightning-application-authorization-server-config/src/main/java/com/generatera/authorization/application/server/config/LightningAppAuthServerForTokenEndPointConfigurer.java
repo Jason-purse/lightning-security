@@ -5,9 +5,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
  * @author FLJ
  * @date 2023/1/28
  * @time 14:25
- * @Description lightning app auth server configurer ...
+ * @Description lightning app auth server for token endpoint configurer ...
  */
-public interface LightningAppAuthServerConfigurer {
+public interface LightningAppAuthServerForTokenEndPointConfigurer {
 
     /**
      * 直接配置 ApplicationAuthServerConfigurer 的快捷方式 ...

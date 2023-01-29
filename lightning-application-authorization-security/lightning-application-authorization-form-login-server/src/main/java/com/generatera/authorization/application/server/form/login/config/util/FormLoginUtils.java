@@ -6,11 +6,20 @@ import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ResolvableType;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
 public class FormLoginUtils {
+
+    public static <B extends HttpSecurityBuilder<B>>  void  configDefaultLoginPageGeneratorFilter(B builder,String loginPage) {
+
+        DefaultLoginPageGeneratingFilter loginPageGeneratingFilter = builder.getSharedObject(DefaultLoginPageGeneratingFilter.class);
+        if(loginPageGeneratingFilter != null) {
+            loginPageGeneratingFilter.setLoginPageUrl(loginPage);
+        }
+    }
 
     static <B extends HttpSecurityBuilder<B>, T> T getOptionalBean(B builder, Class<T> type) {
         Map<String, T> beansMap = BeanFactoryUtils.beansOfTypeIncludingAncestors(builder.getSharedObject(ApplicationContext.class), type);

@@ -21,13 +21,14 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
@@ -250,34 +251,24 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
 
     }
 
-
+    /**
+     * 配置共享对象 ..
+     */
     @Bean
-    @Primary
-    public AuthExtSecurityConfigurer oAuth2ExtSecurityConfigurer(List<LightningAuthServerConfigurer> configurers) {
-        return new AuthExtSecurityConfigurer(configurers);
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public WebSecurityCustomizer webSecurityCustomizer(ApplicationContext applicationContext) {
+        return web -> web.setSharedObject(ApplicationContext.class,applicationContext);
     }
-
 
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain httpSecurity(HttpSecurity httpSecurity,
-                                            AuthExtSecurityConfigurer configurer,
                                             @Autowired(required = false)
-                                                    List<LightningPermissionConfigurer> permissionConfigurers) throws Exception {
+                                                    List<LightningResourcePermissionConfigurer> permissionConfigurers) throws Exception {
         HttpSecurity builder = httpSecurity
-                .apply(configurer)
+                .apply(new AuthExtSecurityConfigurer(permissionConfigurers))
                 .and();
-
-
-        // permission configuration ..
-        if(permissionConfigurers != null) {
-            for (LightningPermissionConfigurer permissionConfigurer : permissionConfigurers) {
-                AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry
-                        = builder.authorizeHttpRequests();
-                permissionConfigurer.configure(registry);
-            }
-        }
 
 
         return builder

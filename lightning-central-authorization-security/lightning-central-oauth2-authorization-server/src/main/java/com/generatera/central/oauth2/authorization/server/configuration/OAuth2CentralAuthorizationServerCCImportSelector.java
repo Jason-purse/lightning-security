@@ -1,9 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.configuration;
 
-import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
-import com.generatera.authorization.application.server.form.login.config.FormLoginProperties;
-import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties.StoreKind;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.consent.AuthorizationConsentConfiguration.JpaAuthorizationConsentComponentConfiguration;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.AuthorizationStoreConfiguration;
@@ -14,13 +11,9 @@ import com.generatera.central.oauth2.authorization.server.configuration.componen
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
-import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.type.AnnotationMetadata;
 
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,20 +31,20 @@ public class OAuth2CentralAuthorizationServerCCImportSelector extends Properties
     }
 
     private static Environment configEnvironment(Environment environment) {
-        if(environment instanceof  ConfigurableEnvironment configurableEnvironment) {
-            MutablePropertySources propertySources = configurableEnvironment.getPropertySources();
-            LogUtil.prettyLog("OAuth2 Authorization Server requires form login support,so Forms support is built-in, so it is mandatory not to separate configurations[isSeparation = false] !!!");
-            propertySources.addFirst(new MapPropertySource(
-                    "oauth2-authorization-form-ext-properties",
-                    new LinkedHashMap<>() {{
-                        put(FormLoginProperties.IS_SEPARATION,Boolean.FALSE);
-
-                        // 设置 oidc 处理,使用oauth2 自带的 oidc
-                        // 也就是不需要 ...
-                        put(ApplicationAuthServerProperties.ServerMetaDataEndpointConfig.ENABLE_OIDC,Boolean.FALSE);
-                    }}
-            ));
-        }
+//        if(environment instanceof  ConfigurableEnvironment configurableEnvironment) {
+//            MutablePropertySources propertySources = configurableEnvironment.getPropertySources();
+//            LogUtil.prettyLog("OAuth2 Authorization Server requires form login support,so Forms support is built-in, so it is mandatory not to separate configurations[isSeparation = false] !!!");
+//            propertySources.addFirst(new MapPropertySource(
+//                    "oauth2-authorization-form-ext-properties",
+//                    new LinkedHashMap<>() {{
+//                        put(FormLoginProperties.IS_SEPARATION,Boolean.FALSE);
+//
+//                        // 设置 oidc 处理,使用oauth2 自带的 oidc
+//                        // 也就是不需要 ...
+//                        put(ApplicationAuthServerProperties.ServerMetaDataEndpointConfig.ENABLE_OIDC,Boolean.FALSE);
+//                    }}
+//            ));
+//        }
 
         return environment;
     }

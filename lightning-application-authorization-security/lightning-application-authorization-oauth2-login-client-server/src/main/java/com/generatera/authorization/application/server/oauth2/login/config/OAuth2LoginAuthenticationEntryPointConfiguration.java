@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.application.server.config.token.AuthConfigurerUtils;
+import com.generatera.authorization.application.server.config.util.AuthConfigurerUtils;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;

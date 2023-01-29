@@ -1,4 +1,4 @@
-package com.generatera.authorization.application.server.form.login.config.components;
+package com.generatera.central.oauth2.authorization.server.configuration.components.authentication;
 
 import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
 import org.apache.commons.logging.Log;
@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -21,8 +22,11 @@ import java.util.regex.Pattern;
 
 /**
  * 遵循  UserDetailsService 返回 LightningUserPrincipal的原则
+ *
+ * 等价于 form-login-auth-server-module的相同类 ...
  */
 @Configuration
+@EnableConfigurationProperties(SecurityProperties.class)
 public class UserDetailsServiceAutoConfiguration {
 
     @ConditionalOnMissingBean(UserDetailsService.class)

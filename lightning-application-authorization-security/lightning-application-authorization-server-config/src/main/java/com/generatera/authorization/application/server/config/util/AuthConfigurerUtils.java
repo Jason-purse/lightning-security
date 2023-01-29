@@ -1,7 +1,10 @@
-package com.generatera.authorization.application.server.config.token;
+package com.generatera.authorization.application.server.config.util;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.DefaultLightningAbstractAuthenticationEntryPoint;
+import com.generatera.authorization.application.server.config.token.AppAuthServerForTokenAuthenticationProvider;
+import com.generatera.authorization.application.server.config.token.DefaultOpaqueAwareTokenCustomizer;
+import com.generatera.authorization.application.server.config.token.DefaultTokenDetailAwareTokenCustomizer;
 import com.generatera.authorization.server.common.configuration.authorization.store.DefaultAuthenticationTokenService;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
@@ -278,7 +281,7 @@ public final class AuthConfigurerUtils {
     }
 
 
-    static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, Class<T> type) {
+    public static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, Class<T> type) {
         return builder.getSharedObject(ApplicationContext.class).getBean(type);
     }
 

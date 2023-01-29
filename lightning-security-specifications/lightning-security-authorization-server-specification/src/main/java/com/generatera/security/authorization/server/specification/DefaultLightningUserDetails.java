@@ -1,6 +1,5 @@
-package com.generatera.authorization.application.server.config;
+package com.generatera.security.authorization.server.specification;
 
-import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 

@@ -1,9 +1,8 @@
 package com.generatera.authorization.application.server.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties.ServerMetaDataEndpointConfig;
-import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
-import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
-import com.generatera.authorization.server.common.configuration.LightningPermissionConfigurer;
+import com.generatera.authorization.server.common.configuration.*;
+import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
@@ -225,37 +224,43 @@ public class ApplicationAuthServerConfig {
     }
 
     /**
-     * 引导 通用组件的配置 ..
+     * 引导token 相关端点的配置处理  ...
      */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public LightningAuthServerConfigurer bootstrapAppAuthServer(
-            @Autowired(required = false) List<LightningAppAuthServerConfigurer> configurers) {
-        return new LightningAuthServerConfigurer() {
-            @Override
-            public void configure(HttpSecurity securityBuilder) throws Exception {
-                ApplicationAuthServerConfigurer<HttpSecurity> authServerConfigurer = new ApplicationAuthServerConfigurer<>();
-                securityBuilder.apply(authServerConfigurer);
-                // 设置为共享对象 ..
-                securityBuilder.setSharedObject(ApplicationAuthServerConfigurer.class, authServerConfigurer);
-                // 共享对象存储
-                securityBuilder
-                        .setSharedObject(ApplicationAuthServerProperties.class, properties);
+    public LightningMultipleAuthServerConfigurer bootstrapAppTokenEndpoint(
+            @Autowired(required = false) List<LightningAppAuthServerForTokenEndPointConfigurer> configurers) {
+       return new LightningMultipleAuthServerConfigurer() {
+           @Override
+           public String routePattern() {
+               // todo 让它们可以配置 ..
+               return AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + AuthConfigConstant.TOKEN_PATTERN_PREFIX + "/**";
+           }
 
-                // pass,仅仅只是提供这个配置器
-                // 应用还可以提供此类LightningAppAuthServerConfigurer 进行进一步配置 ...
-                // 放行端点uri
-                securityBuilder
-                        .authorizeHttpRequests()
-                        .requestMatchers(authServerConfigurer.getEndpointsMatcher())
-                        .permitAll();
-                if (!CollectionUtils.isEmpty(configurers)) {
-                    for (LightningAppAuthServerConfigurer configurer : configurers) {
-                        configurer.configure(authServerConfigurer);
-                    }
-                }
-            }
-        };
+           @Override
+           public void customize(HttpSecurity securityBuilder) throws Exception {
+               ApplicationAuthServerConfigurer<HttpSecurity> authServerConfigurer = new ApplicationAuthServerConfigurer<>();
+               securityBuilder.apply(authServerConfigurer);
+               // 设置为共享对象 ..
+               securityBuilder.setSharedObject(ApplicationAuthServerConfigurer.class, authServerConfigurer);
+               // 共享对象存储
+               securityBuilder
+                       .setSharedObject(ApplicationAuthServerProperties.class, properties);
+
+               // pass,仅仅只是提供这个配置器
+               // 应用还可以提供此类LightningAppAuthServerConfigurer 进行进一步配置 ...
+               // 放行端点uri
+               securityBuilder
+                       .authorizeHttpRequests()
+                       .requestMatchers(authServerConfigurer.getEndpointsMatcher())
+                       .permitAll();
+               if (!CollectionUtils.isEmpty(configurers)) {
+                   for (LightningAppAuthServerForTokenEndPointConfigurer configurer : configurers) {
+                       configurer.configure(authServerConfigurer);
+                   }
+               }
+           }
+       };
     }
 
     ///**
@@ -341,10 +346,10 @@ public class ApplicationAuthServerConfig {
      * oidc 公共组件 url 放行 ..
      */
     @Bean
-    public LightningPermissionConfigurer applicationServerPermissionConfigurer(
+    public LightningResourcePermissionConfigurer applicationServerPermissionConfigurer(
             ApplicationAuthServerProperties authServerProperties
     ) {
-        return new LightningPermissionConfigurer() {
+        return new LightningResourcePermissionConfigurer() {
             @Override
             public void configure(AuthorizationManagerRequestMatcherRegistry registry) {
                 ElvisUtil.isNotEmptyConsumer(

@@ -1,9 +1,9 @@
 package com.generatera.authorization.application.server.form.login.config.components;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfigurer;
-import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
+import com.generatera.authorization.application.server.config.LightningAppAuthServerForTokenEndPointConfigurer;
 import com.generatera.authorization.application.server.config.securityContext.DefaultSecurityContextRepository;
-import com.generatera.authorization.application.server.config.token.AuthConfigurerUtils;
+import com.generatera.authorization.application.server.config.util.AuthConfigurerUtils;
 import com.generatera.authorization.application.server.form.login.config.FormLoginProperties;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
@@ -32,8 +32,8 @@ public class BackendSeparationConfiguration {
      * 增加 FormLoginRequestConverter 表单登录请求 token 颁发支持 ..
      */
     @Bean
-    public LightningAppAuthServerConfigurer appAuthServerConfigurer() {
-        return new LightningAppAuthServerConfigurer() {
+    public LightningAppAuthServerForTokenEndPointConfigurer appAuthServerConfigurer() {
+        return new LightningAppAuthServerForTokenEndPointConfigurer() {
             @Override
             public void configure(ApplicationAuthServerConfigurer<HttpSecurity> applicationAuthServerConfigurer) throws Exception {
                 applicationAuthServerConfigurer.tokenEndpoint(endpoint -> {

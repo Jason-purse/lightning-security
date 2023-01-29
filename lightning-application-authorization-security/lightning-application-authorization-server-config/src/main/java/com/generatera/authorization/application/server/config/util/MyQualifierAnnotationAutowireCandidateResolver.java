@@ -13,5 +13,4 @@ public class MyQualifierAnnotationAutowireCandidateResolver extends QualifierAnn
         return super.checkQualifier(bdHolder, annotation, typeConverter);
     }
 
-
 }

@@ -1,6 +1,6 @@
 package com.generatera.form.login.authorization.and.resource.server;
 
-import com.generatera.authorization.application.server.config.DefaultLightningUserDetails;
+import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.form.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.server.common.configuration.AuthConfigConstant;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,17 +11,12 @@ public class FormLoginProperties {
     public static final String PROPERTIES_PREFIX = ApplicationAuthServerProperties.APPLICATION_AUTH_SERVER_PREFIX + ".form.login.config";
     public static final String IS_SEPARATION = PROPERTIES_PREFIX + ".isSeparation";
 
-    private String loginPageUrl;
-
-    /**
-     * 表单默认路径 ...
-     */
-    private String loginProcessUrl = "/auth/v1/login/login";
-
     private String usernameParameterName = "username";
 
     private String passwordParameterName = "password";
 
+
+    private String loginProcessUrl = AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + "/form/login" +"/process";
 
     private NoSeparation noSeparation = new NoSeparation();
 
@@ -35,7 +31,16 @@ public class FormLoginProperties {
     @Data
     public static class NoSeparation {
 
-        private String loginPageUrl;
+        /**
+         * 前后端分离的时候,也可以指定 ...
+         */
+        private String loginPageUrl = AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + "/form/login";
+
+        private String logoutPageUrl = AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + "/form/logout";
+        /**
+         * 前后端分离的时候,也可以指定 ...
+         */
+        private boolean isCustomLoginPageUrl = false;
 
         /**
          * 仅当开启了 enableSavedRequestForward 才有效

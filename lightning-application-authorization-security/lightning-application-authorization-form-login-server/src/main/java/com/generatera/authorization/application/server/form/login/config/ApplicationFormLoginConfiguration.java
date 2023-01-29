@@ -4,7 +4,9 @@ import com.generatera.authorization.application.server.config.ApplicationAuthSer
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.application.server.form.login.config.components.UserDetailsServiceAutoConfiguration;
-import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
+import com.generatera.authorization.application.server.form.login.config.util.FormLoginUtils;
+import com.generatera.authorization.server.common.configuration.AuthConfigConstant;
+import com.generatera.authorization.server.common.configuration.LightningMultipleAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -13,8 +15,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.util.StringUtils;
 
 import java.util.LinkedList;
@@ -31,27 +35,29 @@ import java.util.Objects;
 @Import({FormLoginConfigurationImportSelector.class, UserDetailsServiceAutoConfiguration.class})
 @RequiredArgsConstructor
 public class ApplicationFormLoginConfiguration {
-
+    public static final String FORM_LOGIN_PATTERN = "/form";
     private final FormLoginProperties formLoginProperties;
     private final ApplicationAuthServerProperties authServerProperties;
 
     @Bean
-    public LightningAuthServerConfigurer lightningFormLoginConfigurer() {
-        return new LightningAuthServerConfigurer() {
+    public LightningMultipleAuthServerConfigurer formLoginConfigurer() {
+        return new LightningMultipleAuthServerConfigurer() {
             @Override
-            public void configure(HttpSecurity builder) throws Exception {
-                FormLoginConfigurer<HttpSecurity> formLoginConfigurer = builder.formLogin();
+            public String routePattern() {
+                return AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + FORM_LOGIN_PATTERN + "/**";
+            }
+
+            @Override
+            public void customize(HttpSecurity security) throws Exception {
+                FormLoginConfigurer<HttpSecurity> formLoginConfigurer = security.formLogin();
                 // 实现 认证provider 处理  LightningAppAuthServerDaoLoginAuthenticationProvider
-                builder.setSharedObject(ApplicationAuthServerProperties.class,authServerProperties);
+                security.setSharedObject(ApplicationAuthServerProperties.class,authServerProperties);
 
                 List<String> patterns = new LinkedList<>();
-                // 如果是前后端分离的 ..
+                // 如果不是前后端分离的 ..
                 if (!Objects.requireNonNullElse(authServerProperties.getIsSeparation(), Boolean.FALSE)) {
                     // 前后端不分离配置 ..
                     FormLoginProperties.NoSeparation noSeparation = formLoginProperties.getNoSeparation();
-                    if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
-                        formLoginConfigurer.loginPage(noSeparation.getLoginPageUrl());
-                    }
 
                     if (noSeparation.getEnableSavedRequestForward() != null && noSeparation.getEnableSavedRequestForward()) {
                         if (StringUtils.hasText(noSeparation.getDefaultSuccessUrl())) {
@@ -70,7 +76,25 @@ public class ApplicationFormLoginConfiguration {
         };
     }
 
-    private void genericConfig(FormLoginConfigurer<HttpSecurity> formLoginConfigurer) {
+    private void genericConfig(FormLoginConfigurer<HttpSecurity> formLoginConfigurer) throws Exception {
+        FormLoginProperties.NoSeparation noSeparation = formLoginProperties.getNoSeparation();
+        if(!noSeparation.isCustomLoginPageUrl()) {
+            formLoginConfigurer.and().apply(
+                    new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
+                        @Override
+                        public void init(HttpSecurity builder) {
+                            // 这种情况下可以配置 loginPageUrl
+                            FormLoginUtils.configDefaultLoginPageGeneratorFilter(builder, noSeparation.getLoginPageUrl());
+                        }
+                    }
+            );
+        }
+        else {
+            if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
+                formLoginConfigurer.loginPage(noSeparation.getLoginPageUrl());
+            }
+        }
+
         // username / password
         if (StringUtils.hasText(formLoginProperties.getUsernameParameterName())) {
             formLoginConfigurer.usernameParameter(formLoginProperties.getUsernameParameterName());
@@ -80,9 +104,18 @@ public class ApplicationFormLoginConfiguration {
             formLoginConfigurer.passwordParameter(formLoginProperties.getPasswordParameterName());
         }
 
+
         if (StringUtils.hasText(formLoginProperties.getLoginProcessUrl())) {
             formLoginConfigurer.loginProcessingUrl(formLoginProperties.getLoginProcessUrl());
         }
+
+        if(StringUtils.hasText(noSeparation.getLogoutPageUrl())) {
+           formLoginConfigurer.and()
+                   .logout()
+                   .logoutUrl(noSeparation.getLogoutPageUrl());
+        }
+
+
     }
 
 

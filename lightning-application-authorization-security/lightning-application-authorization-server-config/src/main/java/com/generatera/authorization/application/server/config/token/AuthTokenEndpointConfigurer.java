@@ -2,6 +2,7 @@ package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.LightningAppAuthServerDaoLoginAuthenticationProvider;
+import com.generatera.authorization.application.server.config.util.AuthConfigurerUtils;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;

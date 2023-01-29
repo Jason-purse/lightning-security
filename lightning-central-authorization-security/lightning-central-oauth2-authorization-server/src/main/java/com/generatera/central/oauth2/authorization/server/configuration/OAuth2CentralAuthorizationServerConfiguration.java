@@ -1,15 +1,17 @@
 package com.generatera.central.oauth2.authorization.server.configuration;
 
 
-import com.generatera.authorization.application.server.form.login.config.FormLoginProperties;
+import com.generatera.authorization.server.common.configuration.AuthConfigConstant;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
+import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.*;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer.LightningCentralOAuth2AccessTokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer.LightningCentralOAuth2JwtTokenCustomizer;
 import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,11 +24,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -54,17 +58,19 @@ import java.util.List;
 @Configuration
 @AutoConfiguration
 @AutoConfigureBefore({AuthorizationServerCommonComponentsConfiguration.class})
-@EnableConfigurationProperties({OAuth2CentralAuthorizationServerProperties.class, FormLoginProperties.class})
+@EnableConfigurationProperties({OAuth2CentralAuthorizationServerProperties.class})
 @Import(OAuth2CentralAuthorizationServerCCImportSelector.class)
+@RequiredArgsConstructor
 public class OAuth2CentralAuthorizationServerConfiguration {
+
+    private final OAuth2CentralAuthorizationServerProperties properties;
 
     /**
      * 需要进行补充 ...
      *
-     * @param properties provider source..
      */
     @Bean
-    public ProviderSettings providerSettings(OAuth2CentralAuthorizationServerProperties properties) {
+    public ProviderSettings providerSettings() {
         return properties.getProvider().getOAuth2ProviderSettingsProvider();
     }
 
@@ -168,12 +174,39 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                     securityBuilder.apply(configurer);
                 }
 
+
+                formLoginSupport(securityBuilder);
+
+
                 // 增加扩展
                 if (!CollectionUtils.isEmpty(extConfigurers)) {
                     for (LightningOAuth2CentralAuthorizationServerExtConfigurer extConfigurer : extConfigurers) {
                         extConfigurer.configure(configurer);
                     }
                 }
+            }
+
+            private void formLoginSupport(HttpSecurity securityBuilder) throws Exception {
+
+                // 表示 非分离配置 ...
+                securityBuilder.setSharedObject(AuthConfigConstant.ENABLE_FORM_LOGIN_NO_SEPARATION.class, AuthConfigConstant.ENABLE_FORM_LOGIN_NO_SEPARATION.INSTANCE);
+                // 表单处理 ...
+                // 增加表单支持
+                FormLoginConfigurer<HttpSecurity> formLoginConfigurer = securityBuilder.formLogin();
+                OAuth2CentralAuthorizationServerProperties.FormLoginSupportConfig config = properties.getFormLoginConfig();
+                if(StringUtils.hasText(config.getLoginPageUrl())) {
+                    formLoginConfigurer.loginPage(config.getLoginPageUrl());
+                }
+                if(StringUtils.hasText(config.getLoginProcessUrl())) {
+                    formLoginConfigurer.loginProcessingUrl(config.getLoginProcessUrl());
+                }
+
+                // default success url 不总是使用,在进行授权码时,进行用户登陆之后跳转为 为进行完毕的授权码 ..
+                if(StringUtils.hasText(config.getDefaultSuccessForwardUrl())) {
+                    formLoginConfigurer.defaultSuccessUrl(config.getDefaultSuccessForwardUrl());
+                }
+
+                LogUtil.prettyLog("central oauth2 auth server enable form login noSeparation support !!!");
             }
         };
     }

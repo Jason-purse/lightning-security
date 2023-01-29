@@ -21,6 +21,20 @@ public class OAuth2CentralAuthorizationServerProperties {
 
     private final OAuth2ProviderSettingProperties provider = new OAuth2ProviderSettingProperties();
 
+
+    private final FormLoginSupportConfig formLoginConfig = new FormLoginSupportConfig();
+
+    @Data
+    public static class FormLoginSupportConfig {
+
+        private String loginPageUrl;
+
+        private String loginProcessUrl = "/auth/v1/form/login";
+
+        private String defaultSuccessForwardUrl = "/default_success.html";
+
+    }
+
     public enum StoreKind {
         REDIS,
         JPA,
