@@ -9,5 +9,4 @@ public class FormLoginAuthorizationServerMain {
         SpringApplication.run(FormLoginAuthorizationServerMain.class,args);
     }
 
-
 }

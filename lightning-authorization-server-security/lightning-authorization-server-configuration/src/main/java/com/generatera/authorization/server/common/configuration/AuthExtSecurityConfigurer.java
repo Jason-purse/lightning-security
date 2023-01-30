@@ -16,10 +16,10 @@ import java.util.List;
 @Slf4j
 public class AuthExtSecurityConfigurer extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>  {
 
-    private final List<LightningResourcePermissionConfigurer> configurers;
+    private final List<LightningAuthServerConfigurer> configurers;
 
 
-    public AuthExtSecurityConfigurer(List<LightningResourcePermissionConfigurer> configurerList) {
+    public AuthExtSecurityConfigurer(List<LightningAuthServerConfigurer> configurerList) {
         this.configurers = configurerList;
     }
 
@@ -28,13 +28,9 @@ public class AuthExtSecurityConfigurer extends SecurityConfigurerAdapter<Default
 
         ApplicationAuthExtConfigurerUtils.getJwkSourceProvider(builder);
 
-        // todo 后面可以定制 ..
-        builder.requestMatchers()
-                .antMatchers(AuthConfigConstant.RESOURCE_PATTERN_PREFIX + "/**");
-
         if(!CollectionUtils.isEmpty(configurers)) {
-            for (LightningResourcePermissionConfigurer configurer : configurers) {
-                configurer.configure(builder.authorizeHttpRequests());
+            for (LightningAuthServerConfigurer configurer : configurers) {
+                configurer.configure(builder);
             }
         }
 

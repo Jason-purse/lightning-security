@@ -1,5 +1,7 @@
 package com.generatera.authorization.application.server.form.login.config.util;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
@@ -13,13 +15,23 @@ import java.util.Map;
 
 public class FormLoginUtils {
 
-    public static <B extends HttpSecurityBuilder<B>>  void  configDefaultLoginPageGeneratorFilter(B builder,String loginPage) {
+    public static <B extends HttpSecurityBuilder<B>> void configDefaultLoginPageGeneratorFilter(B builder, String loginPage, String logoutSuccessUrl) {
 
         DefaultLoginPageGeneratingFilter loginPageGeneratingFilter = builder.getSharedObject(DefaultLoginPageGeneratingFilter.class);
-        if(loginPageGeneratingFilter != null) {
+        if (loginPageGeneratingFilter != null) {
+            ApplicationAuthServerProperties loginProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
+            // 不强制要求重定向到登录页面 ...(但是需要放行对应的页面才行) ...
+            String failureUrl = ElvisUtil.stringElvis(loginProperties.getNoSeparation().getFailureForwardOrRedirectUrl(), "/login?error");
+            loginPageGeneratingFilter.setFormLoginEnabled(true);
             loginPageGeneratingFilter.setLoginPageUrl(loginPage);
+            loginPageGeneratingFilter.setFailureUrl(failureUrl);
+            if (StringUtils.hasText(logoutSuccessUrl)) {
+                loginPageGeneratingFilter.setLogoutSuccessUrl(logoutSuccessUrl);
+            }
+            builder.addFilter(loginPageGeneratingFilter);
         }
     }
+
 
     static <B extends HttpSecurityBuilder<B>, T> T getOptionalBean(B builder, Class<T> type) {
         Map<String, T> beansMap = BeanFactoryUtils.beansOfTypeIncludingAncestors(builder.getSharedObject(ApplicationContext.class), type);

@@ -57,6 +57,10 @@ public interface LightningAbstractAuthenticationEntryPoint extends LightningAuth
         return null;
     }
 
+    default String getUnAuthenticatedMessage() {
+        return null;
+    }
+
     boolean enableAuthDetails();
 
     boolean enableAccountStatusDetails();
@@ -74,30 +78,46 @@ public interface LightningAbstractAuthenticationEntryPoint extends LightningAuth
                 badCredentialsHandle(response);
             } else if (exception instanceof InternalAuthenticationServiceException authenticationServiceException) {
                 internalServiceExceptionHandle(request, response, authenticationServiceException);
+            } else if (exception instanceof InsufficientAuthenticationException) {
+                unLoginExceptionHandle(response);
             } else {
                 authCommonfailureHandle(response);
             }
         } else {
             if (exception instanceof InternalAuthenticationServiceException authenticationServiceException) {
-                internalServiceExceptionHandle(request,response,authenticationServiceException);
-            } else {
+                internalServiceExceptionHandle(request, response, authenticationServiceException);
+            }
+            else if(exception instanceof InsufficientAuthenticationException) {
+                unLoginExceptionHandle(response);
+            }
+            else {
                 // 通用认证失败 ...
                 authCommonfailureHandle(response);
             }
         }
     }
 
+    private void unLoginExceptionHandle(HttpServletResponse response) {
+        if (StringUtils.hasText(getUnAuthenticatedMessage())) {
+            // 未登录 自定义提示信息 ...
+            AuthHttpResponseUtil.commence(response, JsonUtil.getDefaultJsonUtil().asJSON(Result.error(
+                    ApplicationAuthException.unloginException().getCode(),
+                    getUnAuthenticatedMessage()
+            )));
+        } else {
+            AuthHttpResponseUtil.commence(response, JsonUtil.getDefaultJsonUtil().asJSON(ApplicationAuthException.unloginException().asResult()));
+        }
+    }
+
     private void internalServiceExceptionHandle(HttpServletRequest request, HttpServletResponse response, InternalAuthenticationServiceException authenticationServiceException) throws IOException, ServletException {
         Throwable cause = authenticationServiceException.getCause();
-        if(cause != null) {
-            if(cause instanceof AuthenticationException causeAuthException) {
+        if (cause != null) {
+            if (cause instanceof AuthenticationException causeAuthException) {
                 onAuthenticationFailure(request, response, causeAuthException);
-            }
-            else {
+            } else {
                 authCommonfailureHandle(response);
             }
-        }
-        else {
+        } else {
             AuthHttpResponseUtil.commence(response,
                     JsonUtil.getDefaultJsonUtil().asJSON(
                             ApplicationAuthException.authenticationServiceException().asResult()
@@ -106,7 +126,7 @@ public interface LightningAbstractAuthenticationEntryPoint extends LightningAuth
     }
 
     private void authCommonfailureHandle(HttpServletResponse response) {
-        if(StringUtils.hasText(getLoginFailureMessage())) {
+        if (StringUtils.hasText(getLoginFailureMessage())) {
             AuthHttpResponseUtil.commence(response,
                     JsonUtil.getDefaultJsonUtil().asJSON(
                             Result.error(
@@ -115,8 +135,7 @@ public interface LightningAbstractAuthenticationEntryPoint extends LightningAuth
                             )
                     )
             );
-        }
-        else {
+        } else {
             AuthHttpResponseUtil.commence(
                     response,
                     JsonUtil.getDefaultJsonUtil().asJSON(

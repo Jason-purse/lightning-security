@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
-import com.generatera.authorization.application.server.config.util.AuthConfigurerUtils;
+import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import org.springframework.http.HttpMethod;
@@ -92,8 +92,8 @@ public final class AuthTokenIntrospectionEndpointConfigurer extends AbstractAuth
     private <B extends HttpSecurityBuilder<B>> List<AuthenticationProvider> createDefaultAuthenticationProviders(B builder) {
         List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
         AuthTokenIntrospectionAuthenticationProvider tokenIntrospectionAuthenticationProvider =
-                new AuthTokenIntrospectionAuthenticationProvider(AuthConfigurerUtils.getAuthorizationService(builder),
-                AuthConfigurerUtils.getTokenSettingProvider(builder));
+                new AuthTokenIntrospectionAuthenticationProvider(AppAuthConfigurerUtils.getAuthorizationService(builder),
+                AppAuthConfigurerUtils.getTokenSettingProvider(builder));
         authenticationProviders.add(tokenIntrospectionAuthenticationProvider);
         return authenticationProviders;
     }

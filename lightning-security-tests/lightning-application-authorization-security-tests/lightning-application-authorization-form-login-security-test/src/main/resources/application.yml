@@ -2,14 +2,6 @@ lightning:
   app:
     auth:
       server:
-        form:
-          login:
-            config:
-              no-separation:
-                enable-saved-request-forward: true
-                enable-forward: false
-                default-success-url: /index.html
-                success-forward-or-redirect-url: /login.html
         config:
           server-meta-data-endpoint-config:
             enable-oidc: false
@@ -19,6 +11,11 @@ lightning:
             login-failure-message: "登陆失败了呀，亲!"
             bad-credential-message: "请检查账户密码呀，亲!"
             enable-account-status-details: true
+            un-authenticated-message: 未登录,请登录!!
+          no-separation:
+            enable-saved-request-forward: true
+            default-success-url: /login.html
+
 #              no-separation:
 #                success-forward-url: /login.html
 #                failure-forward-url: /failure.html

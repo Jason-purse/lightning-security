@@ -31,6 +31,8 @@ public class DefaultLightningAbstractAuthenticationEntryPoint implements Lightni
 
     private String accountExpiredMessage;
 
+    private String unAuthenticatedMessage;
+
     public DefaultLightningAbstractAuthenticationEntryPoint(boolean enableAuthDetails,boolean enableAccountStatusDetails) {
         this.enableAuthDetails = enableAuthDetails;
         this.enableAccountStatusDetails = enableAccountStatusDetails;
@@ -61,6 +63,10 @@ public class DefaultLightningAbstractAuthenticationEntryPoint implements Lightni
 
     public void setAccountExpiredMessage(String accountExpiredMessage) {
         this.accountExpiredMessage = accountExpiredMessage;
+    }
+
+    public void setUnAuthenticatedMessage(String unAuthenticatedMessage) {
+        this.unAuthenticatedMessage = unAuthenticatedMessage;
     }
 
     public void setAccountLockedMessage(String accountLockedMessage) {
@@ -112,4 +118,10 @@ public class DefaultLightningAbstractAuthenticationEntryPoint implements Lightni
     public String getLoginFailureMessage() {
         return loginFailureMessage;
     }
+
+    @Override
+    public String getUnAuthenticatedMessage() {
+        return unAuthenticatedMessage;
+    }
 }
+

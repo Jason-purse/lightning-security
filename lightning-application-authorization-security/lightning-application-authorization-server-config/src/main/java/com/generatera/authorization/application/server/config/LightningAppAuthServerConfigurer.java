@@ -7,7 +7,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
  * @time 14:25
  * @Description lightning app auth server for token endpoint configurer ...
  */
-public interface LightningAppAuthServerForTokenEndPointConfigurer {
+public interface LightningAppAuthServerConfigurer {
 
     /**
      * 直接配置 ApplicationAuthServerConfigurer 的快捷方式 ...

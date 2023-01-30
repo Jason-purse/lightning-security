@@ -19,7 +19,7 @@ import static com.generatera.authorization.application.server.config.util.AuthEn
  * @time 16:33
  * @Description oauth2 copy
  */
-public final class AuthRefreshTokenAuthenticationConverter implements AuthenticationConverter {
+public class AuthRefreshTokenAuthenticationConverter implements AuthenticationConverter {
     public AuthRefreshTokenAuthenticationConverter() {
     }
 
@@ -29,33 +29,26 @@ public final class AuthRefreshTokenAuthenticationConverter implements Authentica
         if (!AuthorizationGrantType.REFRESH_TOKEN.getValue().equals(grantType)) {
             return null;
         } else {
-            Authentication clientPrincipal = SecurityContextHolder.getContext().getAuthentication();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             MultiValueMap<String, String> parameters = HttpRequestUtil.getParameters(request);
             String refreshToken = parameters.getFirst("refresh_token");
             if (!StringUtils.hasText(refreshToken) || parameters.get("refresh_token").size() != 1) {
                 throwError("invalid_request", "refresh_token", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
             }
-
-            String scope = parameters.getFirst("scope");
-            if (StringUtils.hasText(scope) && parameters.get("scope").size() != 1) {
-                throwError("invalid_request", "scope", "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2");
-            }
-
-            // todo 不需要scope??
-            Set<String> requestedScopes = null;
-            if (StringUtils.hasText(scope)) {
-                requestedScopes = new HashSet<>(Arrays.asList(StringUtils.delimitedListToStringArray(scope, " ")));
-            }
-
-            Map<String, Object> additionalParameters = new HashMap<>();
-            parameters.forEach((key, value) -> {
-                if (!key.equals("grant_type") && !key.equals("refresh_token") && !key.equals("scope")) {
-                    additionalParameters.put(key, value.get(0));
-                }
-
-            });
-            return new AuthRefreshTokenAuthenticationToken(refreshToken, clientPrincipal, requestedScopes, additionalParameters);
+            return doConvert(authentication, refreshToken, parameters);
         }
+    }
+
+    protected Authentication doConvert(Authentication authentication, String refreshToken, MultiValueMap<String, String> parameters) {
+        Map<String, Object> additionalParameters = new HashMap<>();
+        parameters.forEach((key, value) -> {
+            if (!key.equals("grant_type") && !key.equals("refresh_token")) {
+                additionalParameters.put(key, value.get(0));
+            }
+
+        });
+
+        return new AuthRefreshTokenAuthenticationToken(refreshToken, authentication, additionalParameters);
     }
 
 }

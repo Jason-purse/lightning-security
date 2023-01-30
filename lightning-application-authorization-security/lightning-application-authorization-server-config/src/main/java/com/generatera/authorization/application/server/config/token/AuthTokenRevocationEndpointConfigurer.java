@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
-import com.generatera.authorization.application.server.config.util.AuthConfigurerUtils;
+import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import org.springframework.http.HttpMethod;
@@ -91,7 +91,7 @@ public final class AuthTokenRevocationEndpointConfigurer extends AbstractAuthCon
 
     private <B extends HttpSecurityBuilder<B>> List<AuthenticationProvider> createDefaultAuthenticationProviders(B builder) {
         List<AuthenticationProvider> authenticationProviders = new ArrayList();
-        AuthTokenRevocationAuthenticationProvider tokenRevocationAuthenticationProvider = new AuthTokenRevocationAuthenticationProvider(AuthConfigurerUtils.getAuthorizationService(builder));
+        AuthTokenRevocationAuthenticationProvider tokenRevocationAuthenticationProvider = new AuthTokenRevocationAuthenticationProvider(AppAuthConfigurerUtils.getAuthorizationService(builder));
         authenticationProviders.add(tokenRevocationAuthenticationProvider);
         return authenticationProviders;
     }

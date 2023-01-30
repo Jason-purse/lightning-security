@@ -1,6 +1,8 @@
 package com.generatera.authorization.application.server.config.util;
 
+import com.generatera.authorization.application.server.config.AppAuthConfigConstant;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.application.server.config.MyDefaultLogoutPageGeneratingFilter;
 import com.generatera.authorization.application.server.config.authentication.DefaultLightningAbstractAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.config.token.AppAuthServerForTokenAuthenticationProvider;
 import com.generatera.authorization.application.server.config.token.DefaultOpaqueAwareTokenCustomizer;
@@ -16,6 +18,7 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwtEncoder;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.LightningJwtGenerator;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.NimbusJwtEncoder;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.apache.commons.lang3.ObjectUtils;
@@ -32,6 +35,8 @@ import org.springframework.context.annotation.ContextAnnotationAutowireCandidate
 import org.springframework.core.ResolvableType;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -40,10 +45,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public final class AuthConfigurerUtils {
+import static com.generatera.authorization.application.server.config.util.StringUtils.normalize;
+
+public final class AppAuthConfigurerUtils {
 
     public static final ContextAnnotationAutowireCandidateResolver resolver = new ContextAnnotationAutowireCandidateResolver();
-    private AuthConfigurerUtils() {
+    private AppAuthConfigurerUtils() {
     }
 
 
@@ -99,6 +106,44 @@ public final class AuthConfigurerUtils {
         if (StringUtils.hasText(backendSeparation.getLoginFailureMessage())) {
             point.setLoginFailureMessage(backendSeparation.getLoginFailureMessage());
         }
+
+        if(StringUtils.hasText(backendSeparation.getUnAuthenticatedMessage())) {
+            point.setUnAuthenticatedMessage(backendSeparation.getUnAuthenticatedMessage());
+        }
+    }
+
+    public static <B extends HttpSecurityBuilder<B>> DefaultLogoutPageGeneratingFilter getDefaultLogoutPageGeneratingFilter(B builder) {
+        DefaultLogoutPageGeneratingFilter logoutPageGeneratingFilter = builder.getSharedObject(DefaultLogoutPageGeneratingFilter.class);
+        if (logoutPageGeneratingFilter == null) {
+            // 尝试从bean 工厂中获取
+            logoutPageGeneratingFilter = getOptionalBean(builder, DefaultLogoutPageGeneratingFilter.class);
+            if (logoutPageGeneratingFilter == null) {
+                MyDefaultLogoutPageGeneratingFilter pageGeneratingFilter = new MyDefaultLogoutPageGeneratingFilter();
+                logoutPageGeneratingFilter = pageGeneratingFilter;
+                ApplicationAuthServerProperties authServerProperties = getBean(builder, ApplicationAuthServerProperties.class);
+                ApplicationAuthServerProperties.NoSeparation noSeparation = authServerProperties.getNoSeparation();
+
+                // 登出页面配置,
+                // 登出处理路径配置
+                // 使用自己的 登出页面生成过滤器 ..
+                String logoutUrl = ElvisUtil.stringElvis(noSeparation.getLogoutPageUrl(), "/logout");
+                logoutUrl = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX + normalize(logoutUrl);
+                pageGeneratingFilter.setMatcher(new AntPathRequestMatcher(logoutUrl,"GET"));
+                if(StringUtils.hasText(noSeparation.getLogoutProcessUrl())) {
+                    String logoutProcessUrl = noSeparation.getLogoutProcessUrl();
+                    logoutProcessUrl = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX + logoutProcessUrl;
+                    pageGeneratingFilter.setLogoutProcessUrl(logoutProcessUrl);
+                }
+                else {
+                    // 将登出页面url作为 处理路径,但是请求方法不一致 ..
+                    pageGeneratingFilter.setLogoutProcessUrl(logoutUrl);
+                }
+                // 前缀处理 ...
+                builder.setSharedObject(DefaultLogoutPageGeneratingFilter.class,logoutPageGeneratingFilter);
+            }
+        }
+
+        return logoutPageGeneratingFilter;
     }
 
     public static <B extends HttpSecurityBuilder<B>> LightningAuthenticationTokenService getAuthorizationService(B builder) {

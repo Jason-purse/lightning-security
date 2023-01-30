@@ -12,20 +12,15 @@ import java.util.Set;
 
 public class AuthRefreshTokenAuthenticationToken extends AuthAuthorizationGrantAuthenticationToken {
     private final String refreshToken;
-    private final Set<String> scopes;
 
-    public AuthRefreshTokenAuthenticationToken(String refreshToken, Authentication clientPrincipal, @Nullable Set<String> scopes, @Nullable Map<String, Object> additionalParameters) {
+    public AuthRefreshTokenAuthenticationToken(String refreshToken, Authentication clientPrincipal ,@Nullable Map<String, Object> additionalParameters) {
         super(AuthorizationGrantType.REFRESH_TOKEN, clientPrincipal, additionalParameters);
         Assert.hasText(refreshToken, "refreshToken cannot be empty");
         this.refreshToken = refreshToken;
-        this.scopes = Collections.unmodifiableSet(scopes != null ? new HashSet<>(scopes) : Collections.emptySet());
     }
 
     public String getRefreshToken() {
         return this.refreshToken;
     }
 
-    public Set<String> getScopes() {
-        return this.scopes;
-    }
 }

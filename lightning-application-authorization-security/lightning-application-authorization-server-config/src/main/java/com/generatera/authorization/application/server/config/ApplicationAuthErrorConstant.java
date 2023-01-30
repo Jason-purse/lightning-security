@@ -90,4 +90,13 @@ public class ApplicationAuthErrorConstant implements ExceptionStatus {
             "AUTH_FAILURE",
             401
     );
+
+
+    /**
+     * 未登录引起的异常
+     */
+    public static ApplicationAuthErrorConstant AUTH_UNLOGOIN_EXCEPTION = new ApplicationAuthErrorConstant(
+            "UNLOGIN_EXCEPTION",
+            401
+    );
 }

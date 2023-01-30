@@ -1,7 +1,8 @@
 package com.generatera.authorization.application.server.config;
 
-import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties.ServerMetaDataEndpointConfig;
-import com.generatera.authorization.server.common.configuration.*;
+import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
+import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
@@ -23,15 +24,19 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
+
+import static com.generatera.authorization.application.server.config.util.StringUtils.normalize;
 
 /**
  * 此配置作为 整个授权服务器的控制中心(模板配置)
@@ -86,113 +91,6 @@ public class ApplicationAuthServerConfig {
     }
 
 
-    //// token claims customizer -----------------------------------
-    //
-    //// ------------------- access token  customizer---------------------------------
-    //@Bean
-    //@Primary
-    //@ConditionalOnBean(value = LightningTokenClaimsContext.class, parameterizedContainer = LightningTokenCustomizer.class)
-    //public LightningTokenCustomizer<LightningTokenClaimsContext> pluginTokenCustomizer(
-    //        LightningTokenCustomizer<LightningTokenClaimsContext> tokenCustomizer
-    //) {
-    //    return new DelegateLightningTokenCustomizer<>(
-    //            tokenCustomizer,
-    //            tokenCustomizer()
-    //    );
-    //}
-    //
-    //@Bean
-    //@ConditionalOnMissingBean(value = LightningTokenClaimsContext.class, parameterizedContainer = LightningTokenCustomizer.class)
-    //public LightningTokenCustomizer<LightningTokenClaimsContext> tokenCustomizer(
-    //
-    //) {
-    //    // access token 生成处理 ..
-    //    return new DelegateLightningTokenCustomizer<>(
-    //            new DefaultTokenDetailAwareTokenCustomizer(tokenSettingsProvider),
-    //            new DefaultOpaqueAwareTokenCustomizer()
-    //    )::customize;
-    //}
-    //
-    //// -------------------- jwt token customizer --------------------------------------
-    //@Bean
-    //@Primary
-    //@ConditionalOnBean(value = JwtEncodingContext.class, parameterizedContainer = LightningTokenCustomizer.class)
-    //public LightningTokenCustomizer<JwtEncodingContext> pluginJwtCustomizer(
-    //        LightningTokenCustomizer<JwtEncodingContext> jwtCustomizer
-    //) {
-    //    return new DelegateLightningTokenCustomizer<>(
-    //            jwtCustomizer,
-    //            jwtCustomizer()
-    //    );
-    //}
-    //
-    //@Bean
-    //@ConditionalOnMissingBean(value = JwtEncodingContext.class, parameterizedContainer = LightningTokenCustomizer.class)
-    //public LightningTokenCustomizer<JwtEncodingContext> jwtCustomizer() {
-    //    return new DelegateLightningTokenCustomizer<>(
-    //            new DefaultTokenDetailAwareTokenCustomizer(tokenSettingsProvider),
-    //            new DefaultOpaqueAwareTokenCustomizer()
-    //    )::customize;
-    //}
-
-    //// --------------------------- token 生成器 ---------------------------------------
-    //// 当使用oauth2 central  authorization server的时候,token生成器,根本不会使用到这些Token 生成器 ...
-    //// 因为 oauth2 是基于 client认证的方式来提供 token
-    //// 除非需要根据直接使用表单登录进行 用户token 颁发 ...
-    //// 那么这个token 生成器将可以用于 token 颁发 ...
-    //
-    //@Bean
-    //@ConditionalOnBean(LightningJwtEncoder.class)
-    //@ConditionalOnMissingBean(LightningTokenGenerator.class)
-    //public LightningTokenGenerator<LightningToken> tokenGenerator(
-    //        LightningJwtEncoder jwtEncoder,
-    //        @Autowired(required = false)
-    //                LightningJwtCustomizer jwtCustomizer,
-    //        @Autowired(required = false)
-    //                LightningTokenCustomizer<LightningTokenClaimsContext> tokenClaimsCustomizer) {
-    //
-    //    // jwt generator
-    //    DefaultLightningJwtGenerator jwtGenerator = new DefaultLightningJwtGenerator(jwtEncoder);
-    //    ElvisUtil.isNotEmptyConsumer(jwtCustomizer, jwtGenerator::setJwtCustomizer);
-    //
-    //    // access generator
-    //    DefaultLightningAccessTokenGenerator accessTokenGenerator = new DefaultLightningAccessTokenGenerator();
-    //    ElvisUtil.isNotEmptyConsumer(tokenClaimsCustomizer, accessTokenGenerator::setAccessTokenCustomizer);
-    //
-    //    // opaque token 生成器 判断条件
-    //    return new DelegatingLightningTokenGenerator(
-    //            accessTokenGenerator,
-    //            new DefaultLightningRefreshTokenGenerator(),
-    //            jwtGenerator);
-    //}
-
-
-    ///**
-    // * token 名称不能一样,否则当一个bean 方法被跳过时,它也将被跳过 ...
-    // */
-    //@Bean
-    //@ConditionalOnMissingBean({LightningTokenGenerator.class, LightningJwtEncoder.class})
-    //public LightningTokenGenerator<LightningToken> defaultTokenGenerator(
-    //        JWKSourceProvider jwkSourceProvider,
-    //        @Autowired(required = false)
-    //                LightningTokenCustomizer<JwtEncodingContext> jwtCustomizer,
-    //        @Autowired(required = false)
-    //                LightningTokenCustomizer<LightningTokenClaimsContext> tokenCustomizer
-    //) {
-    //    DefaultLightningJwtGenerator jwtGenerator = new DefaultLightningJwtGenerator(new NimbusJwtEncoder(jwkSourceProvider.getJWKSource()));
-    //    ElvisUtil.isNotEmptyConsumer(jwtCustomizer, jwtGenerator::setJwtCustomizer);
-    //
-    //    DefaultLightningAccessTokenGenerator accessTokenGenerator = new DefaultLightningAccessTokenGenerator();
-    //    ElvisUtil.isNotEmptyConsumer(tokenCustomizer, accessTokenGenerator::setAccessTokenCustomizer);
-    //
-    //    return new DelegatingLightningTokenGenerator(
-    //            accessTokenGenerator,
-    //            new DefaultLightningRefreshTokenGenerator(),
-    //            jwtGenerator
-    //    );
-    //}
-    // --------------------------------------------------------------------------------
-
     @Bean
     @Qualifier("userAuthenticationProvider")
     public DaoAuthenticationProvider daoAuthenticationProvider(
@@ -223,144 +121,152 @@ public class ApplicationAuthServerConfig {
         return provider;
     }
 
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public LightningAuthServerConfigurer bootstrapAppAuthServer(
+            @Autowired(required = false) List<LightningAppAuthServerBootstrapConfigurer> appAuthServerConfigurers
+    ) {
+        return new LightningAuthServerConfigurer() {
+            @Override
+            public void configure(HttpSecurity security) throws Exception {
+
+                // 分离场景下,才需要增加token 端点进行token 颁发 / 刷新和 撤销 ...
+                // 不分离,直接记住我就行 ..(remember me 服务) ...
+                // // TODO: 2023/1/30  可以基于 rememberme 标识 来提供刷新token
+                if(properties.getIsSeparation()) {
+                    ApplicationAuthServerProperties serverProperties = security.getSharedObject(ApplicationAuthServerProperties.class);
+                    if (serverProperties == null) {
+                        security.setSharedObject(ApplicationAuthServerProperties.class, properties);
+                    }
+
+                    // 配置 普通应用级别的 授权服务器 ..
+                    if (appAuthServerConfigurers != null && !appAuthServerConfigurers.isEmpty()) {
+                        for (LightningAppAuthServerBootstrapConfigurer appAuthServerConfigurer : appAuthServerConfigurers) {
+                            appAuthServerConfigurer.configure(security);
+                        }
+                    }
+                }
+            }
+        };
+    }
+
+
+    /**
+     * 非分离下的 登录或者登出页面配置 ...
+     */
+    @Bean
+    public LightningAppAuthServerBootstrapConfigurer loginOrLogoutPageConfig() {
+        return new LightningAppAuthServerBootstrapConfigurer() {
+            @Override
+            public void configure(HttpSecurity securityBuilder) throws Exception {
+                // 必须认证 ...
+                securityBuilder
+                        // 保留 csrf 提供的默认页面功能 ...
+                        .csrf()
+                        // 但是忽略所有请求
+                        .ignoringAntMatchers("/**");
+
+                Boolean isSeparation = properties.getIsSeparation();
+                ApplicationAuthServerProperties.NoSeparation noSeparation = properties.getNoSeparation();
+                String appAuthServerPrefix = org.springframework.util.StringUtils.trimTrailingCharacter(ElvisUtil.stringElvis(properties.getAppAuthPrefix(), AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX), '/');
+
+                if (!isSeparation) {
+                    String logoutPageUrl = appAuthServerPrefix + normalize(ElvisUtil.stringElvis(noSeparation.getLogoutPageUrl(), "/logout"));
+                    LogoutConfigurer<HttpSecurity> logout = securityBuilder.logout();
+                    if (StringUtils.isNotBlank(noSeparation.getLogoutProcessUrl())) {
+                        // 设置logout process url
+                        String logoutProcessUrl = appAuthServerPrefix + ElvisUtil.stringElvis(noSeparation.getLogoutProcessUrl(), "/logout");
+                        logout
+                                .logoutRequestMatcher(
+                                        new AntPathRequestMatcher(logoutProcessUrl));
+                    } else {
+                        logout.logoutUrl(logoutPageUrl);
+                    }
+
+                    // 登出成功的url
+                    logout.logoutSuccessUrl(
+                            appAuthServerPrefix + normalize(ElvisUtil.stringElvis(noSeparation.getLogoutSuccessUrl(), "/login?logout"))
+                    );
+
+                    // 配置 logout pageGeneratorFilter(由于默认的 限制太深) ...
+                    DefaultLogoutPageGeneratingFilter filter = AppAuthConfigurerUtils.getDefaultLogoutPageGeneratingFilter(securityBuilder);
+                    // 增加默认登出页面生成过滤器 ..
+                    securityBuilder.addFilter(filter);
+
+
+                    String loginPageUrl = ElvisUtil.stringElvis(noSeparation.getLoginPageUrl(), "/login");
+                    loginPageUrl = appAuthServerPrefix + normalize(loginPageUrl);
+                    // 可以重新配置 ...
+                    String finalLoginPageUrl = loginPageUrl;
+                    securityBuilder
+                            .exceptionHandling()
+                            .authenticationEntryPoint(
+                            (request, response, authException) -> response.sendRedirect(finalLoginPageUrl)
+                    );
+                }
+            }
+        };
+    }
+
+
     /**
      * 引导token 相关端点的配置处理  ...
      */
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public LightningMultipleAuthServerConfigurer bootstrapAppTokenEndpoint(
-            @Autowired(required = false) List<LightningAppAuthServerForTokenEndPointConfigurer> configurers) {
-       return new LightningMultipleAuthServerConfigurer() {
-           @Override
-           public String routePattern() {
-               // todo 让它们可以配置 ..
-               return AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + AuthConfigConstant.TOKEN_PATTERN_PREFIX + "/**";
-           }
-
-           @Override
-           public void customize(HttpSecurity securityBuilder) throws Exception {
-               ApplicationAuthServerConfigurer<HttpSecurity> authServerConfigurer = new ApplicationAuthServerConfigurer<>();
-               securityBuilder.apply(authServerConfigurer);
-               // 设置为共享对象 ..
-               securityBuilder.setSharedObject(ApplicationAuthServerConfigurer.class, authServerConfigurer);
-               // 共享对象存储
-               securityBuilder
-                       .setSharedObject(ApplicationAuthServerProperties.class, properties);
-
-               // pass,仅仅只是提供这个配置器
-               // 应用还可以提供此类LightningAppAuthServerConfigurer 进行进一步配置 ...
-               // 放行端点uri
-               securityBuilder
-                       .authorizeHttpRequests()
-                       .requestMatchers(authServerConfigurer.getEndpointsMatcher())
-                       .permitAll();
-               if (!CollectionUtils.isEmpty(configurers)) {
-                   for (LightningAppAuthServerForTokenEndPointConfigurer configurer : configurers) {
-                       configurer.configure(authServerConfigurer);
-                   }
-               }
-           }
-       };
-    }
-
-    ///**
-    // * oauth2 参考的公共组件 填充处理 ...
-    // */
-    //@Bean
-    //public LightningAuthServerConfigurer commonComponentFillConfigurer() {
-    //    return new LightningAuthServerConfigurer() {
-    //        @Override
-    //        public void configure(HttpSecurity builder) throws Exception {
-    //            //OAuth2AuthorizationServer oAuth2AuthorizationServer = builder.getSharedObject(OAuth2AuthorizationServer.class);
-    //            //// 如果不等于 null,则表示oauth2 已经启动 ...
-    //            //// 否则填充 一些公共配置(用于 可选的resource server 进一步配置) ..
-    //            //if (oAuth2AuthorizationServer == null) {
-    //            //
-    //            //    builder.apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
-    //            //        @Override
-    //            //        public void init(HttpSecurity builder) {
-    //            //
-    //            //            oauth2CommonComponentFill(builder);
-    //            //            oauth2CommonComponentValidation(builder);
-    //            //            // oidc provider meta data by AuthServerProviderMetadataConfiguration handle ..
-    //            //        }
-    //            //
-    //            //        private void oauth2CommonComponentValidation(HttpSecurity builder) {
-    //            //            ProviderSettingsProvider providerSettings = ProviderExtUtils.getProviderSettings(builder);
-    //            //            validateProviderSettings(providerSettings.getProviderSettings());
-    //            //        }
-    //            //
-    //            //
-    //            //        private static void validateProviderSettings(ProviderSettings providerSettings) {
-    //            //            if (providerSettings.getIssuer() != null) {
-    //            //                URI issuerUri;
-    //            //                try {
-    //            //                    issuerUri = new URI(providerSettings.getIssuer());
-    //            //                    issuerUri.toURL();
-    //            //                } catch (Exception var3) {
-    //            //                    throw new IllegalArgumentException("issuer must be a valid URL", var3);
-    //            //                }
-    //            //
-    //            //                if (issuerUri.getQuery() != null || issuerUri.getFragment() != null) {
-    //            //                    throw new IllegalArgumentException("issuer cannot contain query or fragment component");
-    //            //                }
-    //            //            }
-    //            //
-    //            //        }
-    //            //
-    //            //
-    //            //        // oauth2 通用组件复用 ..
-    //            //        private void oauth2CommonComponentFill(HttpSecurity builder) {
-    //            //
-    //            //            ProviderSettingsProvider providerSettings = ProviderExtUtils.getProviderSettings(builder);
-    //            //            AuthorizationProviderContextFilter providerContextFilter
-    //            //                    = new AuthorizationProviderContextFilter(providerSettings.getProviderSettings());
-    //            //            builder.addFilterAfter(this.postProcess(providerContextFilter), SecurityContextPersistenceFilter.class);
-    //            //            JWKSource<SecurityContext> jwkSource = ProviderExtUtils.getJwkSource(builder);
-    //            //
-    //            //            // jwk source ..
-    //            //            if (jwkSource != null) {
-    //            //                AuthorizationServerNimbusJwkSetEndpointFilter jwkSetEndpointFilter
-    //            //                        = new AuthorizationServerNimbusJwkSetEndpointFilter(jwkSource,
-    //            //                        providerSettings.getProviderSettings().getJwkSetEndpoint());
-    //            //                builder.addFilterBefore(
-    //            //                        this.postProcess(jwkSetEndpointFilter),
-    //            //                        AbstractPreAuthenticatedProcessingFilter.class);
-    //            //            }
-    //            //
-    //            //            AuthorizationServerMetadataEndpointFilter authorizationServerMetadataEndpointFilter =
-    //            //                    new AuthorizationServerMetadataEndpointFilter(providerSettings.getProviderSettings());
-    //            //            builder.addFilterBefore(
-    //            //                    this.postProcess(authorizationServerMetadataEndpointFilter),
-    //            //                    AbstractPreAuthenticatedProcessingFilter.class);
-    //            //        }
-    //            //    });
-    //            //}
-    //        }
-    //    };
-    //}
-
-
-    /**
-     * url 放行
-     * oidc 公共组件 url 放行 ..
-     */
-    @Bean
-    public LightningResourcePermissionConfigurer applicationServerPermissionConfigurer(
-            ApplicationAuthServerProperties authServerProperties
-    ) {
-        return new LightningResourcePermissionConfigurer() {
+    public LightningAppAuthServerBootstrapConfigurer tokenEndpointsConfig(
+            @Autowired(required = false)
+                    List<LightningAppAuthServerConfigurer> configurers
+    ) throws Exception {
+        return new LightningAppAuthServerBootstrapConfigurer() {
             @Override
-            public void configure(AuthorizationManagerRequestMatcherRegistry registry) {
-                ElvisUtil.isNotEmptyConsumer(
-                        authServerProperties
-                                .getServerMetaDataEndpointConfig().getEnableOidc(),
-                        flag -> registry
-                                .mvcMatchers(ServerMetaDataEndpointConfig.OPEN_CONNECT_ID_METADATA_ENDPOINT)
-                                .permitAll());
+            public void configure(HttpSecurity securityBuilder) throws Exception {
+                ApplicationAuthServerConfigurer<HttpSecurity> authServerConfigurer = new ApplicationAuthServerConfigurer<>();
+                securityBuilder.apply(authServerConfigurer);
+                // 设置为共享对象 ..
+                securityBuilder.setSharedObject(ApplicationAuthServerConfigurer.class, authServerConfigurer);
+                // 共享对象存储
+                securityBuilder
+                        .setSharedObject(ApplicationAuthServerProperties.class, properties);
+
+                // pass,仅仅只是提供这个配置器
+                // 应用还可以提供此类LightningAppAuthServerConfigurer 进行进一步配置 ...
+                // 放行端点uri
+                securityBuilder
+                        .authorizeHttpRequests()
+                        .requestMatchers(authServerConfigurer.getEndpointsMatcher())
+                        .permitAll();
+                if (!CollectionUtils.isEmpty(configurers)) {
+                    for (LightningAppAuthServerConfigurer configurer : configurers) {
+                        configurer.configure(authServerConfigurer);
+                    }
+                }
+
+
             }
         };
     }
+
+    ///**
+    // * url 放行
+    // * oidc 公共组件 url 放行 ..
+    // */
+    //@Bean
+    //public LightningResourcePermissionConfigurer applicationServerPermissionConfigurer(
+    //        ApplicationAuthServerProperties authServerProperties
+    //) {
+    //    return new LightningResourcePermissionConfigurer() {
+    //        @Override
+    //        public void configure(AuthorizationManagerRequestMatcherRegistry registry) {
+    //            ElvisUtil.isNotEmptyConsumer(
+    //                    authServerProperties
+    //                            .getServerMetaDataEndpointConfig().getEnableOidc(),
+    //                    flag -> registry
+    //                            .mvcMatchers(ServerMetaDataEndpointConfig.OPEN_CONNECT_ID_METADATA_ENDPOINT)
+    //                            .permitAll());
+    //        }
+    //    };
+    //}
 
 
 }

@@ -58,6 +58,10 @@ public class ApplicationAuthException extends AbstractApplicationException {
         return of(ApplicationAuthErrorConstant.AUTH_COMMON_FAILURE_EXCEPTION);
     }
 
+    public static ApplicationAuthException unloginException() {
+        return of(ApplicationAuthErrorConstant.AUTH_UNLOGOIN_EXCEPTION);
+    }
+
     public static ApplicationAuthException of(ApplicationAuthErrorConstant errorConstant) {
         return new ApplicationAuthException(errorConstant.getValue(), errorConstant.getIdentify());
     }

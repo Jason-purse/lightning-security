@@ -2,7 +2,7 @@ package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.LightningAppAuthServerDaoLoginAuthenticationProvider;
-import com.generatera.authorization.application.server.config.util.AuthConfigurerUtils;
+import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
 import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
@@ -102,8 +102,8 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
 
         ApplicationAuthServerProperties authServerProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
         LightningAppAuthServerDaoLoginAuthenticationProvider authenticationProvider = new LightningAppAuthServerDaoLoginAuthenticationProvider(
-                AuthConfigurerUtils.getAppAuthServerForTokenAuthenticationProvider(builder),
-                AuthConfigurerUtils.getBean(builder, DaoAuthenticationProvider.class),
+                AppAuthConfigurerUtils.getAppAuthServerForTokenAuthenticationProvider(builder),
+                AppAuthConfigurerUtils.getBean(builder, DaoAuthenticationProvider.class),
                 authServerProperties.getIsSeparation());
 
         // 实现 用户登录 认证 ..
@@ -130,7 +130,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         }
 
         // ------------------------ 覆盖 ------------------------------------
-        LightningAuthenticationEntryPoint entryPoint = AuthConfigurerUtils.getAuthenticationEntryPoint(builder);
+        LightningAuthenticationEntryPoint entryPoint = AppAuthConfigurerUtils.getAuthenticationEntryPoint(builder);
 
         /**
          * 访问token响应处理器
@@ -162,9 +162,9 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     private <B extends HttpSecurityBuilder<B>> List<AuthenticationProvider> createDefaultAuthenticationProviders(B builder) {
         List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
 
-        LightningAuthenticationTokenService authorizationService = AuthConfigurerUtils.getAuthorizationService(builder);
-        LightningTokenGenerator<? extends LightningToken> tokenGenerator = AuthConfigurerUtils.getTokenGenerator(builder);
-        TokenSettingsProvider tokenSettingProvider = AuthConfigurerUtils.getTokenSettingProvider(builder);
+        LightningAuthenticationTokenService authorizationService = AppAuthConfigurerUtils.getAuthorizationService(builder);
+        LightningTokenGenerator<? extends LightningToken> tokenGenerator = AppAuthConfigurerUtils.getTokenGenerator(builder);
+        TokenSettingsProvider tokenSettingProvider = AppAuthConfigurerUtils.getTokenSettingProvider(builder);
 
         AuthAccessTokenAuthenticationProvider accessTokenAuthenticationProvider = new AuthAccessTokenAuthenticationProvider(
                 authorizationService,

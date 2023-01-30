@@ -1,7 +1,6 @@
 package com.generatera.authorization.application.server.form.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
-import com.generatera.authorization.server.common.configuration.AuthConfigConstant;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -15,16 +14,15 @@ public class FormLoginProperties {
 
     private String passwordParameterName = "password";
 
+    /**
+     * 表单的登录url (将自动拼接 app auth server 前缀) ...
+     */
+    private String loginProcessUrl = "/form/login/process";
 
-    private String loginProcessUrl = AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + "/form/login" +"/process";
-
-    private NoSeparation noSeparation = new NoSeparation();
-
-
-
-
+    private final NoSeparation noSeparation = new NoSeparation();
 
 
+    private final BackendSeparation backendSeparation = new BackendSeparation();
 
 
 
@@ -32,58 +30,22 @@ public class FormLoginProperties {
     public static class NoSeparation {
 
         /**
-         * 前后端分离的时候,也可以指定 ...
-         */
-        private String loginPageUrl = AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + "/form/login";
-
-        private String logoutPageUrl = AuthConfigConstant.AUTH_SERVER_WITH_VERSION_PREFIX + "/form/logout";
-        /**
-         * 前后端分离的时候,也可以指定 ...
-         */
-        private boolean isCustomLoginPageUrl = false;
-
-        /**
-         * 仅当开启了 enableSavedRequestForward 才有效
-         */
-        private String defaultSuccessUrl;
-
-        /**
-         * 仅当开启了 enableForward才有效
-         */
-        private String successForwardOrRedirectUrl;
-
-        /**
-         * 仅当开启了 enableForward才有效
-         */
-        private String failureForwardOrRedirectUrl;
-
-        /**
-         * 默认是转发,如果不是就是重定向
-         */
-        private Boolean enableForward = true;
-
-
-        /**
-         * 开启了它,与 enableForward属性互斥 ..(则后者无效)
+         * 可以指定自己的登录页面
+         * 将自动拼接 app auth server 前缀
          *
-         * 基于使用场景开启它:
-         * 主要它是基于jvm 内存存储发起的请求 ..
-         *
-         * 当然前后端分离的时候,直接 关联前后端地址即可 ..
-         * (例如向授权中心前端发起请求,然后记录它所请求地址,然后转向登陆页面,登陆成功之后跳转回来请求之前的地址 ) ..
-         * 当然这样很繁琐  / 可能也很蠢
-         *
-         * 所以这个选项默认开启 ..(只不过基于http session 缓存之前的请求) ...
-         * 但是一般授权中心是集群,这种流量产生的消耗也只是其中的一部分 ..
-         *
-         *
-         * todo()
-         * 没有自动定时清理 session记录的发起请求信息, 应该改进为使用redis存储可能更好 ..
+         * 可以对 {@link ApplicationAuthServerProperties}的同名属性进行覆盖 ..
          */
-        private Boolean enableSavedRequestForward = true;
+        private String loginPageUrl;
     }
 
+    @Data
+    public static class BackendSeparation {
 
+        /**
+         * 是否启用默认登录页面
+         */
+        private boolean enableLoginPage;
+    }
 
 
 }

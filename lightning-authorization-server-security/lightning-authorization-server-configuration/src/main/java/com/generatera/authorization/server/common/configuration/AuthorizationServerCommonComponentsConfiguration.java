@@ -21,14 +21,12 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
@@ -225,7 +223,6 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
     }
 
 
-
     /**
      * 需要 authorization service
      * <p>
@@ -251,24 +248,23 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
 
     }
 
-    /**
-     * 配置共享对象 ..
-     */
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public WebSecurityCustomizer webSecurityCustomizer(ApplicationContext applicationContext) {
-        return web -> web.setSharedObject(ApplicationContext.class,applicationContext);
-    }
-
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain httpSecurity(HttpSecurity httpSecurity,
-                                            @Autowired(required = false)
-                                                    List<LightningResourcePermissionConfigurer> permissionConfigurers) throws Exception {
+                                               @Autowired(required = false)
+                                                       List<LightningAuthServerConfigurer> configurers,
+                                               @Autowired(required = false)
+                                               List<LightningResourcePermissionConfigurer> permissionConfigurers) throws Exception {
         HttpSecurity builder = httpSecurity
-                .apply(new AuthExtSecurityConfigurer(permissionConfigurers))
+                .apply(new AuthExtSecurityConfigurer(configurers))
                 .and();
+
+        if(permissionConfigurers != null && !permissionConfigurers.isEmpty()){
+            for (LightningResourcePermissionConfigurer permissionConfigurer : permissionConfigurers) {
+                permissionConfigurer.configure(builder.authorizeHttpRequests());
+            }
+        }
 
 
         return builder
@@ -302,15 +298,10 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
 
                 authorizationManagerRequestMatcherRegistry
                         .anyRequest()
-                        .authenticated()
-                        .and()
-                        .csrf()
-                        .disable();
+                        .authenticated();
             }
         };
     }
-
-
 
 
     @Override

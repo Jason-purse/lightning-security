@@ -1,13 +1,17 @@
 package com.generatera.authorization.application.server.form.login.config.components;
 
+import com.generatera.authorization.application.server.config.AppAuthConfigConstant;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfigurer;
-import com.generatera.authorization.application.server.config.LightningAppAuthServerForTokenEndPointConfigurer;
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
 import com.generatera.authorization.application.server.config.securityContext.DefaultSecurityContextRepository;
-import com.generatera.authorization.application.server.config.util.AuthConfigurerUtils;
+import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
+import com.generatera.authorization.application.server.form.login.config.ApplicationFormLoginConfiguration;
 import com.generatera.authorization.application.server.form.login.config.FormLoginProperties;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningSecurityContextRepository;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -16,11 +20,15 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
+import static com.generatera.authorization.application.server.config.util.StringUtils.normalize;
+
 @AutoConfiguration
 @RequiredArgsConstructor
 public class BackendSeparationConfiguration {
 
     private final FormLoginProperties formLoginProperties;
+
+    private final ApplicationAuthServerProperties authServerProperties;
 
     @Bean
     @ConditionalOnMissingBean(LightningSecurityContextRepository.class)
@@ -32,8 +40,8 @@ public class BackendSeparationConfiguration {
      * 增加 FormLoginRequestConverter 表单登录请求 token 颁发支持 ..
      */
     @Bean
-    public LightningAppAuthServerForTokenEndPointConfigurer appAuthServerConfigurer() {
-        return new LightningAppAuthServerForTokenEndPointConfigurer() {
+    public LightningAppAuthServerConfigurer appAuthServerConfigurer() {
+        return new LightningAppAuthServerConfigurer() {
             @Override
             public void configure(ApplicationAuthServerConfigurer<HttpSecurity> applicationAuthServerConfigurer) throws Exception {
                 applicationAuthServerConfigurer.tokenEndpoint(endpoint -> {
@@ -52,11 +60,10 @@ public class BackendSeparationConfiguration {
             @Override
             public void configure(HttpSecurity securityBuilder) throws Exception {
                 FormLoginConfigurer<HttpSecurity> httpSecurityFormLoginConfigurer = securityBuilder.formLogin();
-                securityBuilder.setSharedObject(FormLoginProperties.class, formLoginProperties);
 
                 // entry point
                 LightningAuthenticationEntryPoint authenticationEntryPoint
-                        = AuthConfigurerUtils.getAuthenticationEntryPoint(securityBuilder);
+                        = AppAuthConfigurerUtils.getAuthenticationEntryPoint(securityBuilder);
 
                 httpSecurityFormLoginConfigurer
                         .successHandler(authenticationEntryPoint)
@@ -68,7 +75,26 @@ public class BackendSeparationConfiguration {
                         .and()
                         // 也就是 securityContext 通过 resource server 进行加载
                         .securityContext()
-                        .securityContextRepository(securityContextRepository);
+                        .securityContextRepository(securityContextRepository)
+                        .and()
+                        .exceptionHandling()
+                         // 处理认证 entry Point ...
+                        .authenticationEntryPoint(authenticationEntryPoint);
+
+
+                String appAuthPrefix = ElvisUtil.stringElvis(normalize(authServerProperties.getAppAuthPrefix()), AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX);
+
+                // 启动登录页面 ...
+                ApplicationFormLoginConfiguration.logoutWithLogin(
+                        httpSecurityFormLoginConfigurer,
+                        formLoginProperties.getNoSeparation(),
+                        appAuthPrefix,
+                        authServerProperties
+                );
+
+                // 禁用掉默认的登出页面 ...
+                securityBuilder.csrf().disable();
+
             }
         };
     }

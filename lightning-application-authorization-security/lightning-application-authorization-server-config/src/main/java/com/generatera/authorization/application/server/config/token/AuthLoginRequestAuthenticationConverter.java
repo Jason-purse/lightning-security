@@ -56,8 +56,6 @@ public final class AuthLoginRequestAuthenticationConverter implements Authentica
                 return convert;
             }
         }
-        throwError("invalid_request", "authentication converters","no authenticationConverter can resolve login request !!!");
-        // can't invoke
         return null;
     }
 
