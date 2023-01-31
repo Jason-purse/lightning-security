@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config;
 
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.AuthorizationStoreConfig;
 import com.generatera.authorization.server.common.configuration.provider.metadata.oidc.OidcProviderConfigurationEndpointFilter;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import lombok.Data;
@@ -16,11 +17,11 @@ public class ApplicationAuthServerProperties {
 
     public static final String APPLICATION_AUTH_SERVER_PREFIX = "lightning.app.auth.server.config";
 
-    private ServerMetaDataEndpointConfig serverMetaDataEndpointConfig = new ServerMetaDataEndpointConfig();
+    private final ServerMetaDataEndpointConfig serverMetaDataEndpointConfig = new ServerMetaDataEndpointConfig();
     /**
      * 是否前后端分离
      */
-    private Boolean isSeparation = false;
+    private boolean isSeparation = false;
 
     private final BackendSeparation backendSeparation = new BackendSeparation();
 
@@ -32,10 +33,16 @@ public class ApplicationAuthServerProperties {
      */
     private final ProviderSettingProperties providerSettingProperties = new ProviderSettingProperties();
 
+
+    private final AuthorizationStoreConfig authorizationStoreConfig = new AuthorizationStoreConfig();
+
+
     /**
-     * 可以自定义的前缀 ...
+     * 可以自定义的前缀 ...(如果为空,则默认值)
      */
     public String appAuthPrefix = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX;
+
+
 
 
     @Data
@@ -48,7 +55,12 @@ public class ApplicationAuthServerProperties {
         /**
          * 那么默认需要 ..
          */
-        private Boolean enableOidc = true;
+        private boolean enableOidc = true;
+
+        /**
+         * 当存在 central auth server的时候,让步,追加前缀 ...{@link #appAuthPrefix}
+         */
+        public String openConnectIdMetadataEndpointUri = OPEN_CONNECT_ID_METADATA_ENDPOINT;
 
 
     }
@@ -165,6 +177,5 @@ public class ApplicationAuthServerProperties {
         private Boolean enableSavedRequestForward = true;
 
     }
-
 
 }

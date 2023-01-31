@@ -1,6 +1,5 @@
 package com.generatera.security.authorization.server.specification.components.token;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueType;
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
@@ -33,6 +32,10 @@ public interface LightningToken {
         return null;
     }
 
+    default Class<? extends LightningToken> getTokenClass() {
+        return null;
+    }
+
 
     interface LightningAccessToken extends LightningToken {
 
@@ -54,6 +57,11 @@ public interface LightningToken {
         }
 
         ;
+
+        @Override
+        default Class<? extends LightningToken> getTokenClass() {
+            return LightningAccessToken.class;
+        }
     }
 
 
@@ -70,6 +78,11 @@ public interface LightningToken {
         }
 
         ;
+
+        @Override
+        default Class<? extends LightningToken> getTokenClass() {
+            return LightningRefreshToken.class;
+        }
     }
 
     /**

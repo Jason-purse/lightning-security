@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.token;
 
-import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
+import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +25,7 @@ public final class AuthTokenRevocationAuthenticationProvider implements Authenti
 
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         AuthTokenRevocationAuthenticationToken tokenRevocationAuthentication = (AuthTokenRevocationAuthenticationToken) authentication;
+        // 只要是token 都能撤销 ..
         DefaultLightningAuthorization authorization = this.authorizationService.findByToken(tokenRevocationAuthentication.getToken(), null);
         if (authorization == null) {
             return tokenRevocationAuthentication;

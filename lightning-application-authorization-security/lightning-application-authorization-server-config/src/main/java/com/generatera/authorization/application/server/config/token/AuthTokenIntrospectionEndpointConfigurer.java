@@ -69,7 +69,8 @@ public final class AuthTokenIntrospectionEndpointConfigurer extends AbstractAuth
     public <B extends HttpSecurityBuilder<B>> void configure(B builder) {
         AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
         ProviderSettingsProvider providerSettings = ProviderExtUtils.getProviderSettings(builder);
-        TokenIntrospectFilter introspectionEndpointFilter = new TokenIntrospectFilter(authenticationManager, providerSettings.getProviderSettings().getTokenIntrospectionEndpoint());
+        AuthTokenIntrospectEndpointFilter introspectionEndpointFilter = new AuthTokenIntrospectEndpointFilter(authenticationManager,
+                providerSettings.getProviderSettings().getTokenIntrospectionEndpoint());
         if (this.introspectionRequestConverter != null) {
             introspectionEndpointFilter.setAuthenticationConverter(this.introspectionRequestConverter);
         }

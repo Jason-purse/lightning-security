@@ -1,10 +1,10 @@
 package com.generatera.authorization.application.server.config;
 
+import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.authorization.application.server.config.token.AbstractAuthConfigurer;
 import com.generatera.authorization.application.server.config.token.AuthTokenEndpointConfigurer;
 import com.generatera.authorization.application.server.config.token.AuthTokenIntrospectionEndpointConfigurer;
 import com.generatera.authorization.application.server.config.token.AuthTokenRevocationEndpointConfigurer;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.authorization.server.common.configuration.provider.AuthorizationServerNimbusJwkSetEndpointFilter;
 import com.generatera.authorization.server.common.configuration.provider.metadata.AuthorizationProviderContextFilter;
 import com.generatera.authorization.server.common.configuration.provider.metadata.AuthorizationServerMetadataEndpointFilter;
@@ -13,6 +13,7 @@ import com.generatera.security.authorization.server.specification.ProviderSettin
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenGenerator;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.http.HttpMethod;
@@ -31,6 +32,8 @@ import org.springframework.util.Assert;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,7 +47,6 @@ import java.util.Map;
  * - provider context
  * - authentication token service
  * - jwk set
- *
  */
 public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> extends AbstractHttpConfigurer<ApplicationAuthServerConfigurer<B>, B> {
 
@@ -54,13 +56,20 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
     private RequestMatcher jwkSetEndpointMatcher;
     private RequestMatcher authorizationServerMetadataEndpointMatcher;
     private final RequestMatcher endpointsMatcher = (request) -> {
-        return this.getRequestMatcher(
-                AuthTokenEndpointConfigurer.class).matches(request)
-                || this.getRequestMatcher(AuthTokenIntrospectionEndpointConfigurer.class).matches(request)
+        boolean value = this.getRequestMatcher(AuthTokenEndpointConfigurer.class).matches(request)
                 || this.getRequestMatcher(AuthTokenRevocationEndpointConfigurer.class).matches(request)
                 || this.jwkSetEndpointMatcher.matches(request)
                 || this.authorizationServerMetadataEndpointMatcher.matches(request);
+
+        // 启用了就有,没启用就没有 ..
+        RequestMatcher matcher = ElvisUtil.isNotEmptyFunction(this.getConfigurer(AuthTokenIntrospectionEndpointConfigurer.class), AuthTokenIntrospectionEndpointConfigurer::getRequestMatcher);
+
+        if (matcher != null) {
+            return value || matcher.matches(request);
+        }
+        return value;
     };
+
 
     public ApplicationAuthServerConfigurer() {
     }
@@ -86,7 +95,13 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
     }
 
     public ApplicationAuthServerConfigurer<B> tokenIntrospectionEndpoint(Customizer<AuthTokenIntrospectionEndpointConfigurer> tokenIntrospectionEndpointCustomizer) {
-        tokenIntrospectionEndpointCustomizer.customize(this.getConfigurer(AuthTokenIntrospectionEndpointConfigurer.class));
+        AuthTokenIntrospectionEndpointConfigurer configurer = this.getConfigurer(AuthTokenIntrospectionEndpointConfigurer.class);
+        if (configurer == null) {
+            AuthTokenIntrospectionEndpointConfigurer endpointConfigurer = new AuthTokenIntrospectionEndpointConfigurer(this::postProcess);
+            configurers.put(AuthTokenIntrospectionEndpointConfigurer.class, endpointConfigurer);
+            configurer = endpointConfigurer;
+        }
+        tokenIntrospectionEndpointCustomizer.customize(configurer);
         return this;
     }
 
@@ -119,15 +134,22 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
         // 如果没有,则直接给出401 ...
         ExceptionHandlingConfigurer<B> exceptionHandling = (ExceptionHandlingConfigurer<B>) builder.getConfigurer(ExceptionHandlingConfigurer.class);
         if (exceptionHandling != null) {
+
+            AuthTokenIntrospectionEndpointConfigurer configurer = getConfigurer(AuthTokenIntrospectionEndpointConfigurer.class);
+
+            List<RequestMatcher> matchers = new LinkedList<>();
+            matchers.add(this.getRequestMatcher(AuthTokenEndpointConfigurer.class));
+            matchers.add(this.getRequestMatcher(AuthTokenRevocationEndpointConfigurer.class));
+            if(configurer != null) {
+                matchers.add(this.getRequestMatcher(AuthTokenIntrospectionEndpointConfigurer.class));
+            }
+
+            // 以下三个端点,不需要跳转到 其他地方,直接给出 未认证 ...
+            // 这是默认行为 ...
             exceptionHandling
                     .defaultAuthenticationEntryPointFor(
                             new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                            new OrRequestMatcher(
-                                    this.getRequestMatcher(AuthTokenEndpointConfigurer.class),
-                                    this.getRequestMatcher(AuthTokenIntrospectionEndpointConfigurer.class),
-                                    this.getRequestMatcher(AuthTokenRevocationEndpointConfigurer.class)
-                            )
-                    );
+                            new OrRequestMatcher(matchers));
         }
 
     }
@@ -151,8 +173,9 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
 
     private Map<Class<? extends AbstractAuthConfigurer>, AbstractAuthConfigurer> createConfigurers() {
         Map<Class<? extends AbstractAuthConfigurer>, AbstractAuthConfigurer> configurers = new LinkedHashMap<>();
-        configurers.put(AuthTokenEndpointConfigurer.class,new AuthTokenEndpointConfigurer(this::postProcess));
-        configurers.put(AuthTokenIntrospectionEndpointConfigurer.class, new AuthTokenIntrospectionEndpointConfigurer(this::postProcess));
+        configurers.put(AuthTokenEndpointConfigurer.class, new AuthTokenEndpointConfigurer(this::postProcess));
+        // 条件配置 ...
+        //configurers.put(AuthTokenIntrospectionEndpointConfigurer.class, new AuthTokenIntrospectionEndpointConfigurer(this::postProcess));
         configurers.put(AuthTokenRevocationEndpointConfigurer.class, new AuthTokenRevocationEndpointConfigurer(this::postProcess));
         return configurers;
     }

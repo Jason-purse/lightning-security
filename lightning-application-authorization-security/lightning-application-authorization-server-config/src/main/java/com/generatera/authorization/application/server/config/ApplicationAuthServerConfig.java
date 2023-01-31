@@ -1,18 +1,21 @@
 package com.generatera.authorization.application.server.config;
 
 import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
+import com.generatera.authorization.application.server.config.util.ApplicationAuthServerUtils;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
-import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
-import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
+import com.generatera.authorization.server.common.configuration.LightningCentralAuthServerConfigurer;
+import com.generatera.authorization.server.common.configuration.LightningResourcePermissionConfigurer;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
+import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
+import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -22,13 +25,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.core.type.AnnotationMetadata;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsPasswordService;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
@@ -80,45 +81,21 @@ public class ApplicationAuthServerConfig {
         Assert.notNull(settingProperties.getTokenIntrospectionEndpoint(), "token introspect endpoint must not be null !!!");
         Assert.notNull(settingProperties.getTokenRevocationEndpoint(), "token revoke endpoint must not be null !!!");
 
+
+        String tokenEndpoint = normalize(ElvisUtil.stringElvis(settingProperties.getTokenEndpoint(), ProviderSettingProperties.TOKEN_ENDPOINT));
+        String jwks = normalize(ElvisUtil.stringElvis(settingProperties.getJwkSetEndpoint(), ProviderSettingProperties.JWT_SET_ENDPOINT));
+        String revoke = normalize(ElvisUtil.stringElvis(settingProperties.getTokenRevocationEndpoint(), ProviderSettingProperties.TOKEN_REVOCATION_ENDPOINT));
+        String introspect = normalize(ElvisUtil.stringElvis(settingProperties.getTokenIntrospectionEndpoint(), ProviderSettingProperties.TOKEN_INTROSPECTION_ENDPOINT));
+
+        String authPrefix = ElvisUtil.stringElvis(properties.getAppAuthPrefix(), AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX);
         ProviderSettings settings = builder
-                .tokenEndpoint(settingProperties.getTokenEndpoint())
-                .jwkSetEndpoint(settingProperties.getJwkSetEndpoint())
-                .tokenRevocationEndpoint(settingProperties.getTokenRevocationEndpoint())
-                .tokenIntrospectionEndpoint(settingProperties.getTokenIntrospectionEndpoint())
+                .tokenEndpoint(authPrefix + tokenEndpoint)
+                .jwkSetEndpoint(authPrefix + jwks)
+                .tokenRevocationEndpoint(authPrefix + revoke)
+                .tokenIntrospectionEndpoint(authPrefix + introspect)
                 .build();
 
         return new ProviderSettingsProvider(settings);
-    }
-
-
-    @Bean
-    @Qualifier("userAuthenticationProvider")
-    public DaoAuthenticationProvider daoAuthenticationProvider(
-            UserDetailsService userDetailsService,
-            @Autowired(required = false)
-                    PasswordEncoder passwordEncoder,
-            @Autowired(required = false)
-                    UserDetailsPasswordService passwordManager
-    ) {
-        UserDetailsService finalUserDetailsService = userDetailsService;
-        userDetailsService = username -> {
-            UserDetails userDetails = finalUserDetailsService.loadUserByUsername(username);
-            if (!LightningUserPrincipal.class.isAssignableFrom(userDetails.getClass())) {
-                return new DefaultLightningUserDetails(userDetails);
-            }
-            return userDetails;
-        };
-
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        if (passwordEncoder != null) {
-            provider.setPasswordEncoder(passwordEncoder);
-        }
-
-        if (passwordManager != null) {
-            provider.setUserDetailsPasswordService(passwordManager);
-        }
-        return provider;
     }
 
 
@@ -131,10 +108,14 @@ public class ApplicationAuthServerConfig {
             @Override
             public void configure(HttpSecurity security) throws Exception {
 
+                // 应用 授权服务器 ..utils
+                ApplicationAuthServerUtils applicationAuthServerUtils = new ApplicationAuthServerUtils(properties);
+                security.setSharedObject(ApplicationAuthServerUtils.class,applicationAuthServerUtils);
+
                 // 分离场景下,才需要增加token 端点进行token 颁发 / 刷新和 撤销 ...
                 // 不分离,直接记住我就行 ..(remember me 服务) ...
                 // // TODO: 2023/1/30  可以基于 rememberme 标识 来提供刷新token
-                if(properties.getIsSeparation()) {
+                if (properties.getIsSeparation()) {
                     ApplicationAuthServerProperties serverProperties = security.getSharedObject(ApplicationAuthServerProperties.class);
                     if (serverProperties == null) {
                         security.setSharedObject(ApplicationAuthServerProperties.class, properties);
@@ -202,8 +183,8 @@ public class ApplicationAuthServerConfig {
                     securityBuilder
                             .exceptionHandling()
                             .authenticationEntryPoint(
-                            (request, response, authException) -> response.sendRedirect(finalLoginPageUrl)
-                    );
+                                    (request, response, authException) -> response.sendRedirect(finalLoginPageUrl)
+                            );
                 }
             }
         };
@@ -225,9 +206,12 @@ public class ApplicationAuthServerConfig {
                 securityBuilder.apply(authServerConfigurer);
                 // 设置为共享对象 ..
                 securityBuilder.setSharedObject(ApplicationAuthServerConfigurer.class, authServerConfigurer);
-                // 共享对象存储
-                securityBuilder
-                        .setSharedObject(ApplicationAuthServerProperties.class, properties);
+
+                if (!CollectionUtils.isEmpty(configurers)) {
+                    for (LightningAppAuthServerConfigurer configurer : configurers) {
+                        configurer.configure(authServerConfigurer);
+                    }
+                }
 
                 // pass,仅仅只是提供这个配置器
                 // 应用还可以提供此类LightningAppAuthServerConfigurer 进行进一步配置 ...
@@ -236,37 +220,61 @@ public class ApplicationAuthServerConfig {
                         .authorizeHttpRequests()
                         .requestMatchers(authServerConfigurer.getEndpointsMatcher())
                         .permitAll();
-                if (!CollectionUtils.isEmpty(configurers)) {
-                    for (LightningAppAuthServerConfigurer configurer : configurers) {
-                        configurer.configure(authServerConfigurer);
-                    }
-                }
-
 
             }
         };
     }
 
-    ///**
-    // * url 放行
-    // * oidc 公共组件 url 放行 ..
-    // */
-    //@Bean
-    //public LightningResourcePermissionConfigurer applicationServerPermissionConfigurer(
-    //        ApplicationAuthServerProperties authServerProperties
-    //) {
-    //    return new LightningResourcePermissionConfigurer() {
-    //        @Override
-    //        public void configure(AuthorizationManagerRequestMatcherRegistry registry) {
-    //            ElvisUtil.isNotEmptyConsumer(
-    //                    authServerProperties
-    //                            .getServerMetaDataEndpointConfig().getEnableOidc(),
-    //                    flag -> registry
-    //                            .mvcMatchers(ServerMetaDataEndpointConfig.OPEN_CONNECT_ID_METADATA_ENDPOINT)
-    //                            .permitAll());
-    //        }
-    //    };
-    //}
+    /**
+     * 如果是opaque token ,那么将启用token 省查端点 ...
+     */
+    @Bean
+    public LightningAuthServerConfigurer opaqueTokenConfigurer(TokenSettingsProvider tokenSettingsProvider) {
+        return new LightningAuthServerConfigurer() {
+            @Override
+            public void configure(HttpSecurity securityBuilder) throws Exception {
+                TokenSettingsProperties tokenSettings = tokenSettingsProvider.getTokenSettings();
+                ApplicationAuthServerConfigurer<HttpSecurity> configurer = (ApplicationAuthServerConfigurer<HttpSecurity>) securityBuilder.getConfigurer(ApplicationAuthServerConfigurer.class);
+                LightningTokenType.LightningTokenValueFormat accessTokenValueFormat = tokenSettings.getAccessTokenValueFormat();
+                if (accessTokenValueFormat == LightningTokenType.LightningTokenValueFormat.OPAQUE) {
+                    configurer.tokenIntrospectionEndpoint(Customizer.withDefaults());
+                }
+            }
+        };
+    }
 
+    /**
+     * url 放行
+     * oidc 公共组件 url 放行 ..
+     * {@link ApplicationServerImportSelector#selectImports(AnnotationMetadata)}
+     */
+    @Bean
+    public LightningResourcePermissionConfigurer applicationServerPermissionConfigurer(
+            ApplicationAuthServerProperties authServerProperties,
+            @Autowired(required = false)
+                    List<LightningCentralAuthServerConfigurer> configurers
+    ) {
+        return new LightningResourcePermissionConfigurer() {
+            @Override
+            public void configure(AuthorizationManagerRequestMatcherRegistry registry) {
+                String openIdConnectMetaData = ElvisUtil.stringElvis(authServerProperties.getServerMetaDataEndpointConfig().getOpenConnectIdMetadataEndpointUri(), ApplicationAuthServerProperties.ServerMetaDataEndpointConfig.OPEN_CONNECT_ID_METADATA_ENDPOINT);
+
+                String appAuthPrefix = ElvisUtil.stringElvis(authServerProperties.appAuthPrefix, AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX);
+
+                // 存在 中央授权服务器 ...
+                if (configurers != null && configurers.size() > 0) {
+                    openIdConnectMetaData = appAuthPrefix + normalize(openIdConnectMetaData);
+                }
+                boolean enableOidc = authServerProperties
+                        .getServerMetaDataEndpointConfig().isEnableOidc();
+
+                if (enableOidc) {
+                    registry
+                            .mvcMatchers(openIdConnectMetaData)
+                            .permitAll();
+                }
+            }
+        };
+    }
 
 }

@@ -4,6 +4,7 @@ import com.generatera.authorization.application.server.config.ApplicationAuthExc
 import com.generatera.authorization.application.server.config.token.ApplicationLevelAuthorizationToken;
 import com.generatera.authorization.application.server.config.token.AuthAccessTokenAuthenticationToken;
 import com.generatera.authorization.application.server.config.token.DefaultAuthAppLevelAuthorizationTokenResponseMapConverter;
+import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
 import com.jianyue.lightning.result.Result;
@@ -71,6 +72,9 @@ public interface LightningAbstractAuthenticationEntryPoint extends LightningAuth
 
     @Override
     default void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
+
+        LogUtil.prettyLog("Authentication Failure Error !!!",exception);
+
         if (enableAuthDetails()) {
             if (exception instanceof AccountStatusException) {
                 accountExceptionRoute(response, exception);

@@ -1,5 +1,6 @@
 package com.generatera.security.authorization.server.specification.components.authorization;
 
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
@@ -26,7 +27,7 @@ public class LightningAuthError implements Serializable {
     }
 
     public final String getDescription() {
-        return this.description;
+        return ElvisUtil.stringElvis(this.description,this.errorCode);
     }
 
     public final String getUri() {

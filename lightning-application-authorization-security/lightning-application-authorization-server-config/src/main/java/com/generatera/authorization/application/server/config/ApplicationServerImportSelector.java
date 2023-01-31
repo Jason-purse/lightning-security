@@ -1,6 +1,8 @@
 package com.generatera.authorization.application.server.config;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
+import com.generatera.authorization.application.server.config.authorization.store.AuthorizationStoreConfiguration;
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.AuthorizationStoreConfig;
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
 import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import org.jetbrains.annotations.NotNull;
@@ -43,6 +45,25 @@ public class ApplicationServerImportSelector extends PropertiesBindImportSelecto
                 });
 
 
+        authorizationStoreConfig(properties, candidates);
+
         return candidates.size() > 0 ? candidates.toArray(String[]::new) : new String[0];
+    }
+
+
+    private void authorizationStoreConfig(ApplicationAuthServerProperties properties, List<String> candidates) {
+        AuthorizationStoreConfig authorizationStoreConfig = properties.getAuthorizationStoreConfig();
+        if(authorizationStoreConfig.getStoreKind() == StoreKind.MEMORY) {
+            candidates.add(AuthorizationStoreConfiguration.MemoryStoreConfiguration.class.getName());
+        }
+        else if(authorizationStoreConfig.getStoreKind() == StoreKind.REDIS) {
+            candidates.add(AuthorizationStoreConfiguration.RedisStoreConfiguration.class.getName());
+        }
+        else if(authorizationStoreConfig.getStoreKind() == StoreKind.JPA) {
+            candidates.add(AuthorizationStoreConfiguration.JpaStoreConfiguration.class.getName());
+        }
+        else if(authorizationStoreConfig.getStoreKind() == StoreKind.MONGO) {
+            candidates.add(AuthorizationStoreConfiguration.MongoStoreConfiguration.class.getName());
+        }
     }
 }

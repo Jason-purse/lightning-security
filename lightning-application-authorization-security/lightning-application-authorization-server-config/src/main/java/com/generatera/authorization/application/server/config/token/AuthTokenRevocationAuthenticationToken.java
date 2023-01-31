@@ -19,10 +19,9 @@ public class AuthTokenRevocationAuthenticationToken extends AbstractAuthenticati
     private final Authentication principal;
     private final String tokenTypeHint;
 
-    public AuthTokenRevocationAuthenticationToken(String token, Authentication principal, @Nullable String tokenTypeHint) {
+    public AuthTokenRevocationAuthenticationToken(String token, @Nullable Authentication principal, @Nullable String tokenTypeHint) {
         super(Collections.emptyList());
         Assert.hasText(token, "token cannot be empty");
-        Assert.notNull(principal, "principal cannot be null");
         this.token = token;
         this.principal = principal;
         this.tokenTypeHint = tokenTypeHint;

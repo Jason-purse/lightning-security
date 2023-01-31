@@ -3,7 +3,7 @@ package com.generatera.authorization.application.server.config.token;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.LightningAppAuthServerDaoLoginAuthenticationProvider;
 import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
@@ -14,7 +14,6 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
@@ -102,8 +101,9 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
 
         ApplicationAuthServerProperties authServerProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
         LightningAppAuthServerDaoLoginAuthenticationProvider authenticationProvider = new LightningAppAuthServerDaoLoginAuthenticationProvider(
+                                    // 将会获取一个 生成 token的 provider ...
                 AppAuthConfigurerUtils.getAppAuthServerForTokenAuthenticationProvider(builder),
-                AppAuthConfigurerUtils.getBean(builder, DaoAuthenticationProvider.class),
+                AppAuthConfigurerUtils.getDaoAuthenticationProvider(builder),
                 authServerProperties.getIsSeparation());
 
         // 实现 用户登录 认证 ..
@@ -165,6 +165,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         LightningAuthenticationTokenService authorizationService = AppAuthConfigurerUtils.getAuthorizationService(builder);
         LightningTokenGenerator<? extends LightningToken> tokenGenerator = AppAuthConfigurerUtils.getTokenGenerator(builder);
         TokenSettingsProvider tokenSettingProvider = AppAuthConfigurerUtils.getTokenSettingProvider(builder);
+        LightningUserDetailsProvider userDetailsService = AppAuthConfigurerUtils.getLightningUserDetailsProvider(builder);
 
         AuthAccessTokenAuthenticationProvider accessTokenAuthenticationProvider = new AuthAccessTokenAuthenticationProvider(
                 authorizationService,
@@ -178,7 +179,8 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         AuthRefreshTokenAuthenticationProvider refreshTokenAuthenticationProvider = new AuthRefreshTokenAuthenticationProvider(
                 authorizationService,
                 tokenGenerator,
-                tokenSettingProvider
+                tokenSettingProvider,
+                userDetailsService
         );
         authenticationProviders.add(accessTokenAuthenticationProvider);
         authenticationProviders.add(refreshTokenAuthenticationProvider);

@@ -10,16 +10,19 @@ import lombok.Data;
 @Data
 public class ProviderSettingProperties {
 
-    public static final String JWT_SET_ENDPOINT = "/auth/v1/jwks";
-    public static final String TOKEN_REVOCATION_ENDPOINT = "/auth/v1/revoke";
+    // 当没有多种授权服务器交织的时候.. 它的默认值 ..
+    public static final String JWT_SET_ENDPOINT = "/provider/jwks";
+    public static final String TOKEN_REVOCATION_ENDPOINT = "/provider/revoke";
 
     // 默认配置 ..
-    public static final String TOKEN_INTROSPECTION_ENDPOINT = "/auth/v1/introspect";
-    public static final String TOKEN_ENDPOINT = "/auth/v1/token";
+    public static final String TOKEN_INTROSPECTION_ENDPOINT = "/provider/introspect";
+    public static final String TOKEN_ENDPOINT = "/provider/token";
 
     // 可以为空(自己自动生成)
     private String issuer;
 
+
+    // 以下属性,在 app auth server中,将自动添加前缀 ...
     private String jwkSetEndpoint = JWT_SET_ENDPOINT;
 
     private String tokenRevocationEndpoint = TOKEN_REVOCATION_ENDPOINT;

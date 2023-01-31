@@ -3,6 +3,9 @@ package com.generatera.authorization.application.server.config.token;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthError;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthenticationException;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
+import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
+import com.jianyue.lightning.result.Result;
+import com.jianyue.lightning.util.JsonUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -27,7 +30,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
+/**
+ * @author FLJ
+ * @date 2023/1/31
+ * @time 16:00
+ * @Description 实现token 撤销 ...
+ */
 public final class AuthTokenRevocationEndpointFilter extends OncePerRequestFilter {
     private static final String DEFAULT_TOKEN_REVOCATION_ENDPOINT_URI = ProviderSettingProperties.TOKEN_REVOCATION_ENDPOINT;
     private final AuthenticationManager authenticationManager;
@@ -85,12 +93,16 @@ public final class AuthTokenRevocationEndpointFilter extends OncePerRequestFilte
 
     private void sendRevocationSuccessResponse(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         response.setStatus(HttpStatus.OK.value());
+        AuthHttpResponseUtil.commence(response, JsonUtil.getDefaultJsonUtil().asJSON(
+                Result.success(HttpStatus.OK.value(),"REVOKE TOKEN SUCCESS")
+        ));
     }
 
     private void sendErrorResponse(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
         LightningAuthError error = ((LightningAuthenticationException)exception).getError();
         ServletServerHttpResponse httpResponse = new ServletServerHttpResponse(response);
-        httpResponse.setStatusCode(HttpStatus.BAD_REQUEST);
+        httpResponse.setStatusCode(HttpStatus.OK);
+
         this.errorHttpResponseConverter.write(error, null, httpResponse);
     }
 
@@ -104,8 +116,6 @@ public final class AuthTokenRevocationEndpointFilter extends OncePerRequestFilte
         }
 
         public Authentication convert(HttpServletRequest request) {
-            // todo 没有客户端
-            Authentication clientPrincipal = SecurityContextHolder.getContext().getAuthentication();
             MultiValueMap<String, String> parameters = HttpRequestUtil.getParameters(request);
             String token = parameters.getFirst("token");
             if (!StringUtils.hasText(token) || parameters.get("token").size() != 1) {
@@ -117,7 +127,7 @@ public final class AuthTokenRevocationEndpointFilter extends OncePerRequestFilte
                 AuthTokenRevocationEndpointFilter.throwError("invalid_request", "token_type_hint");
             }
 
-            return new AuthTokenRevocationAuthenticationToken(token, clientPrincipal, tokenTypeHint);
+            return new AuthTokenRevocationAuthenticationToken(token,null, tokenTypeHint);
         }
     }
 }

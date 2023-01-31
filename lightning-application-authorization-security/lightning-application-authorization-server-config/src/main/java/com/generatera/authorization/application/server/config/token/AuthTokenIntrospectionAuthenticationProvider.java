@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.token;
 
-import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
+import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
@@ -16,10 +16,16 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+/**
+ * @author FLJ
+ * @date 2023/1/31
+ * @time 15:05
+ * @Description Token 省查认证提供器 ..
+ */
 public final class AuthTokenIntrospectionAuthenticationProvider implements AuthenticationProvider {
     private static final TypeDescriptor OBJECT_TYPE_DESCRIPTOR = TypeDescriptor.valueOf(Object.class);
     private static final TypeDescriptor LIST_STRING_TYPE_DESCRIPTOR = TypeDescriptor.collection(List.class, TypeDescriptor.valueOf(String.class));
@@ -41,6 +47,7 @@ public final class AuthTokenIntrospectionAuthenticationProvider implements Authe
         if (authorization == null) {
             return tokenIntrospectionAuthentication;
         } else {
+            // 判断token
             DefaultLightningAuthorization.Token<LightningToken> authorizedToken = authorization.getToken(tokenIntrospectionAuthentication.getToken());
             if (authorizedToken == null || !authorizedToken.isActive()) {
                 // 无效token ,不需要进行撤销 ..
@@ -53,7 +60,8 @@ public final class AuthTokenIntrospectionAuthenticationProvider implements Authe
                 AuthTokenIntrospection tokenClaims = withActiveTokenClaims(authorizedToken);
                 // 这里加不加入 authorities 不重要 ..(因为最终通过token 解析授权信息)
                 return new AuthTokenIntrospectionAuthenticationToken(authorizedToken.getToken().getTokenValue(),
-                        UsernamePasswordAuthenticationToken.unauthenticated(authorization.getPrincipal(), null),
+                                // 这种属于不透明token, 不需要 authorities ..
+                        UsernamePasswordAuthenticationToken.authenticated(authorization.getPrincipal(), null, Collections.emptyList()),
                         tokenClaims);
             }
         }

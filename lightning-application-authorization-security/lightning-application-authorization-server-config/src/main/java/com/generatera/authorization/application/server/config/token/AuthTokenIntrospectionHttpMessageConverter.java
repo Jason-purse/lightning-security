@@ -27,6 +27,8 @@ import java.util.*;
  * @date 2023/1/28
  * @time 12:46
  * @Description 将认证省查的结果写出 ...
+ *
+ * spring oauth2 copy
  */
 public class AuthTokenIntrospectionHttpMessageConverter extends AbstractHttpMessageConverter<AuthTokenIntrospection> {
     private static final ParameterizedTypeReference<Map<String, Object>> STRING_OBJECT_MAP = new ParameterizedTypeReference<>() {

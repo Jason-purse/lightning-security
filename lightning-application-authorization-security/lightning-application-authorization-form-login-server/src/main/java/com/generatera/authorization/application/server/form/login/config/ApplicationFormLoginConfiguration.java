@@ -5,25 +5,40 @@ import com.generatera.authorization.application.server.config.ApplicationAuthSer
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.LightningAppAuthServerBootstrapConfigurer;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
+import com.generatera.authorization.application.server.config.token.LightningDaoAuthenticationProvider;
+import com.generatera.authorization.application.server.config.token.LightningUserDetailsProvider;
+import com.generatera.authorization.application.server.form.login.config.components.FormDaoAuthenticationProvider;
+import com.generatera.authorization.application.server.form.login.config.components.FormLoginUserDetailsProvider;
 import com.generatera.authorization.application.server.form.login.config.components.UserDetailsServiceAutoConfiguration;
 import com.generatera.authorization.application.server.form.login.config.util.FormLoginUtils;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 
 import static com.generatera.authorization.application.server.config.util.StringUtils.normalize;
 
@@ -41,6 +56,48 @@ public class ApplicationFormLoginConfiguration {
     private final FormLoginProperties formLoginProperties;
     private final ApplicationAuthServerProperties authServerProperties;
 
+
+    @Bean
+    @Qualifier("userAuthenticationProvider")
+    public DaoAuthenticationProvider daoAuthenticationProvider(
+            UserDetailsService userDetailsService,
+            @Autowired(required = false)
+                    PasswordEncoder passwordEncoder,
+            @Autowired(required = false)
+                    UserDetailsPasswordService passwordManager
+    ) {
+        UserDetailsService finalUserDetailsService = userDetailsService;
+        userDetailsService = username -> {
+            UserDetails userDetails = finalUserDetailsService.loadUserByUsername(username);
+            if (!LightningUserPrincipal.class.isAssignableFrom(userDetails.getClass())) {
+                return new DefaultLightningUserDetails(userDetails);
+            }
+            return userDetails;
+        };
+
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        if (passwordEncoder != null) {
+            provider.setPasswordEncoder(passwordEncoder);
+        }
+
+        if (passwordManager != null) {
+            provider.setUserDetailsPasswordService(passwordManager);
+        }
+        return provider;
+    }
+
+
+    @Bean
+    public LightningUserDetailsProvider formUserDetailsProvider(UserDetailsService userDetailsService) {
+        return new FormLoginUserDetailsProvider(userDetailsService);
+    }
+
+    @Bean
+    public LightningDaoAuthenticationProvider formLoginDaoAuthenticationProvider(DaoAuthenticationProvider daoAuthenticationProvider) {
+        return new FormDaoAuthenticationProvider(daoAuthenticationProvider);
+    }
+
     /**
      * 表单登录配置 ...
      */
@@ -50,7 +107,7 @@ public class ApplicationFormLoginConfiguration {
 
             @Override
             public void configure(HttpSecurity security) throws Exception {
-                security.setSharedObject(FormLoginProperties.class,formLoginProperties);
+                security.setSharedObject(FormLoginProperties.class, formLoginProperties);
 
                 FormLoginProperties.NoSeparation noSeparation = formLoginProperties.getNoSeparation();
                 String appAuthPrefix = ElvisUtil.stringElvis(normalize(authServerProperties.getAppAuthPrefix()), AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX);
@@ -78,7 +135,7 @@ public class ApplicationFormLoginConfiguration {
 
 
         ApplicationAuthServerProperties serverProperties = formLoginConfigurer.and().getSharedObject(ApplicationAuthServerProperties.class);
-        authResponse(formLoginConfigurer, patterns,serverProperties.getNoSeparation() , authServerPrefix);
+        authResponse(formLoginConfigurer, patterns, serverProperties.getNoSeparation(), authServerPrefix);
 
         ApplicationAuthServerProperties authServerProperties = formLoginConfigurer.and().getSharedObject(ApplicationAuthServerProperties.class);
 
@@ -94,7 +151,7 @@ public class ApplicationFormLoginConfiguration {
     public static void logoutWithLogin(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, FormLoginProperties.NoSeparation noSeparation, String authServerPrefix, ApplicationAuthServerProperties authServerProperties) throws Exception {
         // 表示登出页面处理  ...
         ApplicationAuthServerProperties.NoSeparation mainNoSeparation = authServerProperties.getNoSeparation();
-        String loginPageUrl = authServerPrefix + normalize(ElvisUtil.stringElvis(noSeparation.getLoginPageUrl(),mainNoSeparation.getLoginPageUrl()));
+        String loginPageUrl = authServerPrefix + normalize(ElvisUtil.stringElvis(noSeparation.getLoginPageUrl(), mainNoSeparation.getLoginPageUrl()));
 
         // 自定义的登录页面
         if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
@@ -109,8 +166,7 @@ public class ApplicationFormLoginConfiguration {
             exceptionHandling.authenticationEntryPoint(
                     (request, response, authException) -> response.sendRedirect(loginPageUrl)
             );
-        }
-        else {
+        } else {
             // 默认登录页面配置
             formLoginConfigurer
                     .and()
@@ -119,8 +175,8 @@ public class ApplicationFormLoginConfiguration {
                                 @Override
                                 public void init(HttpSecurity builder) throws Exception {
                                     // 这个不存在就填充 ..
-                                    String logoutSuccessUrl  = authServerPrefix + ElvisUtil.stringElvis(normalize(authServerProperties.getNoSeparation().getLogoutSuccessUrl()),"/login?logout");
-                                    FormLoginUtils.configDefaultLoginPageGeneratorFilter(builder, loginPageUrl,logoutSuccessUrl);
+                                    String logoutSuccessUrl = authServerPrefix + ElvisUtil.stringElvis(normalize(authServerProperties.getNoSeparation().getLogoutSuccessUrl()), "/login?logout");
+                                    FormLoginUtils.configDefaultLoginPageGeneratorFilter(builder, loginPageUrl, logoutSuccessUrl);
                                     // 晚一点配置 ..
                                     formLoginConfigurer.loginPage(loginPageUrl);
                                 }
@@ -176,7 +232,7 @@ public class ApplicationFormLoginConfiguration {
         }
 
         // 自动设置 ...
-        if(StringUtils.hasText(noSeparation.getDefaultSuccessUrl())) {
+        if (StringUtils.hasText(noSeparation.getDefaultSuccessUrl())) {
             patterns.add(noSeparation.getDefaultSuccessUrl());
             formLoginConfigurer.defaultSuccessUrl(noSeparation.getDefaultSuccessUrl());
         }

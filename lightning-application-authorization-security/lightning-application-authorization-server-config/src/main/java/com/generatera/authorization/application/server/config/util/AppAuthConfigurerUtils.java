@@ -4,11 +4,9 @@ import com.generatera.authorization.application.server.config.AppAuthConfigConst
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.MyDefaultLogoutPageGeneratingFilter;
 import com.generatera.authorization.application.server.config.authentication.DefaultLightningAbstractAuthenticationEntryPoint;
-import com.generatera.authorization.application.server.config.token.AppAuthServerForTokenAuthenticationProvider;
-import com.generatera.authorization.application.server.config.token.DefaultOpaqueAwareTokenCustomizer;
-import com.generatera.authorization.application.server.config.token.DefaultTokenDetailAwareTokenCustomizer;
-import com.generatera.authorization.server.common.configuration.authorization.store.DefaultAuthenticationTokenService;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.authorization.application.server.config.token.*;
+import com.generatera.authorization.application.server.config.authorization.store.DefaultAuthenticationTokenService;
+import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
@@ -27,8 +25,6 @@ import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
@@ -40,16 +36,14 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.generatera.authorization.application.server.config.util.StringUtils.normalize;
 
 public final class AppAuthConfigurerUtils {
 
     public static final ContextAnnotationAutowireCandidateResolver resolver = new ContextAnnotationAutowireCandidateResolver();
+
     private AppAuthConfigurerUtils() {
     }
 
@@ -107,7 +101,7 @@ public final class AppAuthConfigurerUtils {
             point.setLoginFailureMessage(backendSeparation.getLoginFailureMessage());
         }
 
-        if(StringUtils.hasText(backendSeparation.getUnAuthenticatedMessage())) {
+        if (StringUtils.hasText(backendSeparation.getUnAuthenticatedMessage())) {
             point.setUnAuthenticatedMessage(backendSeparation.getUnAuthenticatedMessage());
         }
     }
@@ -128,18 +122,17 @@ public final class AppAuthConfigurerUtils {
                 // 使用自己的 登出页面生成过滤器 ..
                 String logoutUrl = ElvisUtil.stringElvis(noSeparation.getLogoutPageUrl(), "/logout");
                 logoutUrl = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX + normalize(logoutUrl);
-                pageGeneratingFilter.setMatcher(new AntPathRequestMatcher(logoutUrl,"GET"));
-                if(StringUtils.hasText(noSeparation.getLogoutProcessUrl())) {
+                pageGeneratingFilter.setMatcher(new AntPathRequestMatcher(logoutUrl, "GET"));
+                if (StringUtils.hasText(noSeparation.getLogoutProcessUrl())) {
                     String logoutProcessUrl = noSeparation.getLogoutProcessUrl();
                     logoutProcessUrl = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX + logoutProcessUrl;
                     pageGeneratingFilter.setLogoutProcessUrl(logoutProcessUrl);
-                }
-                else {
+                } else {
                     // 将登出页面url作为 处理路径,但是请求方法不一致 ..
                     pageGeneratingFilter.setLogoutProcessUrl(logoutUrl);
                 }
                 // 前缀处理 ...
-                builder.setSharedObject(DefaultLogoutPageGeneratingFilter.class,logoutPageGeneratingFilter);
+                builder.setSharedObject(DefaultLogoutPageGeneratingFilter.class, logoutPageGeneratingFilter);
             }
         }
 
@@ -263,50 +256,77 @@ public final class AppAuthConfigurerUtils {
         return sharedObject;
     }
 
+
+    public static <B extends HttpSecurityBuilder<B>> LightningUserDetailsProvider getLightningUserDetailsProvider(B builder) {
+        LightningUserDetailsProvider sharedObject = builder.getSharedObject(LightningUserDetailsProvider.class);
+        if (sharedObject == null) {
+            Collection<LightningUserDetailsProvider> beans = getBeansForType(builder, LightningUserDetailsProvider.class);
+            DelegateLightningUserDetailsProvider delegateLightningUserDetailsProvider = new DelegateLightningUserDetailsProvider(beans);
+            builder.setSharedObject(LightningUserDetailsProvider.class, delegateLightningUserDetailsProvider);
+            sharedObject = delegateLightningUserDetailsProvider;
+        }
+        return sharedObject;
+    }
+
+    public static <B extends HttpSecurityBuilder<B>> LightningDaoAuthenticationProvider getDaoAuthenticationProvider(B builder) {
+        LightningDaoAuthenticationProvider sharedObject = builder.getSharedObject(LightningDaoAuthenticationProvider.class);
+        if(sharedObject == null) {
+            Collection<LightningDaoAuthenticationProvider> list = getBeansForType(builder, LightningDaoAuthenticationProvider.class);
+            DelegateLightningDaoAuthenticationProvider daoAuthenticationProvider = new DelegateLightningDaoAuthenticationProvider(list);
+            builder.setSharedObject(LightningDaoAuthenticationProvider.class,daoAuthenticationProvider);
+            sharedObject = daoAuthenticationProvider;
+        }
+        return sharedObject;
+    }
+
     /**
      * 获取 共享对象或者 容器中的 AppAuthServerForTokenAuthenticationProvider ..
+     *
+     * 如果覆盖,可以设置 share object ..
+     *
+     * 默认{@link AuthTokenEndpointConfigurer#createDefaultAuthenticationProviders(HttpSecurityBuilder)} 将提供共享对象 ...
      */
     public static <B extends HttpSecurityBuilder<B>> AppAuthServerForTokenAuthenticationProvider getAppAuthServerForTokenAuthenticationProvider(B builder) {
         AppAuthServerForTokenAuthenticationProvider serverForTokenAuthenticationProvider = builder.getSharedObject(AppAuthServerForTokenAuthenticationProvider.class);
-        if(serverForTokenAuthenticationProvider == null) {
+        if (serverForTokenAuthenticationProvider == null) {
             serverForTokenAuthenticationProvider = getBean(builder, AppAuthServerForTokenAuthenticationProvider.class);
-            builder.setSharedObject(AppAuthServerForTokenAuthenticationProvider.class,serverForTokenAuthenticationProvider);
+            builder.setSharedObject(AppAuthServerForTokenAuthenticationProvider.class, serverForTokenAuthenticationProvider);
         }
         return serverForTokenAuthenticationProvider;
     }
 
-    private static  <T> T lazyBean(ApplicationContext context, ObjectPostProcessor<Object> objectPostProcessor,Class<T> interfaceName) {
+    private static <T> T lazyBean(ApplicationContext context, ObjectPostProcessor<Object> objectPostProcessor, Class<T> interfaceName) {
         LazyInitTargetSource lazyTargetSource = new LazyInitTargetSource();
         String[] beanNamesForType = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(context, interfaceName);
         if (beanNamesForType.length == 0) {
             return null;
         } else {
-            String beanName = getBeanName(interfaceName, context,beanNamesForType);
+            String beanName = getBeanName(interfaceName, context, beanNamesForType);
             lazyTargetSource.setTargetBeanName(beanName);
             lazyTargetSource.setBeanFactory(context);
             ProxyFactoryBean proxyFactory = new ProxyFactoryBean();
             proxyFactory = objectPostProcessor.postProcess(proxyFactory);
             proxyFactory.setTargetSource(lazyTargetSource);
-            return (T)proxyFactory.getObject();
+            return (T) proxyFactory.getObject();
         }
     }
 
-    private static <T> String getBeanName(Class<T> interfaceName, ApplicationContext applicationContext,String[] beanNamesForType) {
+    private static <T> String getBeanName(Class<T> interfaceName, ApplicationContext applicationContext, String[] beanNamesForType) {
         if (beanNamesForType.length == 1) {
             return beanNamesForType[0];
         } else {
-            List<String> primaryBeanNames = getPrimaryBeanNames(applicationContext,beanNamesForType);
+            List<String> primaryBeanNames = getPrimaryBeanNames(applicationContext, beanNamesForType);
             Assert.isTrue(primaryBeanNames.size() != 0, () -> {
                 return "Found " + beanNamesForType.length + " beans for type " + interfaceName + ", but none marked as primary";
             });
             Assert.isTrue(primaryBeanNames.size() == 1, () -> {
                 return "Found " + primaryBeanNames.size() + " beans for type " + interfaceName + " marked as primary";
             });
-            return (String)primaryBeanNames.get(0);
+            return (String) primaryBeanNames.get(0);
         }
     }
 
-    private static List<String> getPrimaryBeanNames(ApplicationContext applicationContext,String[] beanNamesForType) {
+    private static List<String> getPrimaryBeanNames(ApplicationContext applicationContext, String[] beanNamesForType) {
         List<String> list = new ArrayList<>();
         if (!(applicationContext instanceof ConfigurableApplicationContext)) {
             return Collections.emptyList();
@@ -314,9 +334,9 @@ public final class AppAuthConfigurerUtils {
             String[] var3 = beanNamesForType;
             int var4 = beanNamesForType.length;
 
-            for(int var5 = 0; var5 < var4; ++var5) {
+            for (int var5 = 0; var5 < var4; ++var5) {
                 String beanName = var3[var5];
-                if (((ConfigurableApplicationContext)applicationContext).getBeanFactory().getBeanDefinition(beanName).isPrimary()) {
+                if (((ConfigurableApplicationContext) applicationContext).getBeanFactory().getBeanDefinition(beanName).isPrimary()) {
                     list.add(beanName);
                 }
             }
@@ -363,19 +383,11 @@ public final class AppAuthConfigurerUtils {
         }
     }
 
-    static <B extends HttpSecurityBuilder<B>,T> List<T> getBeansForType(B builder,ResolvableType type) {
+    static <B extends HttpSecurityBuilder<B>, T> Collection<T> getBeansForType(B builder, Class<T> type) {
         ApplicationContext context = builder.getSharedObject(ApplicationContext.class);
         String[] beanNamesForType = context.getBeanNamesForType(type);
-        if(beanNamesForType.length > 0) {
-            if (context instanceof ConfigurableApplicationContext configurableApplicationContext) {
-                for (String s : beanNamesForType) {
-                    BeanDefinition beanDefinition = configurableApplicationContext.getBeanFactory()
-                            .getBeanDefinition(s);
-                    AbstractBeanDefinition abstractBeanDefinition = (AbstractBeanDefinition) beanDefinition;
-
-                }
-
-            }
+        if (beanNamesForType.length > 0) {
+            return context.getBeansOfType(type).values();
         }
 
         return Collections.emptyList();

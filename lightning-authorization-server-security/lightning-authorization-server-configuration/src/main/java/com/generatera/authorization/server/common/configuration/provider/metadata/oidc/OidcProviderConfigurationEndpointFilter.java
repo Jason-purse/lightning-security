@@ -1,8 +1,8 @@
 package com.generatera.authorization.server.common.configuration.provider.metadata.oidc;
 
-import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
+import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -25,10 +25,15 @@ public final class OidcProviderConfigurationEndpointFilter extends OncePerReques
     private final RequestMatcher requestMatcher;
     private final OidcProviderConfigurationHttpMessageConverter providerConfigurationHttpMessageConverter = new OidcProviderConfigurationHttpMessageConverter();
 
-    public OidcProviderConfigurationEndpointFilter(ProviderSettings providerSettings) {
+    public OidcProviderConfigurationEndpointFilter(ProviderSettings providerSettings, String openConnectIdMetaDataUri) {
         Assert.notNull(providerSettings, "providerSettings cannot be null");
+        Assert.notNull(openConnectIdMetaDataUri, "openConnectIdMetaDataUri cannot be null");
         this.providerSettings = providerSettings;
-        this.requestMatcher = new AntPathRequestMatcher("/.well-known/openid-configuration", HttpMethod.GET.name());
+        this.requestMatcher = new AntPathRequestMatcher(openConnectIdMetaDataUri, HttpMethod.GET.name());
+    }
+
+    public OidcProviderConfigurationEndpointFilter(ProviderSettings providerSettings) {
+        this(providerSettings, DEFAULT_OIDC_PROVIDER_CONFIGURATION_ENDPOINT_URI);
     }
 
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {

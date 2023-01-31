@@ -7,7 +7,9 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.ResolvableType;
+import org.springframework.lang.Nullable;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 import org.springframework.util.StringUtils;
 
@@ -31,6 +33,18 @@ public class FormLoginUtils {
             builder.addFilter(loginPageGeneratingFilter);
         }
     }
+
+    @Nullable
+    public static <B extends HttpSecurityBuilder<B>> UserDetailsService getUserDetailsService(B builder) {
+        UserDetailsService sharedObject = builder.getSharedObject(UserDetailsService.class);
+        if (sharedObject == null) {
+            UserDetailsService bean = getBean(builder, UserDetailsService.class);
+            builder.setSharedObject(UserDetailsService.class, bean);
+            sharedObject = bean;
+        }
+        return sharedObject;
+    }
+
 
 
     static <B extends HttpSecurityBuilder<B>, T> T getOptionalBean(B builder, Class<T> type) {

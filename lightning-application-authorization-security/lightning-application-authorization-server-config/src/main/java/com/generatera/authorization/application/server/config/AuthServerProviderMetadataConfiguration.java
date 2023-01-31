@@ -3,6 +3,7 @@ package com.generatera.authorization.application.server.config;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.provider.metadata.oidc.OidcProviderConfigurationEndpointFilter;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
@@ -42,12 +43,13 @@ public class AuthServerProviderMetadataConfiguration {
     public static class OidcProviderServerMetadataEnabler {
 
         @Bean
-        public LightningAuthServerConfigurer appAuthServerConfigurer(ProviderSettingsProvider provider) {
+        public LightningAuthServerConfigurer appAuthServerConfigurer(ProviderSettingsProvider provider,ApplicationAuthServerProperties properties) {
             return new LightningAuthServerConfigurer() {
                 @Override
                 public void configure(HttpSecurity securityBuilder) throws Exception {
                     securityBuilder.addFilterBefore(
-                            new OidcProviderConfigurationEndpointFilter(provider.getProviderSettings()),
+                            new OidcProviderConfigurationEndpointFilter(provider.getProviderSettings(),
+                                    ElvisUtil.stringElvis(properties.getServerMetaDataEndpointConfig().getOpenConnectIdMetadataEndpointUri(), ApplicationAuthServerProperties.ServerMetaDataEndpointConfig.OPEN_CONNECT_ID_METADATA_ENDPOINT)),
                             AbstractPreAuthenticatedProcessingFilter.class);
                 }
             };

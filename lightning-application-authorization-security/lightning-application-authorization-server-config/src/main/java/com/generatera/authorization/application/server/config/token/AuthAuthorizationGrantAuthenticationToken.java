@@ -13,15 +13,14 @@ import java.util.Map;
 public class AuthAuthorizationGrantAuthenticationToken extends AbstractAuthenticationToken {
 
     private final AuthorizationGrantType authorizationGrantType;
-    private final Authentication clientPrincipal;
+    private final Authentication principal;
     private final Map<String, Object> additionalParameters;
 
-    protected AuthAuthorizationGrantAuthenticationToken(AuthorizationGrantType authorizationGrantType, Authentication clientPrincipal, @Nullable Map<String, Object> additionalParameters) {
+    protected AuthAuthorizationGrantAuthenticationToken(AuthorizationGrantType authorizationGrantType, @Nullable Authentication principal, @Nullable Map<String, Object> additionalParameters) {
         super(Collections.emptyList());
         Assert.notNull(authorizationGrantType, "authorizationGrantType cannot be null");
-        Assert.notNull(clientPrincipal, "clientPrincipal cannot be null");
         this.authorizationGrantType = authorizationGrantType;
-        this.clientPrincipal = clientPrincipal;
+        this.principal = principal;
         this.additionalParameters = Collections.unmodifiableMap(additionalParameters != null ? new HashMap<>(additionalParameters) : Collections.emptyMap());
     }
 
@@ -30,7 +29,7 @@ public class AuthAuthorizationGrantAuthenticationToken extends AbstractAuthentic
     }
 
     public Object getPrincipal() {
-        return this.clientPrincipal;
+        return this.principal;
     }
 
     public Object getCredentials() {

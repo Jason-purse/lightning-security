@@ -55,7 +55,7 @@ public class FormLoginRequestConverter implements AuthenticationConverter {
         }
 
         // 处理表单登录 ..
-        if (StringUtils.hasText(loginRequestType) &&  !loginRequestType.equalsIgnoreCase(LoginGrantType.FORM_LOGIN)) {
+        if (StringUtils.hasText(loginRequestType) &&  !loginRequestType.equalsIgnoreCase(LoginGrantType.FORM_LOGIN.value())) {
             return null;
         }
 

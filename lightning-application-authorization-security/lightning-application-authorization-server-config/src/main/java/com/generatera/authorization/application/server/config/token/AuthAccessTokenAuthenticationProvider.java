@@ -1,7 +1,8 @@
 package com.generatera.authorization.application.server.config.token;
 
-import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization;
+import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthError;
@@ -11,6 +12,7 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningRefreshToken;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.ClaimAccessor;
+import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.util.Assert;
@@ -31,6 +33,13 @@ import static com.generatera.security.authorization.server.specification.compone
  * 不需要交换授权码(所以 如果需要进行登录限制的话,需要做额外的事情)
  * <p>
  * 本质上通过 增强DaoAuthenticationProvider委托它进行 token 生成 ..
+ *
+ *
+ * 它将被{@link com.generatera.authorization.application.server.config.authentication.LightningAppAuthServerDaoLoginAuthenticationProvider}
+ * 使用来针对 服务器的配置(是否前后端分离来颁发token) ...
+ *
+ * 它本身仅仅处理 .. {@link AuthAccessTokenAuthenticationToken}
+ *
  */
 public final class AuthAccessTokenAuthenticationProvider implements AppAuthServerForTokenAuthenticationProvider {
     private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
@@ -73,7 +82,7 @@ public final class AuthAccessTokenAuthenticationProvider implements AppAuthServe
             DefaultLightningAuthorization.Builder authorizationBuilder = new DefaultLightningAuthorization.Builder();
 
             authorizationBuilder.principalName(authentication.getName());
-            authorizationBuilder.principal(((LightningUserPrincipal) authentication.getPrincipal()));
+            authorizationBuilder.attribute(LightningAuthorization.USER_INFO_ATTRIBUTE_NAME,((LightningUserPrincipal) authentication.getPrincipal()));
 
             LightningAccessToken accessToken
                     = new LightningAccessTokenGenerator.LightningAuthenticationAccessToken(
@@ -85,7 +94,8 @@ public final class AuthAccessTokenAuthenticationProvider implements AppAuthServe
                             .getAccessTokenValueFormat()
             );
             if (generatedAccessToken instanceof ClaimAccessor) {
-                authorizationBuilder.token(accessToken, (metadata) -> {
+                // 否则不是这个接口类型的,无法获取 ..
+                authorizationBuilder.token(accessToken, LightningAccessToken.class,(metadata) -> {
                     metadata.put(DefaultLightningAuthorization.Token.CLAIMS_METADATA_NAME, ((ClaimAccessor) generatedAccessToken).getClaims());
                     metadata.put(DefaultLightningAuthorization.Token.INVALIDATED_METADATA_NAME, false);
                 });
@@ -121,7 +131,8 @@ public final class AuthAccessTokenAuthenticationProvider implements AppAuthServe
                 authorizationBuilder.refreshToken((LightningRefreshToken) generatedRefreshToken);
             }
 
-
+            // 新 token
+            authorizationBuilder.id(UuidUtil.nextId());
             authorization = authorizationBuilder.build();
             this.authorizationService.save(authorization);
             Map<String, Object> additionalParameters = Collections.emptyMap();

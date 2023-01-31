@@ -1,7 +1,8 @@
 package com.generatera.authorization.application.server.config.token;
 
-import com.generatera.authorization.server.common.configuration.authorization.DefaultLightningAuthorization;
-import com.generatera.authorization.server.common.configuration.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
+import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthError;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.Assert;
 
 import java.util.Collections;
@@ -29,6 +31,9 @@ import java.util.Map;
  * 也就是判断刷新token 是否过期,如果没有过期,进行访问token的生成,并刷新刷新token ...
  *
  * 此认证提供器 非常关注 userPrincipal的 状态
+ *
+ * 简单表单登录 / 和 oauth2 client 登录的刷新 token 抽象提供器 ..
+ *
  */
 public final class AuthRefreshTokenAuthenticationProvider implements AuthenticationProvider {
     private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
@@ -37,15 +42,20 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
 
     private final TokenSettingsProvider tokenSettingsProvider;
 
+    private final LightningUserDetailsProvider userDetailsService;
+
     public AuthRefreshTokenAuthenticationProvider(LightningAuthenticationTokenService authorizationService,
                                                   LightningTokenGenerator<? extends LightningToken> tokenGenerator,
-                                                  TokenSettingsProvider tokenSettingsProvider) {
+                                                  TokenSettingsProvider tokenSettingsProvider,
+                                                  LightningUserDetailsProvider userDetailsService) {
         Assert.notNull(authorizationService, "authorizationService cannot be null");
         Assert.notNull(tokenGenerator, "tokenGenerator cannot be null");
         Assert.notNull(tokenSettingsProvider, "tokenSettingsProvider cannot be null");
+        Assert.notNull(userDetailsService, "userDetailsService cannot be null");
         this.authorizationService = authorizationService;
         this.tokenGenerator = tokenGenerator;
         this.tokenSettingsProvider = tokenSettingsProvider;
+        this.userDetailsService = userDetailsService;
     }
 
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -61,14 +71,22 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
             DefaultLightningAuthorization.Token<LightningRefreshToken> refreshToken = authorization.getRefreshToken();
             assert refreshToken != null;
             if (!refreshToken.isActive()) {
-                throw new LightningAuthenticationException("invalid_grant");
+                throw new LightningAuthenticationException("invalid_refresh_token");
             } else {
                 if (!isAuthenticated(authorization.getPrincipal())) {
                     throw new LightningAuthenticationException("unauthorized_grant");
                 }
 
+                // 直接获取用户信息,然后重新生成token
+                UserDetails userDetails = userDetailsService.getUserDetails(refreshTokenAuthentication,authorization.getPrincipalName());
+                if(userDetails == null) {
+                    throw new LightningAuthenticationException("invalid_login_grant_type");
+                }
+                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails,
+                        null, userDetails.getAuthorities());
+                // 重新认证
                 DefaultLightningTokenContext.Builder builder = DefaultLightningTokenContext.builder()
-                        .authentication(authentication)
+                        .authentication(authenticationToken)
                         .providerContext(ProviderContextHolder.getProviderContext())
                         .tokenSettings(tokenSettingsProvider.getTokenSettings())
                         .tokenValueType(tokenSettingsProvider.getTokenSettings().getAccessTokenValueType())
@@ -79,7 +97,7 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
                         builder.build()
                 );
 
-                DefaultLightningAuthorization.Builder authorizationBuilder = new DefaultLightningAuthorization.Builder();
+                DefaultLightningAuthorization.Builder authorizationBuilder = DefaultLightningAuthorization.from(authorization);
 
                 LightningToken generatedAccessToken = this.tokenGenerator.generate(accessTokenContext);
                 if (generatedAccessToken == null) {
@@ -96,7 +114,7 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
                                     .getAccessTokenValueFormat()
                     );
                     if (generatedAccessToken instanceof ClaimAccessor) {
-                        authorizationBuilder.token(accessToken, (metadata) -> {
+                        authorizationBuilder.token(accessToken, LightningAccessToken.class,(metadata) -> {
                             metadata.put(DefaultLightningAuthorization.Token.CLAIMS_METADATA_NAME, ((ClaimAccessor) generatedAccessToken).getClaims());
                             metadata.put(DefaultLightningAuthorization.Token.INVALIDATED_METADATA_NAME, false);
                         });
@@ -106,6 +124,7 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
 
 
                     LightningRefreshToken currentRefreshToken = refreshToken.getToken();
+                    // 如果没有重用刷新 token
                     if (!tokenSettingsProvider.getTokenSettings().isReuseRefreshToken()) {
 
                         // 刷新 token 处理 ...
@@ -126,6 +145,8 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
                         currentRefreshToken = (LightningRefreshToken) generatedRefreshToken;
                         authorizationBuilder.refreshToken(currentRefreshToken);
                     }
+
+                    authorizationBuilder.attribute(LightningAuthorization.USER_INFO_ATTRIBUTE_NAME,userDetails);
 
                     authorization = authorizationBuilder.build();
                     this.authorizationService.save(authorization);

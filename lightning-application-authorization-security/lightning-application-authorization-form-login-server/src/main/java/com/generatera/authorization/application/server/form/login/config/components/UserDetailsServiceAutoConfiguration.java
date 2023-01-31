@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.form.login.config.components;
 
+import com.generatera.authorization.application.server.config.token.LightningUserDetailsProvider;
 import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +49,7 @@ public class UserDetailsServiceAutoConfiguration {
                             .build()
             );
         }
+
 
         private String getOrDeducePassword(SecurityProperties.User user, PasswordEncoder encoder) {
             String password = user.getPassword();
