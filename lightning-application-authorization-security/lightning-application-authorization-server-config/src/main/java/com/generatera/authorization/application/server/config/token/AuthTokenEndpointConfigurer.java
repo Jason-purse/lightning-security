@@ -104,7 +104,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
                                     // 将会获取一个 生成 token的 provider ...
                 AppAuthConfigurerUtils.getAppAuthServerForTokenAuthenticationProvider(builder),
                 AppAuthConfigurerUtils.getDaoAuthenticationProvider(builder),
-                authServerProperties.getIsSeparation());
+                authServerProperties.isSeparation());
 
         // 实现 用户登录 认证 ..
         builder.authenticationProvider(authenticationProvider);

@@ -21,7 +21,7 @@ public class ApplicationAuthServerProperties {
     /**
      * 是否前后端分离
      */
-    private boolean isSeparation = false;
+    private boolean separation = false;
 
     private final BackendSeparation backendSeparation = new BackendSeparation();
 
@@ -68,7 +68,9 @@ public class ApplicationAuthServerProperties {
     @Data
     public static class BackendSeparation {
 
-        private String logoutProcessUrl = "/logout/process";
+        public static final String DEFAULT_LOGOUT_PROCESS_URL = "/logout/process";
+
+        private String logoutProcessUrl = DEFAULT_LOGOUT_PROCESS_URL;
         private String logoutSuccessMessage = "LOGOUT SUCCESS";
 
 
@@ -114,10 +116,18 @@ public class ApplicationAuthServerProperties {
     @Data
     public static class NoSeparation {
 
+        public static final String DEFAULT_LOGOUT_PAGE_URL = "/logout";
+        public static final String DEFAULT_LOGOUT_SUCCESS_URL = "/login?logout";
+
+        public static final String DEFAULT_LOGIN_PAGE_URL = "/login";
+
+        public static final String DEFAULT_FAILURE_FORWARD_OR_REDIRECT_URL = "/login?error";
+
+
         /**
          * 登出页面 url
          */
-        private String logoutPageUrl = "/logout";
+        private String logoutPageUrl = DEFAULT_LOGOUT_PAGE_URL;
 
         /**
          * 可以自定义(默认等价于 logoutPageUrl)
@@ -127,12 +137,14 @@ public class ApplicationAuthServerProperties {
          */
         private String logoutProcessUrl;
 
-        private String logoutSuccessUrl = "/login?logout";
 
-        private String loginPageUrl = "/login";
+        private String loginPageUrl = DEFAULT_LOGIN_PAGE_URL;
 
 
-        // ------------------------------- 以下 url 将不会自动拼接 app 授权服务器前缀 -----------------------------
+
+        private String logoutSuccessUrl = DEFAULT_LOGOUT_SUCCESS_URL;
+
+
         /**
          * 仅当开启了 enableSavedRequestForward 才有效
          */
@@ -149,12 +161,12 @@ public class ApplicationAuthServerProperties {
         /**
          *  enableForward 则需要是一个具体的资源
          */
-        private String failureForwardOrRedirectUrl = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX + "/login?error";
+        private String failureForwardOrRedirectUrl = DEFAULT_FAILURE_FORWARD_OR_REDIRECT_URL;
 
         /**
          * 默认是转发,如果不是就是重定向
          */
-        private Boolean enableForward = false;
+        private boolean enableForward = false;
 
 
         /**
@@ -174,7 +186,7 @@ public class ApplicationAuthServerProperties {
          * todo()
          * 没有自动定时清理 session记录的发起请求信息, 应该改进为使用redis存储可能更好 ..
          */
-        private Boolean enableSavedRequestForward = true;
+        private boolean enableSavedRequestForward = true;
 
     }
 

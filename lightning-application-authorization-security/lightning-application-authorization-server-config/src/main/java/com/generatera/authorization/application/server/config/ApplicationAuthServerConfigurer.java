@@ -190,6 +190,7 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
     }
 
     private void initEndpointMatchers(ProviderSettings providerSettings) {
+        // // TODO: 2023/1/31 修改为动态配置属性
         this.jwkSetEndpointMatcher = new AntPathRequestMatcher(providerSettings.getJwkSetEndpoint(), HttpMethod.GET.name());
         this.authorizationServerMetadataEndpointMatcher = new AntPathRequestMatcher(AUTHORIZATION_SERVER_METADATA_ENDPOINT_URL, HttpMethod.GET.name());
     }

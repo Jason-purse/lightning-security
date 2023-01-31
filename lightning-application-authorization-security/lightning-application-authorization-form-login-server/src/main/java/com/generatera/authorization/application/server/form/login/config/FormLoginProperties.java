@@ -17,7 +17,7 @@ public class FormLoginProperties {
     /**
      * 表单的登录url (将自动拼接 app auth server 前缀) ...
      */
-    private String loginProcessUrl = "/form/login/process";
+    private String loginProcessUrl;
 
     private final NoSeparation noSeparation = new NoSeparation();
 

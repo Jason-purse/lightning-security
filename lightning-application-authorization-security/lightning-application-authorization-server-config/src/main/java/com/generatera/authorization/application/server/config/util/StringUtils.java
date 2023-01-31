@@ -2,7 +2,7 @@ package com.generatera.authorization.application.server.config.util;
 
 public class StringUtils {
     public static String normalize(String path) {
-        return normalize(path, true);
+        return normalize(path, false);
     }
 
     public static String normalize(String path, boolean needLeaf) {

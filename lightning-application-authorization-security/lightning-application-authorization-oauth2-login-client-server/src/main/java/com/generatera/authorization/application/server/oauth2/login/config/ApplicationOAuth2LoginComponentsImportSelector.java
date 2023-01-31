@@ -3,7 +3,6 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
-import org.apache.commons.lang3.ObjectUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.env.Environment;
@@ -41,7 +40,7 @@ public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBi
 
     private void isSeparationForEntryPoint(LinkedList<String> candidates) {
         // entry point handled
-        if(ObjectUtils.isNotEmpty(authServerProperties.getIsSeparation()) && authServerProperties.getIsSeparation()) {
+        if(authServerProperties.isSeparation()) {
             candidates.add(OAuth2LoginAuthenticationEntryPointConfiguration.class.getName());
         }
     }

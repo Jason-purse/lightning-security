@@ -31,7 +31,7 @@ public class ApplicationServerImportSelector extends PropertiesBindImportSelecto
         ApplicationAuthServerProperties properties = getProperties();
         List<String> candidates = new LinkedList<>();
 
-        OptionalFlux.of(properties.getServerMetaDataEndpointConfig().getEnableOidc())
+        OptionalFlux.of(properties.getServerMetaDataEndpointConfig().isEnableOidc())
                 .consumeOrNull(flag -> {
                     if (flag == null) {
                         candidates.add(AuthServerProviderMetadataConfiguration.NoOidcProviderServerMetadataController.class.getName());

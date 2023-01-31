@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>lightning-plain-resource-server</artifactId>
+    <artifactId>lightning-application-resource-server</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

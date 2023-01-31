@@ -87,7 +87,7 @@ public class ApplicationOAuth2LoginConfiguration {
                 public void configure(HttpSecurity securityBuilder) throws Exception {
                     OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer = securityBuilder.oauth2Login();
                     List<String> patterns = new LinkedList<>();
-                    if (!authServerProperties.getIsSeparation()) {
+                    if (!authServerProperties.isSeparation()) {
                         noSeparationConfig(oAuth2LoginConfigurer, patterns, properties);
                     }
                     // 授权放行url

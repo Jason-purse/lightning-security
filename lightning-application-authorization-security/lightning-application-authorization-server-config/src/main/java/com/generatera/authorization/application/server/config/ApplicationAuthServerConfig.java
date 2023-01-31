@@ -6,6 +6,7 @@ import com.generatera.authorization.server.common.configuration.AuthorizationSer
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.LightningCentralAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.LightningResourcePermissionConfigurer;
+import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
@@ -67,6 +68,11 @@ public class ApplicationAuthServerConfig {
     @Primary
     public ProviderSettingsProvider provider() {
         ProviderSettingProperties settingProperties = properties.getProviderSettingProperties();
+
+        // 直接使用
+        ApplicationAuthServerProperties serverProperties = new ApplicationAuthServerUtils(properties)
+                .getProperties();
+        ProviderSettingProperties providerSettingProperties = serverProperties.getProviderSettingProperties();
         final ProviderSettings.Builder builder = ProviderSettings
                 .builder();
 
@@ -81,18 +87,11 @@ public class ApplicationAuthServerConfig {
         Assert.notNull(settingProperties.getTokenIntrospectionEndpoint(), "token introspect endpoint must not be null !!!");
         Assert.notNull(settingProperties.getTokenRevocationEndpoint(), "token revoke endpoint must not be null !!!");
 
-
-        String tokenEndpoint = normalize(ElvisUtil.stringElvis(settingProperties.getTokenEndpoint(), ProviderSettingProperties.TOKEN_ENDPOINT));
-        String jwks = normalize(ElvisUtil.stringElvis(settingProperties.getJwkSetEndpoint(), ProviderSettingProperties.JWT_SET_ENDPOINT));
-        String revoke = normalize(ElvisUtil.stringElvis(settingProperties.getTokenRevocationEndpoint(), ProviderSettingProperties.TOKEN_REVOCATION_ENDPOINT));
-        String introspect = normalize(ElvisUtil.stringElvis(settingProperties.getTokenIntrospectionEndpoint(), ProviderSettingProperties.TOKEN_INTROSPECTION_ENDPOINT));
-
-        String authPrefix = ElvisUtil.stringElvis(properties.getAppAuthPrefix(), AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX);
         ProviderSettings settings = builder
-                .tokenEndpoint(authPrefix + tokenEndpoint)
-                .jwkSetEndpoint(authPrefix + jwks)
-                .tokenRevocationEndpoint(authPrefix + revoke)
-                .tokenIntrospectionEndpoint(authPrefix + introspect)
+                .tokenEndpoint(providerSettingProperties.getTokenEndpoint())
+                .jwkSetEndpoint(providerSettingProperties.getJwkSetEndpoint())
+                .tokenRevocationEndpoint(providerSettingProperties.getTokenRevocationEndpoint())
+                .tokenIntrospectionEndpoint(providerSettingProperties.getTokenIntrospectionEndpoint())
                 .build();
 
         return new ProviderSettingsProvider(settings);
@@ -115,17 +114,15 @@ public class ApplicationAuthServerConfig {
                 // 分离场景下,才需要增加token 端点进行token 颁发 / 刷新和 撤销 ...
                 // 不分离,直接记住我就行 ..(remember me 服务) ...
                 // // TODO: 2023/1/30  可以基于 rememberme 标识 来提供刷新token
-                if (properties.getIsSeparation()) {
-                    ApplicationAuthServerProperties serverProperties = security.getSharedObject(ApplicationAuthServerProperties.class);
-                    if (serverProperties == null) {
-                        security.setSharedObject(ApplicationAuthServerProperties.class, properties);
-                    }
+                ApplicationAuthServerProperties serverProperties = security.getSharedObject(ApplicationAuthServerProperties.class);
+                if (serverProperties == null) {
+                    security.setSharedObject(ApplicationAuthServerProperties.class, properties);
+                }
 
-                    // 配置 普通应用级别的 授权服务器 ..
-                    if (appAuthServerConfigurers != null && !appAuthServerConfigurers.isEmpty()) {
-                        for (LightningAppAuthServerBootstrapConfigurer appAuthServerConfigurer : appAuthServerConfigurers) {
-                            appAuthServerConfigurer.configure(security);
-                        }
+                // 配置 普通应用级别的 授权服务器 ..
+                if (appAuthServerConfigurers != null && !appAuthServerConfigurers.isEmpty()) {
+                    for (LightningAppAuthServerBootstrapConfigurer appAuthServerConfigurer : appAuthServerConfigurers) {
+                        appAuthServerConfigurer.configure(security);
                     }
                 }
             }
@@ -148,16 +145,16 @@ public class ApplicationAuthServerConfig {
                         // 但是忽略所有请求
                         .ignoringAntMatchers("/**");
 
-                Boolean isSeparation = properties.getIsSeparation();
-                ApplicationAuthServerProperties.NoSeparation noSeparation = properties.getNoSeparation();
-                String appAuthServerPrefix = org.springframework.util.StringUtils.trimTrailingCharacter(ElvisUtil.stringElvis(properties.getAppAuthPrefix(), AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX), '/');
+                boolean isSeparation = properties.isSeparation();
+                ApplicationAuthServerUtils applicationAuthServerPropertiesUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(securityBuilder);
+                ApplicationAuthServerProperties.NoSeparation noSeparation = applicationAuthServerPropertiesUtils.getProperties().getNoSeparation();
 
                 if (!isSeparation) {
-                    String logoutPageUrl = appAuthServerPrefix + normalize(ElvisUtil.stringElvis(noSeparation.getLogoutPageUrl(), "/logout"));
+                    String logoutPageUrl = noSeparation.getLogoutPageUrl();
                     LogoutConfigurer<HttpSecurity> logout = securityBuilder.logout();
                     if (StringUtils.isNotBlank(noSeparation.getLogoutProcessUrl())) {
                         // 设置logout process url
-                        String logoutProcessUrl = appAuthServerPrefix + ElvisUtil.stringElvis(noSeparation.getLogoutProcessUrl(), "/logout");
+                        String logoutProcessUrl = noSeparation.getLogoutProcessUrl();
                         logout
                                 .logoutRequestMatcher(
                                         new AntPathRequestMatcher(logoutProcessUrl));
@@ -166,9 +163,7 @@ public class ApplicationAuthServerConfig {
                     }
 
                     // 登出成功的url
-                    logout.logoutSuccessUrl(
-                            appAuthServerPrefix + normalize(ElvisUtil.stringElvis(noSeparation.getLogoutSuccessUrl(), "/login?logout"))
-                    );
+                    logout.logoutSuccessUrl(noSeparation.getLogoutSuccessUrl());
 
                     // 配置 logout pageGeneratorFilter(由于默认的 限制太深) ...
                     DefaultLogoutPageGeneratingFilter filter = AppAuthConfigurerUtils.getDefaultLogoutPageGeneratingFilter(securityBuilder);
@@ -176,14 +171,12 @@ public class ApplicationAuthServerConfig {
                     securityBuilder.addFilter(filter);
 
 
-                    String loginPageUrl = ElvisUtil.stringElvis(noSeparation.getLoginPageUrl(), "/login");
-                    loginPageUrl = appAuthServerPrefix + normalize(loginPageUrl);
+                    String loginPageUrl = noSeparation.getLogoutPageUrl();
                     // 可以重新配置 ...
-                    String finalLoginPageUrl = loginPageUrl;
                     securityBuilder
                             .exceptionHandling()
                             .authenticationEntryPoint(
-                                    (request, response, authException) -> response.sendRedirect(finalLoginPageUrl)
+                                    (request, response, authException) -> response.sendRedirect(loginPageUrl)
                             );
                 }
             }
@@ -264,6 +257,11 @@ public class ApplicationAuthServerConfig {
                 // 存在 中央授权服务器 ...
                 if (configurers != null && configurers.size() > 0) {
                     openIdConnectMetaData = appAuthPrefix + normalize(openIdConnectMetaData);
+
+                    ProviderSettingsProvider providerSettings = ProviderExtUtils.getProviderSettings(registry.and());
+                    // 增加前缀 ..
+                    // TODO
+                    providerSettings.getProviderSettings();
                 }
                 boolean enableOidc = authServerProperties
                         .getServerMetaDataEndpointConfig().isEnableOidc();

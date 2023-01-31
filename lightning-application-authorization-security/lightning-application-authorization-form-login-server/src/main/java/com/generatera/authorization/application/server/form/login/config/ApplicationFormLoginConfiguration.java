@@ -1,12 +1,12 @@
 package com.generatera.authorization.application.server.form.login.config;
 
-import com.generatera.authorization.application.server.config.AppAuthConfigConstant;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.LightningAppAuthServerBootstrapConfigurer;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.application.server.config.token.LightningDaoAuthenticationProvider;
 import com.generatera.authorization.application.server.config.token.LightningUserDetailsProvider;
+import com.generatera.authorization.application.server.config.util.ApplicationAuthServerUtils;
 import com.generatera.authorization.application.server.form.login.config.components.FormDaoAuthenticationProvider;
 import com.generatera.authorization.application.server.form.login.config.components.FormLoginUserDetailsProvider;
 import com.generatera.authorization.application.server.form.login.config.components.UserDetailsServiceAutoConfiguration;
@@ -38,8 +38,8 @@ import org.springframework.util.StringUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 
+import static com.generatera.authorization.application.server.config.ApplicationAuthServerProperties.NoSeparation.DEFAULT_FAILURE_FORWARD_OR_REDIRECT_URL;
 import static com.generatera.authorization.application.server.config.util.StringUtils.normalize;
 
 /**
@@ -110,18 +110,18 @@ public class ApplicationFormLoginConfiguration {
                 security.setSharedObject(FormLoginProperties.class, formLoginProperties);
 
                 FormLoginProperties.NoSeparation noSeparation = formLoginProperties.getNoSeparation();
-                String appAuthPrefix = ElvisUtil.stringElvis(normalize(authServerProperties.getAppAuthPrefix()), AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX);
 
                 FormLoginConfigurer<HttpSecurity> formLoginConfigurer = security.formLogin();
 
                 Collection<String> patterns = new LinkedHashSet<>();
 
+                ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(security);
                 // 如果不是前后端分离的 ..
-                if (!Objects.requireNonNullElse(authServerProperties.getIsSeparation(), Boolean.FALSE)) {
-                    noSeparationOtherConfig(formLoginConfigurer, patterns, noSeparation, appAuthPrefix);
+                if (authServerProperties.isSeparation()) {
+                    noSeparationOtherConfig(formLoginConfigurer, patterns, noSeparation, applicationAuthServerUtils);
                 }
 
-                genericConfig(formLoginConfigurer, appAuthPrefix);
+                genericConfig(formLoginConfigurer, applicationAuthServerUtils);
 
                 LogUtil.prettyLog("form login authorization server enabled .....");
             }
@@ -131,15 +131,13 @@ public class ApplicationFormLoginConfiguration {
 
     private static void noSeparationOtherConfig(FormLoginConfigurer<HttpSecurity> formLoginConfigurer,
                                                 Collection<String> patterns, FormLoginProperties.NoSeparation noSeparation,
-                                                String authServerPrefix) throws Exception {
+                                                ApplicationAuthServerUtils applicationAuthServerUtils) throws Exception {
 
 
-        ApplicationAuthServerProperties serverProperties = formLoginConfigurer.and().getSharedObject(ApplicationAuthServerProperties.class);
-        authResponse(formLoginConfigurer, patterns, serverProperties.getNoSeparation(), authServerPrefix);
+        authResponse(formLoginConfigurer, patterns, applicationAuthServerUtils);
 
-        ApplicationAuthServerProperties authServerProperties = formLoginConfigurer.and().getSharedObject(ApplicationAuthServerProperties.class);
 
-        logoutWithLogin(formLoginConfigurer, noSeparation, authServerPrefix, authServerProperties);
+        logoutWithLogin(formLoginConfigurer, noSeparation,applicationAuthServerUtils);
 
 
         formLoginConfigurer.and()
@@ -148,10 +146,12 @@ public class ApplicationFormLoginConfiguration {
                 .permitAll();
     }
 
-    public static void logoutWithLogin(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, FormLoginProperties.NoSeparation noSeparation, String authServerPrefix, ApplicationAuthServerProperties authServerProperties) throws Exception {
+    public static void logoutWithLogin(FormLoginConfigurer<HttpSecurity> formLoginConfigurer,
+                                       FormLoginProperties.NoSeparation noSeparation,
+                                       ApplicationAuthServerUtils applicationAuthServerUtils) throws Exception {
         // 表示登出页面处理  ...
-        ApplicationAuthServerProperties.NoSeparation mainNoSeparation = authServerProperties.getNoSeparation();
-        String loginPageUrl = authServerPrefix + normalize(ElvisUtil.stringElvis(noSeparation.getLoginPageUrl(), mainNoSeparation.getLoginPageUrl()));
+        ApplicationAuthServerProperties.NoSeparation mainNoSeparation = applicationAuthServerUtils.getProperties().getNoSeparation();
+        String loginPageUrl = normalize(ElvisUtil.stringElvis(noSeparation.getLoginPageUrl(), mainNoSeparation.getLoginPageUrl()));
 
         // 自定义的登录页面
         if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
@@ -175,7 +175,7 @@ public class ApplicationFormLoginConfiguration {
                                 @Override
                                 public void init(HttpSecurity builder) throws Exception {
                                     // 这个不存在就填充 ..
-                                    String logoutSuccessUrl = authServerPrefix + ElvisUtil.stringElvis(normalize(authServerProperties.getNoSeparation().getLogoutSuccessUrl()), "/login?logout");
+                                    String logoutSuccessUrl = mainNoSeparation.getLogoutSuccessUrl();
                                     FormLoginUtils.configDefaultLoginPageGeneratorFilter(builder, loginPageUrl, logoutSuccessUrl);
                                     // 晚一点配置 ..
                                     formLoginConfigurer.loginPage(loginPageUrl);
@@ -184,47 +184,48 @@ public class ApplicationFormLoginConfiguration {
         }
     }
 
-    private static void authResponse(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, Collection<String> patterns, ApplicationAuthServerProperties.NoSeparation noSeparation, String authServerPrefix) {
+    private static void authResponse(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, Collection<String> patterns, ApplicationAuthServerUtils applicationAuthServerUtils) {
         // 针对于 转发url 是post请求,所以静态资源不支持,会报错 405
         // 所以需要自己重写 登陆成功的跳转地址 ..
-        if (noSeparation.getEnableForward() != null && noSeparation.getEnableForward()) {
+        ApplicationAuthServerProperties properties = applicationAuthServerUtils.getProperties();
+        ApplicationAuthServerProperties.NoSeparation noSeparation = properties.getNoSeparation();
+        if (noSeparation.isEnableForward()) {
 
             if (StringUtils.hasText(noSeparation.getSuccessForwardOrRedirectUrl())) {
-                String path = authServerPrefix + normalize(noSeparation.getSuccessForwardOrRedirectUrl());
-                formLoginConfigurer.successForwardUrl(path);
-                patterns.add(path);
+                formLoginConfigurer.successForwardUrl(noSeparation.getSuccessForwardOrRedirectUrl());
+                patterns.add(noSeparation.getSuccessForwardOrRedirectUrl());
             }
 
             if (StringUtils.hasText(noSeparation.getFailureForwardOrRedirectUrl())) {
-                String path = authServerPrefix + normalize(noSeparation.getFailureForwardOrRedirectUrl());
-                formLoginConfigurer.failureForwardUrl(path);
-                patterns.add(path);
+                formLoginConfigurer.failureForwardUrl(noSeparation.getFailureForwardOrRedirectUrl());
+                patterns.add(noSeparation.getFailureForwardOrRedirectUrl());
             }
         } else {
             // 如果都没有填写转发地址 ..
             // 这里直接启用 强制重定向到 /
             if (StringUtils.hasText(noSeparation.getSuccessForwardOrRedirectUrl())) {
-                String path = authServerPrefix + normalize(noSeparation.getSuccessForwardOrRedirectUrl());
-                formLoginConfigurer.successHandler(new RedirectAuthenticationSuccessOrFailureHandler(path));
-                patterns.add(path);
+                formLoginConfigurer.successHandler(new RedirectAuthenticationSuccessOrFailureHandler(noSeparation.getSuccessForwardOrRedirectUrl()));
+                patterns.add(noSeparation.getSuccessForwardOrRedirectUrl());
             } else {
-                if (!noSeparation.getEnableSavedRequestForward()) {
+                if (!noSeparation.isEnableSavedRequestForward()) {
                     formLoginConfigurer.successHandler(new RedirectAuthenticationSuccessOrFailureHandler("/"));
                     patterns.add("/");
                 }
             }
 
             if (StringUtils.hasText(noSeparation.getFailureForwardOrRedirectUrl())) {
-                String path = normalize(noSeparation.getFailureForwardOrRedirectUrl());
-                formLoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler(path));
-                patterns.add(path);
+                formLoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler(
+                        noSeparation.getFailureForwardOrRedirectUrl()
+                ));
+                patterns.add(noSeparation.getFailureForwardOrRedirectUrl());
             } else {
                 if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
-                    String path = authServerPrefix + normalize(noSeparation.getLoginPageUrl());
-                    formLoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler(path));
-                    patterns.add(path);
+                    formLoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler(
+                            noSeparation.getLoginPageUrl()
+                    ));
+                    patterns.add(noSeparation.getLoginPageUrl());
                 } else {
-                    String path = authServerPrefix + "/login?error";
+                    String path = DEFAULT_FAILURE_FORWARD_OR_REDIRECT_URL;
                     patterns.add(path);
                     formLoginConfigurer.failureHandler(new RedirectAuthenticationSuccessOrFailureHandler(path));
                 }
@@ -239,7 +240,7 @@ public class ApplicationFormLoginConfiguration {
     }
 
 
-    private void genericConfig(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, String authServerPrefix) throws Exception {
+    private void genericConfig(FormLoginConfigurer<HttpSecurity> formLoginConfigurer, ApplicationAuthServerUtils applicationAuthServerUtils) throws Exception {
 
         // username / password
         if (StringUtils.hasText(formLoginProperties.getUsernameParameterName())) {
@@ -252,7 +253,7 @@ public class ApplicationFormLoginConfiguration {
 
 
         if (StringUtils.hasText(formLoginProperties.getLoginProcessUrl())) {
-            String path = authServerPrefix + normalize(formLoginProperties.getLoginProcessUrl());
+            String path = normalize(formLoginProperties.getLoginProcessUrl());
             formLoginConfigurer.loginProcessingUrl(path);
         }
 

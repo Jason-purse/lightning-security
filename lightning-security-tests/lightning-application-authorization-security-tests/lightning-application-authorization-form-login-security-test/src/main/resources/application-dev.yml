@@ -5,7 +5,6 @@ lightning:
         config:
           server-meta-data-endpoint-config:
             enable-oidc: false
-          is-separation: true
           backend-separation:
             login-success-message: "登陆成功了呀，亲!"
             login-failure-message: "登陆失败了呀，亲!"
@@ -17,6 +16,7 @@ lightning:
             default-success-url: /login.html
           authorization-store-config:
             store-kind: jpa
+          separation: true
 
 
 server:

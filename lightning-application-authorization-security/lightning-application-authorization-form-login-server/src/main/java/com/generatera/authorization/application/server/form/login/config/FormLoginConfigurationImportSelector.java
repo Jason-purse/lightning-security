@@ -25,7 +25,7 @@ public class FormLoginConfigurationImportSelector extends PropertiesBindImportSe
 
         FormLoginProperties properties = getProperties();
 
-        if (authServerProperties.getIsSeparation()) {
+        if (authServerProperties.isSeparation()) {
             return new String[]{BackendSeparationConfiguration.class.getName()};
         }
         return new String[0];
