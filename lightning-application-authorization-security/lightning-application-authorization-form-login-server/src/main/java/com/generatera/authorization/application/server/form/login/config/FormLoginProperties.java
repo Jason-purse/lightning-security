@@ -22,10 +22,6 @@ public class FormLoginProperties {
     private final NoSeparation noSeparation = new NoSeparation();
 
 
-    private final BackendSeparation backendSeparation = new BackendSeparation();
-
-
-
     @Data
     public static class NoSeparation {
 
@@ -38,14 +34,6 @@ public class FormLoginProperties {
         private String loginPageUrl;
     }
 
-    @Data
-    public static class BackendSeparation {
-
-        /**
-         * 是否启用默认登录页面
-         */
-        private boolean enableLoginPage;
-    }
 
 
 }

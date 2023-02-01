@@ -50,7 +50,7 @@ import java.util.List;
  *
  * @see org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository
  * @see com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer
- * @see LightningOAuth2CentralAuthorizationServerExtConfigurer
+ * @see LightningOAuth2CentralAuthorizationServerBootstrapConfigurer
  * @see DefaultOpaqueAwareOAuth2TokenCustomizer
  * @see DefaultTokenDetailAwareOAuth2TokenCustomizer
  */
@@ -67,7 +67,6 @@ public class OAuth2CentralAuthorizationServerConfiguration {
 
     /**
      * 需要进行补充 ...
-     *
      */
     @Bean
     public ProviderSettings providerSettings() {
@@ -149,7 +148,7 @@ public class OAuth2CentralAuthorizationServerConfiguration {
 
     /**
      * 支持 oauth2 authorization server configurer ..
-     * 并且支持 oauth2 授权服务器的额外配置且扩展,通过{@link LightningOAuth2CentralAuthorizationServerExtConfigurer} 进行配置,
+     * 并且支持 oauth2 授权服务器的额外配置且扩展,通过{@link LightningOAuth2CentralAuthorizationServerBootstrapConfigurer} 进行配置,
      * 同时它本质上可以通过@Order注解或者Ordered接口进行执行顺序处理,默认是通过{@link org.springframework.core.annotation.AnnotationAwareOrderComparator}
      * 进行顺序比较器处理 顺序,如果没有优先级要求,默认追加到 配置器列表尾部 ...
      *
@@ -160,7 +159,7 @@ public class OAuth2CentralAuthorizationServerConfiguration {
     @SuppressWarnings("unchecked")
     public LightningAuthServerConfigurer configurer(
             @Autowired(required = false)
-                    List<LightningOAuth2CentralAuthorizationServerExtConfigurer> extConfigurers
+                    List<LightningOAuth2CentralAuthorizationServerBootstrapConfigurer> extConfigurers
     ) {
         return new LightningAuthServerConfigurer() {
             @Override
@@ -174,16 +173,19 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                     securityBuilder.apply(configurer);
                 }
 
-
                 formLoginSupport(securityBuilder);
 
 
                 // 增加扩展
                 if (!CollectionUtils.isEmpty(extConfigurers)) {
-                    for (LightningOAuth2CentralAuthorizationServerExtConfigurer extConfigurer : extConfigurers) {
+                    for (LightningOAuth2CentralAuthorizationServerBootstrapConfigurer extConfigurer : extConfigurers) {
                         extConfigurer.configure(configurer);
                     }
                 }
+
+                // 忽略对这些端点的csrf 处理
+                securityBuilder.csrf()
+                        .ignoringRequestMatchers(configurer.getEndpointsMatcher());
             }
 
             private void formLoginSupport(HttpSecurity securityBuilder) throws Exception {
@@ -194,15 +196,15 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                 // 增加表单支持
                 FormLoginConfigurer<HttpSecurity> formLoginConfigurer = securityBuilder.formLogin();
                 OAuth2CentralAuthorizationServerProperties.FormLoginSupportConfig config = properties.getFormLoginConfig();
-                if(StringUtils.hasText(config.getLoginPageUrl())) {
+                if (StringUtils.hasText(config.getLoginPageUrl())) {
                     formLoginConfigurer.loginPage(config.getLoginPageUrl());
                 }
-                if(StringUtils.hasText(config.getLoginProcessUrl())) {
+                if (StringUtils.hasText(config.getLoginProcessUrl())) {
                     formLoginConfigurer.loginProcessingUrl(config.getLoginProcessUrl());
                 }
 
                 // default success url 不总是使用,在进行授权码时,进行用户登陆之后跳转为 为进行完毕的授权码 ..
-                if(StringUtils.hasText(config.getDefaultSuccessForwardUrl())) {
+                if (StringUtils.hasText(config.getDefaultSuccessForwardUrl())) {
                     formLoginConfigurer.defaultSuccessUrl(config.getDefaultSuccessForwardUrl());
                 }
 
@@ -210,6 +212,5 @@ public class OAuth2CentralAuthorizationServerConfiguration {
             }
         };
     }
-
 
 }

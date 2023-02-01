@@ -11,12 +11,12 @@ import lombok.Data;
 public class ProviderSettingProperties {
 
     // 当没有多种授权服务器交织的时候.. 它的默认值 ..
-    public static final String JWT_SET_ENDPOINT = "/provider/jwks";
-    public static final String TOKEN_REVOCATION_ENDPOINT = "/provider/revoke";
+    public static final String JWT_SET_ENDPOINT = "/jwks";
+    public static final String TOKEN_REVOCATION_ENDPOINT = "/revoke";
 
     // 默认配置 ..
-    public static final String TOKEN_INTROSPECTION_ENDPOINT = "/provider/introspect";
-    public static final String TOKEN_ENDPOINT = "/provider/token";
+    public static final String TOKEN_INTROSPECTION_ENDPOINT = "/introspect";
+    public static final String TOKEN_ENDPOINT = "/token";
 
     // 可以为空(自己自动生成)
     private String issuer;

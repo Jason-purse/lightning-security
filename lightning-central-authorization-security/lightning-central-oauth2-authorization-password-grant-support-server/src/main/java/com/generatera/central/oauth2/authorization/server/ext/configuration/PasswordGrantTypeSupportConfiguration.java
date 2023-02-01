@@ -1,7 +1,7 @@
 package com.generatera.central.oauth2.authorization.server.ext.configuration;
 
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
-import com.generatera.central.oauth2.authorization.server.configuration.LightningOAuth2CentralAuthorizationServerExtConfigurer;
+import com.generatera.central.oauth2.authorization.server.configuration.LightningOAuth2CentralAuthorizationServerBootstrapConfigurer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,8 +28,8 @@ import java.util.Arrays;
 public class PasswordGrantTypeSupportConfiguration {
 
     @Bean
-    public LightningOAuth2CentralAuthorizationServerExtConfigurer passwordGrantConfigurer() {
-        return new LightningOAuth2CentralAuthorizationServerExtConfigurer() {
+    public LightningOAuth2CentralAuthorizationServerBootstrapConfigurer passwordGrantConfigurer() {
+        return new LightningOAuth2CentralAuthorizationServerBootstrapConfigurer() {
             @Override
             public void configure(OAuth2AuthorizationServerConfigurer<HttpSecurity> configurer) throws Exception {
                 configurer.tokenEndpoint( tokenEndpoint -> {

@@ -1,5 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.configuration;
 
+import com.generatera.authorization.server.common.configuration.LightningCentralAuthServer;
 import com.generatera.authorization.server.common.configuration.OAuth2AuthorizationServer;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
@@ -38,7 +39,7 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
                 OAuth2AuthorizationServerConfigurer<B> serverConfigurer = new OAuth2AuthorizationServerConfigurer<>();
                 builder.setSharedObject(OAuth2AuthorizationServerConfigurer.class,serverConfigurer);
                 // 用于判断oauth2 authorization server是否存在
-                builder.setSharedObject(OAuth2AuthorizationServer.class, new OAuth2AuthorizationServer() {});
+                builder.setSharedObject(LightningCentralAuthServer.class, new OAuth2AuthorizationServer() {});
                 oAuth2AuthorizationServerConfigurer = serverConfigurer;
             }
             return oAuth2AuthorizationServerConfigurer;

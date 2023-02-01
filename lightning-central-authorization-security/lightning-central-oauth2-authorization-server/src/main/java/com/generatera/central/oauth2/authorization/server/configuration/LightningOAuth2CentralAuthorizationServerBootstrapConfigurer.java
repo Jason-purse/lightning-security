@@ -179,7 +179,7 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.ser
  *
  * 使用示例可参考 lightning-central-oauth2-authorization-password-grant-support-server
  */
-public interface LightningOAuth2CentralAuthorizationServerExtConfigurer {
+public interface LightningOAuth2CentralAuthorizationServerBootstrapConfigurer {
 
     public void configure(OAuth2AuthorizationServerConfigurer<HttpSecurity> configurer) throws Exception;
 }

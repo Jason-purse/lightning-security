@@ -22,31 +22,17 @@ spring:
     port: 16379
     database: 4
 lightning:
-  auth:
-    app:
+  app:
+    auth:
       server:
-        oauth2:
-          login:
-            config:
-              no-separation:
-                enable-saved-request-forward: false
-                enable-forward: false
-                success-url: /login-success.html
-                failure-url: /login-failure.html
-              is-separation: true
-              backend-separation:
-                login-success-message: "登陆成功了,亲!!!"
-                login-failure-message: "登陆失败了,亲!!!"
-                enable-auth-error-detail: true
-    server:
-      common:
-        component:
-          authorization-store-config:
-            # redis 存储
-            store-kind: redis
-          token-settings:
-            access-token:
-              # 进行 opaque token处理 ..
-              token-value-format: opaque
+        config:
+          no-separation:
+            enable-saved-request-forward: false
+            enable-forward: false
+            failure-forward-or-redirect-url: /login-failure.html
+          backend-separation:
+            login-success-message: "登陆成功了,亲!!!"
+            login-failure-message: "登陆失败了,亲!!!"
+          separation: false
 server:
   port: 8080

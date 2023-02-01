@@ -136,7 +136,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
      */
     @NotNull
     private SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> permissionHandle() {
-        return new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
+        return new SecurityConfigurerAdapter<>() {
             @Override
             public void init(HttpSecurity builder) throws Exception {
 
@@ -153,9 +153,14 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                 }
 
 
-                authorizationManagerRequestMatcherRegistry
-                        .anyRequest()
-                        .authenticated();
+                builder.apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
+                    @Override
+                    public void init(HttpSecurity builder) throws Exception {
+                        builder.authorizeHttpRequests()
+                                .anyRequest()
+                                .authenticated();
+                    }
+                });
             }
         };
     }

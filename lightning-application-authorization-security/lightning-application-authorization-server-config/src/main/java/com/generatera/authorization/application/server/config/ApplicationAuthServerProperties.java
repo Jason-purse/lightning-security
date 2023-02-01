@@ -39,6 +39,7 @@ public class ApplicationAuthServerProperties {
 
     /**
      * 可以自定义的前缀 ...(如果为空,则默认值)
+     * 当存在多个不同类型的授权服务器时,用于区分 token 端点的 app auth 前缀 ..
      */
     public String appAuthPrefix = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX;
 
@@ -47,8 +48,6 @@ public class ApplicationAuthServerProperties {
 
     @Data
     public static class ServerMetaDataEndpointConfig {
-
-        public static final String ENABLE_OIDC = APPLICATION_AUTH_SERVER_PREFIX + ".serverMetaDataEndpointConfig.enableOidc";
 
         public static final String OPEN_CONNECT_ID_METADATA_ENDPOINT = OidcProviderConfigurationEndpointFilter.DEFAULT_OIDC_PROVIDER_CONFIGURATION_ENDPOINT_URI;
 
@@ -73,6 +72,10 @@ public class ApplicationAuthServerProperties {
         private String logoutProcessUrl = DEFAULT_LOGOUT_PROCESS_URL;
         private String logoutSuccessMessage = "LOGOUT SUCCESS";
 
+        /**
+         * 是否启用默认登录页面
+         */
+        private boolean enableLoginPage = true;
 
         /**
          * 它主要控制,以下两个选项 ..
@@ -122,7 +125,6 @@ public class ApplicationAuthServerProperties {
         public static final String DEFAULT_LOGIN_PAGE_URL = "/login";
 
         public static final String DEFAULT_FAILURE_FORWARD_OR_REDIRECT_URL = "/login?error";
-
 
         /**
          * 登出页面 url

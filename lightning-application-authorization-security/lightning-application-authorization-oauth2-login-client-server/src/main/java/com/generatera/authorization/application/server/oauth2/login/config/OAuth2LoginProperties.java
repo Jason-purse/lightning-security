@@ -1,6 +1,5 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,10 +14,10 @@ public class OAuth2LoginProperties {
 
     /**
      * 可能存在多个,所以使用 "*"
+     *
+     * oauth2 client 登录的处理方式使用默认形式 ...
      */
     private String loginProcessUrl = "/auth/v1/oauth2/login/code/*";
-
-    private BackendSeparation backendSeparation = new BackendSeparation();
 
     private NoSeparation noSeparation = new NoSeparation();
 
@@ -53,6 +52,7 @@ public class OAuth2LoginProperties {
     public static class OAuthorizationRequestEndpoint {
 
         private final static Long DEFAULT_STORE_TIME_OF_MILLIS = 5 * 1000 * 60L;
+
         private String authorizationRequestBaseUri;
 
         private AuthorizationRequestStoreKind storeKind = AuthorizationRequestStoreKind.IN_MEMORY;
@@ -95,39 +95,16 @@ public class OAuth2LoginProperties {
 
         private String loginFailureMessage;
 
-        private Boolean enableAuthErrorDetail = false;
+        private boolean enableAuthErrorDetail = false;
 
     }
 
     @Data
     public static class NoSeparation {
+        /**
+         * 可以自定义的登录页面 ..
+         */
         private String loginPageUrl;
-
-        /**
-         * 仅当启用了 enableSavedRequestForward 才有效果
-         */
-        private String defaultSuccessUrl;
-
-        /**
-         * 仅当开启了 enableForward 才有效果
-         */
-        private String successUrl;
-
-        /**
-         * 仅当开启了 enableForward 才有效果
-         */
-        private String failureUrl;
-
-
-        /**
-         * 默认开启转发
-         */
-        private Boolean enableForward = true;
-
-        /**
-         * 此选项和 enableForward 互斥
-         */
-        private Boolean enableSavedRequestForward = true;
 
     }
 

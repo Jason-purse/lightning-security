@@ -91,9 +91,21 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
                     ((AbstractAuthenticationToken) authorizationGrantAuthentication).setDetails(this.authenticationDetailsSource.buildDetails(request));
                 }
 
-                AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken) this.authenticationManager.authenticate(authorizationGrantAuthentication);
-                this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, accessTokenAuthentication);
-            } catch (AuthenticationException var7) { // 只要是认证异常 都接收 ...
+                // 处理重定向 ....
+                if (authorizationGrantAuthentication instanceof AuthorizationRequestAuthentication requestAuthentication) {
+                    try {
+                        requestAuthentication.sendRedirect(request,response);
+                    }catch (Exception e) {
+                        // pass
+                        // 不做任何提示 ...
+                        throw new LightningAuthenticationException(new LightningAuthError("invalid_redirect_uri"));
+                    }
+                }
+                else {
+                    AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken) this.authenticationManager.authenticate(authorizationGrantAuthentication);
+                    this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, accessTokenAuthentication);
+                }
+             } catch (AuthenticationException  var7) { // 只要是认证异常 都接收 ...
                 SecurityContextHolder.clearContext();
                 this.authenticationFailureHandler.onAuthenticationFailure(request, response, var7);
             }
@@ -146,8 +158,7 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
                 if (exception.getCause() instanceof AuthenticationException value) {
                     sendErrorResponse(request, response, value);
                 }
-            }
-            else {
+            } else {
                 // 否则就是普通异常..
                 this.errorHttpResponseConverter.write(
                         new LightningAuthError(

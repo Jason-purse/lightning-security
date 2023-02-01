@@ -1,6 +1,5 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +14,14 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.cli
 @RequiredArgsConstructor
 public class OAuth2LoginAuthenticationEntryPointConfiguration {
 
+
     @Bean
     public LightningAuthServerConfigurer oauth2LoginAuthenticationEntryPointConfigurer() {
         return new LightningAuthServerConfigurer() {
             @Override
             public void configure(HttpSecurity securityBuilder) throws Exception {
                 OAuth2LoginConfigurer<HttpSecurity> httpSecurityOAuth2LoginConfigurer = securityBuilder.oauth2Login();
-                LightningAuthenticationEntryPoint authenticationEntryPoint = AppAuthConfigurerUtils.getAuthenticationEntryPoint(securityBuilder);
+                LightningAuthenticationEntryPoint authenticationEntryPoint = OAuth2LoginUtils.getAuthenticationEntryPoint(securityBuilder);
                 httpSecurityOAuth2LoginConfigurer
                         .successHandler(authenticationEntryPoint)
                         .failureHandler(authenticationEntryPoint);

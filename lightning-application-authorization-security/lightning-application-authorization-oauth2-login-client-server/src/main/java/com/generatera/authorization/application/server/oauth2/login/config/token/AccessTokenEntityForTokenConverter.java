@@ -24,7 +24,7 @@ public class AccessTokenEntityForTokenConverter implements Converter<OAuth2Acces
                 .accessTokenScopes(
                         Optional.ofNullable(source.getScopes())
                                 .filter(ObjectUtils::isNotEmpty)
-                                .map(ele -> StringUtils.joinWith(",", ele.toArray()))
+                                .map(ele -> StringUtils.joinWith(" ", ele.toArray()))
                                 .orElse("")
                 )
                 .accessTokenMetadata("")

@@ -2,9 +2,8 @@ package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.config.authentication.LightningAppAuthServerDaoLoginAuthenticationProvider;
-import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
 import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
-import com.generatera.security.authorization.server.specification.ProviderExtUtils;
+import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
@@ -86,7 +85,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     }
 
     public <B extends HttpSecurityBuilder<B>> void init(B builder) {
-        ProviderSettings providerSettings = ProviderExtUtils.getProviderSettings(builder).getProviderSettings();
+        ProviderSettings providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder).getProviderSettings();
         this.requestMatcher = new AntPathRequestMatcher(providerSettings.getTokenEndpoint(), HttpMethod.POST.name());
         List<AuthenticationProvider> authenticationProviders = !this.authenticationProviders.isEmpty() ? this.authenticationProviders : this.createDefaultAuthenticationProviders(builder);
         authenticationProviders.forEach((authenticationProvider) -> {
@@ -96,7 +95,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
 
     public <B extends HttpSecurityBuilder<B>> void configure(B builder) {
         AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
-        ProviderSettings providerSettings = ProviderExtUtils.getProviderSettings(builder).getProviderSettings();
+        ProviderSettings providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder).getProviderSettings();
         AuthTokenEndpointFilter tokenEndpointFilter = new AuthTokenEndpointFilter(authenticationManager, providerSettings.getTokenEndpoint());
 
         ApplicationAuthServerProperties authServerProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
@@ -167,14 +166,6 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         TokenSettingsProvider tokenSettingProvider = AppAuthConfigurerUtils.getTokenSettingProvider(builder);
         LightningUserDetailsProvider userDetailsService = AppAuthConfigurerUtils.getLightningUserDetailsProvider(builder);
 
-        AuthAccessTokenAuthenticationProvider accessTokenAuthenticationProvider = new AuthAccessTokenAuthenticationProvider(
-                authorizationService,
-                tokenGenerator,
-                tokenSettingProvider
-        );
-
-        // 为了获取 AppAuthServerForTokenAuthenticationProvider
-        builder.setSharedObject(AppAuthServerForTokenAuthenticationProvider.class, accessTokenAuthenticationProvider);
 
         AuthRefreshTokenAuthenticationProvider refreshTokenAuthenticationProvider = new AuthRefreshTokenAuthenticationProvider(
                 authorizationService,
@@ -182,8 +173,10 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
                 tokenSettingProvider,
                 userDetailsService
         );
-        authenticationProviders.add(accessTokenAuthenticationProvider);
+        authenticationProviders.add(AppAuthConfigurerUtils.getAppAuthServerForTokenAuthenticationProvider(builder));
         authenticationProviders.add(refreshTokenAuthenticationProvider);
         return authenticationProviders;
     }
+
+
 }

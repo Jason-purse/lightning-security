@@ -37,12 +37,14 @@ public final class ProviderExtUtils {
         return jwkSource;
     }
 
-
-    public static <B extends HttpSecurityBuilder<B>> ProviderSettingsProvider getProviderSettings(B builder) {
-        ProviderSettingsProvider providerSettings = builder.getSharedObject(ProviderSettingsProvider.class);
+    /**
+     * 多个提供者混合的时候,需要考虑
+     */
+    public static <B extends HttpSecurityBuilder<B>,T extends AuthServerProvider> T getProviderSettings(B builder, Class<T> providerClass) {
+        T providerSettings = builder.getSharedObject(providerClass);
         if (providerSettings == null) {
-            providerSettings = getBean(builder, ProviderSettingsProvider.class);
-            builder.setSharedObject(ProviderSettingsProvider.class, providerSettings);
+            providerSettings = getBean(builder, providerClass);
+            builder.setSharedObject(providerClass, providerSettings);
         }
 
         return providerSettings;

@@ -1,19 +1,16 @@
 package com.generatera.authorization.application.server.config;
 
 import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
-import com.generatera.authorization.application.server.config.token.AbstractAuthConfigurer;
-import com.generatera.authorization.application.server.config.token.AuthTokenEndpointConfigurer;
-import com.generatera.authorization.application.server.config.token.AuthTokenIntrospectionEndpointConfigurer;
-import com.generatera.authorization.application.server.config.token.AuthTokenRevocationEndpointConfigurer;
+import com.generatera.authorization.application.server.config.token.*;
+import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
 import com.generatera.authorization.server.common.configuration.provider.AuthorizationServerNimbusJwkSetEndpointFilter;
 import com.generatera.authorization.server.common.configuration.provider.metadata.AuthorizationProviderContextFilter;
 import com.generatera.authorization.server.common.configuration.provider.metadata.AuthorizationServerMetadataEndpointFilter;
+import com.generatera.security.authorization.server.specification.AuthServerProvider;
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
-import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenGenerator;
-import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.http.HttpMethod;
@@ -56,18 +53,12 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
     private RequestMatcher jwkSetEndpointMatcher;
     private RequestMatcher authorizationServerMetadataEndpointMatcher;
     private final RequestMatcher endpointsMatcher = (request) -> {
-        boolean value = this.getRequestMatcher(AuthTokenEndpointConfigurer.class).matches(request)
+        return this.getRequestMatcher(AuthTokenEndpointConfigurer.class).matches(request)
                 || this.getRequestMatcher(AuthTokenRevocationEndpointConfigurer.class).matches(request)
+                || this.getRequestMatcher(AuthTokenIntrospectionEndpointConfigurer.class).matches(request)
+                || this.getRequestMatcher(OpenConnectAuthServerMetadataConfigurer.class).matches(request)
                 || this.jwkSetEndpointMatcher.matches(request)
                 || this.authorizationServerMetadataEndpointMatcher.matches(request);
-
-        // 启用了就有,没启用就没有 ..
-        RequestMatcher matcher = ElvisUtil.isNotEmptyFunction(this.getConfigurer(AuthTokenIntrospectionEndpointConfigurer.class), AuthTokenIntrospectionEndpointConfigurer::getRequestMatcher);
-
-        if (matcher != null) {
-            return value || matcher.matches(request);
-        }
-        return value;
     };
 
 
@@ -115,6 +106,11 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
         return this;
     }
 
+    public ApplicationAuthServerConfigurer<B> oidcProviderMeta(Customizer<OpenConnectAuthServerMetadataConfigurer> openConnectAuthServerMetadataConfigurerCustomizer) {
+        openConnectAuthServerMetadataConfigurerCustomizer.customize( this.getConfigurer(OpenConnectAuthServerMetadataConfigurer.class));
+        return this;
+    }
+
 
     public RequestMatcher getEndpointsMatcher() {
         return this.endpointsMatcher;
@@ -122,7 +118,7 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
 
     @SuppressWarnings("unchecked")
     public void init(B builder) {
-        ProviderSettingsProvider providerSettings = ProviderExtUtils.getProviderSettings(builder);
+        AuthServerProvider providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder);
         validateProviderSettings(providerSettings.getProviderSettings());
         this.initEndpointMatchers(providerSettings.getProviderSettings());
         this.configurers.values().forEach((configurer) -> {
@@ -140,9 +136,8 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
             List<RequestMatcher> matchers = new LinkedList<>();
             matchers.add(this.getRequestMatcher(AuthTokenEndpointConfigurer.class));
             matchers.add(this.getRequestMatcher(AuthTokenRevocationEndpointConfigurer.class));
-            if(configurer != null) {
-                matchers.add(this.getRequestMatcher(AuthTokenIntrospectionEndpointConfigurer.class));
-            }
+            matchers.add(this.getRequestMatcher(AuthTokenIntrospectionEndpointConfigurer.class));
+
 
             // 以下三个端点,不需要跳转到 其他地方,直接给出 未认证 ...
             // 这是默认行为 ...
@@ -158,7 +153,7 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
         this.configurers.values().forEach((configurer) -> {
             configurer.configure(builder);
         });
-        ProviderSettings providerSettings = ProviderExtUtils.getProviderSettings(builder).getProviderSettings();
+        ProviderSettings providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder).getProviderSettings();
         AuthorizationProviderContextFilter providerContextFilter = new AuthorizationProviderContextFilter(providerSettings);
         builder.addFilterAfter(this.postProcess(providerContextFilter), SecurityContextPersistenceFilter.class);
         JWKSource<SecurityContext> jwkSource = ProviderExtUtils.getJwkSource(builder);
@@ -174,8 +169,8 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
     private Map<Class<? extends AbstractAuthConfigurer>, AbstractAuthConfigurer> createConfigurers() {
         Map<Class<? extends AbstractAuthConfigurer>, AbstractAuthConfigurer> configurers = new LinkedHashMap<>();
         configurers.put(AuthTokenEndpointConfigurer.class, new AuthTokenEndpointConfigurer(this::postProcess));
-        // 条件配置 ...
-        //configurers.put(AuthTokenIntrospectionEndpointConfigurer.class, new AuthTokenIntrospectionEndpointConfigurer(this::postProcess));
+        configurers.put(AuthTokenIntrospectionEndpointConfigurer.class, new AuthTokenIntrospectionEndpointConfigurer(this::postProcess));
+        configurers.put(OpenConnectAuthServerMetadataConfigurer.class,new OpenConnectAuthServerMetadataConfigurer(this::postProcess));
         configurers.put(AuthTokenRevocationEndpointConfigurer.class, new AuthTokenRevocationEndpointConfigurer(this::postProcess));
         return configurers;
     }
@@ -190,7 +185,6 @@ public class ApplicationAuthServerConfigurer<B extends HttpSecurityBuilder<B>> e
     }
 
     private void initEndpointMatchers(ProviderSettings providerSettings) {
-        // // TODO: 2023/1/31 修改为动态配置属性
         this.jwkSetEndpointMatcher = new AntPathRequestMatcher(providerSettings.getJwkSetEndpoint(), HttpMethod.GET.name());
         this.authorizationServerMetadataEndpointMatcher = new AntPathRequestMatcher(AUTHORIZATION_SERVER_METADATA_ENDPOINT_URL, HttpMethod.GET.name());
     }

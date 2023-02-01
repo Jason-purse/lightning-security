@@ -149,10 +149,10 @@ public class ApplicationFormLoginConfiguration {
     public static void logoutWithLogin(FormLoginConfigurer<HttpSecurity> formLoginConfigurer,
                                        FormLoginProperties.NoSeparation noSeparation,
                                        ApplicationAuthServerUtils applicationAuthServerUtils) throws Exception {
+
         // 表示登出页面处理  ...
         ApplicationAuthServerProperties.NoSeparation mainNoSeparation = applicationAuthServerUtils.getProperties().getNoSeparation();
         String loginPageUrl = normalize(ElvisUtil.stringElvis(noSeparation.getLoginPageUrl(), mainNoSeparation.getLoginPageUrl()));
-
         // 自定义的登录页面
         if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
             formLoginConfigurer.loginPage(loginPageUrl);
@@ -174,10 +174,8 @@ public class ApplicationFormLoginConfiguration {
                             new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
                                 @Override
                                 public void init(HttpSecurity builder) throws Exception {
-                                    // 这个不存在就填充 ..
-                                    String logoutSuccessUrl = mainNoSeparation.getLogoutSuccessUrl();
-                                    FormLoginUtils.configDefaultLoginPageGeneratorFilter(builder, loginPageUrl, logoutSuccessUrl);
-                                    // 晚一点配置 ..
+                                    FormLoginUtils.configDefaultLoginPageGeneratorFilter(builder, loginPageUrl);
+                                    // 晚一点配置 ..(因为 逃避 此配置器的 customizePage 检测)
                                     formLoginConfigurer.loginPage(loginPageUrl);
                                 }
                             });

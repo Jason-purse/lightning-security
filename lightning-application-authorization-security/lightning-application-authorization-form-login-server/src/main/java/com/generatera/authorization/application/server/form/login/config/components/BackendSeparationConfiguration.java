@@ -75,18 +75,18 @@ public class BackendSeparationConfiguration {
                         .securityContextRepository(securityContextRepository)
                         .and()
                         .exceptionHandling()
-                         // 处理认证 entry Point ...
+                        // 处理认证 entry Point ...
                         .authenticationEntryPoint(authenticationEntryPoint);
 
-                // 启动登录页面 ...
-                ApplicationFormLoginConfiguration.logoutWithLogin(
-                        httpSecurityFormLoginConfigurer,
-                        formLoginProperties.getNoSeparation(),
-                        ApplicationAuthServerUtils.getApplicationAuthServerProperties(securityBuilder)
-                );
-
-                // 禁用掉默认的登出页面 ...
-                securityBuilder.csrf().disable();
+                ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(securityBuilder);
+                if (applicationAuthServerUtils.getProperties().getBackendSeparation().isEnableLoginPage()) {
+                    // 是否启动登录页面 ...
+                    ApplicationFormLoginConfiguration.logoutWithLogin(
+                            httpSecurityFormLoginConfigurer,
+                            formLoginProperties.getNoSeparation(),
+                            applicationAuthServerUtils
+                    );
+                }
 
             }
         };

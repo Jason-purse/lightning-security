@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.form.login.config.util;
 
-import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.application.server.config.util.ApplicationAuthServerUtils;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -17,20 +17,23 @@ import java.util.Map;
 
 public class FormLoginUtils {
 
-    public static <B extends HttpSecurityBuilder<B>> void configDefaultLoginPageGeneratorFilter(B builder, String loginPage, String logoutSuccessUrl) {
+    public static <B extends HttpSecurityBuilder<B>> void configDefaultLoginPageGeneratorFilter(B builder, String loginPage) {
 
         DefaultLoginPageGeneratingFilter loginPageGeneratingFilter = builder.getSharedObject(DefaultLoginPageGeneratingFilter.class);
         if (loginPageGeneratingFilter != null) {
-            ApplicationAuthServerProperties loginProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
+            // 如果已经被启用了,那么就不需要增加
+            if(!loginPageGeneratingFilter.isEnabled()) {
+                builder.addFilter(loginPageGeneratingFilter);
+            }
+            ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(builder);
             // 不强制要求重定向到登录页面 ...(但是需要放行对应的页面才行) ...
-            String failureUrl = ElvisUtil.stringElvis(loginProperties.getNoSeparation().getFailureForwardOrRedirectUrl(), "/login?error");
             loginPageGeneratingFilter.setFormLoginEnabled(true);
-            loginPageGeneratingFilter.setLoginPageUrl(loginPage);
-            loginPageGeneratingFilter.setFailureUrl(failureUrl);
+            loginPageGeneratingFilter.setLoginPageUrl(ElvisUtil.stringElvis(loginPage,applicationAuthServerUtils.getProperties().getNoSeparation().getLoginPageUrl()));
+            loginPageGeneratingFilter.setFailureUrl(applicationAuthServerUtils.getProperties().getNoSeparation().getFailureForwardOrRedirectUrl());
+            String logoutSuccessUrl = applicationAuthServerUtils.getProperties().getNoSeparation().getLogoutSuccessUrl();
             if (StringUtils.hasText(logoutSuccessUrl)) {
                 loginPageGeneratingFilter.setLogoutSuccessUrl(logoutSuccessUrl);
             }
-            builder.addFilter(loginPageGeneratingFilter);
         }
     }
 

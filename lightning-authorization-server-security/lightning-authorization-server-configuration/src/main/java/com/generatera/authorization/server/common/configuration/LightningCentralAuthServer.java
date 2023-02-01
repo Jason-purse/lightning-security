@@ -5,5 +5,5 @@ package com.generatera.authorization.server.common.configuration;
  * @time 17:13
  * @Description 标识这个类
  */
-public interface LightningCentralAuthServerConfigurer extends LightningAuthServerConfigurer {
+public interface LightningCentralAuthServer {
 }

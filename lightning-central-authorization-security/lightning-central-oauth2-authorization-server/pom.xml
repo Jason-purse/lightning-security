@@ -19,13 +19,6 @@
 
 
     <dependencies>
-<!--&lt;!&ndash;        需要表单登录支持,进行授权码流程处理&ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.generatera</groupId>-->
-<!--            <artifactId>lightning-application-authorization-form-login-server</artifactId>-->
-<!--            <version>0.0.1-SNAPSHOT</version>-->
-<!--        </dependency>-->
-
 <!--        本身作为认证服务器,需要这些配置-->
         <dependency>
             <groupId>com.generatera</groupId>

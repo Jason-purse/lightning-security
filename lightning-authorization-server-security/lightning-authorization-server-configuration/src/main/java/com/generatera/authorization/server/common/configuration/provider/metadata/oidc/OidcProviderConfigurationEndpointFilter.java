@@ -5,6 +5,7 @@ import com.generatera.security.authorization.server.specification.components.pro
 import com.generatera.security.authorization.server.specification.components.token.SignatureAlgorithm;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -24,22 +25,29 @@ public final class OidcProviderConfigurationEndpointFilter extends OncePerReques
     private final ProviderSettings providerSettings;
     private final RequestMatcher requestMatcher;
     private final OidcProviderConfigurationHttpMessageConverter providerConfigurationHttpMessageConverter = new OidcProviderConfigurationHttpMessageConverter();
+    private final boolean enable;
 
-    public OidcProviderConfigurationEndpointFilter(ProviderSettings providerSettings, String openConnectIdMetaDataUri) {
+    public OidcProviderConfigurationEndpointFilter(ProviderSettings providerSettings, String openConnectIdMetaDataUri, boolean enable) {
         Assert.notNull(providerSettings, "providerSettings cannot be null");
         Assert.notNull(openConnectIdMetaDataUri, "openConnectIdMetaDataUri cannot be null");
         this.providerSettings = providerSettings;
         this.requestMatcher = new AntPathRequestMatcher(openConnectIdMetaDataUri, HttpMethod.GET.name());
+        this.enable = enable;
     }
 
     public OidcProviderConfigurationEndpointFilter(ProviderSettings providerSettings) {
-        this(providerSettings, DEFAULT_OIDC_PROVIDER_CONFIGURATION_ENDPOINT_URI);
+        this(providerSettings, DEFAULT_OIDC_PROVIDER_CONFIGURATION_ENDPOINT_URI, false);
     }
 
     protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
         if (!this.requestMatcher.matches(request)) {
             filterChain.doFilter(request, response);
         } else {
+            if(!enable) {
+                // 只设定一个 401
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                return;
+            }
             String issuer = ProviderContextHolder.getProviderContext().getIssuer();
             OidcProviderConfiguration providerConfiguration = OidcProviderConfiguration.builder()
                     .issuer(issuer)

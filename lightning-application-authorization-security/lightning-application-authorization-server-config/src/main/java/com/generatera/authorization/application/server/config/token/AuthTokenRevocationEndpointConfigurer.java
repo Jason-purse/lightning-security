@@ -1,7 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
-import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -58,7 +57,7 @@ public final class AuthTokenRevocationEndpointConfigurer extends AbstractAuthCon
     }
 
     public <B extends HttpSecurityBuilder<B>> void init(B builder) {
-        ProviderSettings providerSettings = ProviderExtUtils.getProviderSettings(builder).getProviderSettings();
+        ProviderSettings providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder).getProviderSettings();
         this.requestMatcher = new AntPathRequestMatcher(providerSettings.getTokenRevocationEndpoint(), HttpMethod.POST.name());
         List<AuthenticationProvider> authenticationProviders = !this.authenticationProviders.isEmpty() ? this.authenticationProviders : this.createDefaultAuthenticationProviders(builder);
         authenticationProviders.forEach((authenticationProvider) -> {
@@ -68,7 +67,7 @@ public final class AuthTokenRevocationEndpointConfigurer extends AbstractAuthCon
 
     public <B extends HttpSecurityBuilder<B>> void configure(B builder) {
         AuthenticationManager authenticationManager = (AuthenticationManager)builder.getSharedObject(AuthenticationManager.class);
-        ProviderSettings providerSettings = ProviderExtUtils.getProviderSettings(builder).getProviderSettings();
+        ProviderSettings providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder).getProviderSettings();
         AuthTokenRevocationEndpointFilter revocationEndpointFilter = new AuthTokenRevocationEndpointFilter(authenticationManager, providerSettings.getTokenRevocationEndpoint());
         if (this.revocationRequestConverter != null) {
             revocationEndpointFilter.setAuthenticationConverter(this.revocationRequestConverter);

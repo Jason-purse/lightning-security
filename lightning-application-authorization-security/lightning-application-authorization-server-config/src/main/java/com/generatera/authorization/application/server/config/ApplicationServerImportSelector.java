@@ -4,7 +4,6 @@ import com.generatera.authorization.application.server.config.authorization.stor
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.AuthorizationStoreConfig;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
-import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.env.Environment;
@@ -30,20 +29,6 @@ public class ApplicationServerImportSelector extends PropertiesBindImportSelecto
     public String[] selectImports(@NotNull AnnotationMetadata importingClassMetadata) {
         ApplicationAuthServerProperties properties = getProperties();
         List<String> candidates = new LinkedList<>();
-
-        OptionalFlux.of(properties.getServerMetaDataEndpointConfig().isEnableOidc())
-                .consumeOrNull(flag -> {
-                    if (flag == null) {
-                        candidates.add(AuthServerProviderMetadataConfiguration.NoOidcProviderServerMetadataController.class.getName());
-                    } else {
-                        if (flag) {
-                            candidates.add(AuthServerProviderMetadataConfiguration.OidcProviderServerMetadataEnabler.class.getName());
-                        } else {
-                            candidates.add(AuthServerProviderMetadataConfiguration.NoOidcProviderServerMetadataController.class.getName());
-                        }
-                    }
-                });
-
 
         authorizationStoreConfig(properties, candidates);
 

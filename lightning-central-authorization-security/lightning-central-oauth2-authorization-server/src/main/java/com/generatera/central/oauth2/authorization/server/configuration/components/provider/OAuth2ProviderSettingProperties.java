@@ -10,14 +10,14 @@ import org.springframework.util.StringUtils;
 @EqualsAndHashCode(callSuper = true)
 public class OAuth2ProviderSettingProperties  extends ProviderSettingProperties {
 
-    public static final String OAUTH2_AUTHORIZATION_ENDPOINT = "/auth/v1/oauth2/authorize";
-    public static final String OAUTH2_OIDC_CLIENT_REGISTRATION_ENDPOINT = "/auth/v1/oauth2/register";
-    public static final String OAUTH2_OIDC_USER_INFO_ENDPOINT = "/auth/v1/oauth2/userinfo";
+    public static final String OAUTH2_AUTHORIZATION_ENDPOINT = "/oauth2/authorize";
+    public static final String OAUTH2_OIDC_CLIENT_REGISTRATION_ENDPOINT = "/oauth2/register";
+    public static final String OAUTH2_OIDC_USER_INFO_ENDPOINT = "/oauth2/userinfo";
 
-    public static final String OAUTH2_JWK_SET_ENDPOINT = "/auth/v1/oauth2/jwks";
-    public static final String OAUTH2_TOKEN_ENDPOINT = "/auth/v1/oauth2/token";
-    public static final String OAUTH2_TOKEN_REVOCATION_ENDPOINT = "/auth/v1/oauth2/revoke";
-    public static final String OAUTH2_TOKEN_INTROSPECTION_ENDPOINT = "/auth/v1/oauth2/introspect";
+    public static final String OAUTH2_JWK_SET_ENDPOINT = "/oauth2/jwks";
+    public static final String OAUTH2_TOKEN_ENDPOINT = "/oauth2/token";
+    public static final String OAUTH2_TOKEN_REVOCATION_ENDPOINT = "/oauth2/revoke";
+    public static final String OAUTH2_TOKEN_INTROSPECTION_ENDPOINT = "/oauth2/introspect";
 
     private String authorizationEndpoint = OAUTH2_AUTHORIZATION_ENDPOINT;
 

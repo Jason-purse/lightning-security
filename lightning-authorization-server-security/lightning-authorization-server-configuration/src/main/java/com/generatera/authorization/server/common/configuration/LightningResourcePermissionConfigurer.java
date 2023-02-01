@@ -1,6 +1,7 @@
 package com.generatera.authorization.server.common.configuration;
 
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer.AuthorizationManagerRequestMatcherRegistry;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 /**
  * @author FLJ
  * @date 2023/1/17
@@ -11,5 +12,5 @@ import org.springframework.security.config.annotation.web.configurers.AuthorizeH
  * 相比于 {@link AuthorizationServerCommonComponentsConfiguration#permissionHandle()},更灵活 ...
  */
 public interface LightningResourcePermissionConfigurer {
-    void configure(AuthorizationManagerRequestMatcherRegistry registry);
+    void configure(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry);
 }

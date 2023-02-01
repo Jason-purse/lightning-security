@@ -1,8 +1,8 @@
 package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
-import com.generatera.security.authorization.server.specification.ProviderExtUtils;
-import com.generatera.security.authorization.server.specification.ProviderSettingsProvider;
+import com.generatera.authorization.application.server.config.util.ApplicationAuthServerUtils;
+import com.generatera.security.authorization.server.specification.AuthServerProvider;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -36,6 +36,7 @@ public final class AuthTokenIntrospectionEndpointConfigurer extends AbstractAuth
         super(objectPostProcessor);
     }
 
+
     public AuthTokenIntrospectionEndpointConfigurer introspectionRequestConverter(AuthenticationConverter introspectionRequestConverter) {
         this.introspectionRequestConverter = introspectionRequestConverter;
         return this;
@@ -58,32 +59,41 @@ public final class AuthTokenIntrospectionEndpointConfigurer extends AbstractAuth
     }
 
     public <B extends HttpSecurityBuilder<B>> void init(B builder) {
-        ProviderSettingsProvider providerSettings = ProviderExtUtils.getProviderSettings(builder);
+        AuthServerProvider providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder);
         this.requestMatcher = new AntPathRequestMatcher(providerSettings.getProviderSettings().getTokenIntrospectionEndpoint(), HttpMethod.POST.name());
-        List<AuthenticationProvider> authenticationProviders = !this.authenticationProviders.isEmpty() ? this.authenticationProviders : this.createDefaultAuthenticationProviders(builder);
-        authenticationProviders.forEach((authenticationProvider) -> {
-            builder.authenticationProvider(this.postProcess(authenticationProvider));
-        });
+        ApplicationAuthServerUtils applicationAuthServerProperties = ApplicationAuthServerUtils.getApplicationAuthServerProperties(builder);
+
+        // 仅当 分离的时候
+        if (applicationAuthServerProperties.getProperties().isSeparation()) {
+            List<AuthenticationProvider> authenticationProviders = !this.authenticationProviders.isEmpty() ? this.authenticationProviders : this.createDefaultAuthenticationProviders(builder);
+            authenticationProviders.forEach((authenticationProvider) -> {
+                builder.authenticationProvider(this.postProcess(authenticationProvider));
+            });
+        }
     }
 
     public <B extends HttpSecurityBuilder<B>> void configure(B builder) {
-        AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
-        ProviderSettingsProvider providerSettings = ProviderExtUtils.getProviderSettings(builder);
-        AuthTokenIntrospectEndpointFilter introspectionEndpointFilter = new AuthTokenIntrospectEndpointFilter(authenticationManager,
-                providerSettings.getProviderSettings().getTokenIntrospectionEndpoint());
-        if (this.introspectionRequestConverter != null) {
-            introspectionEndpointFilter.setAuthenticationConverter(this.introspectionRequestConverter);
-        }
 
-        if (this.introspectionResponseHandler != null) {
-            introspectionEndpointFilter.setAuthenticationSuccessHandler(this.introspectionResponseHandler);
-        }
+        ApplicationAuthServerUtils applicationAuthServerProperties = ApplicationAuthServerUtils.getApplicationAuthServerProperties(builder);
+        if (applicationAuthServerProperties.getProperties().isSeparation()) {
+            AuthenticationManager authenticationManager = builder.getSharedObject(AuthenticationManager.class);
+            AuthServerProvider providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder);
+            AuthTokenIntrospectEndpointFilter introspectionEndpointFilter = new AuthTokenIntrospectEndpointFilter(authenticationManager,
+                    providerSettings.getProviderSettings().getTokenIntrospectionEndpoint());
+            if (this.introspectionRequestConverter != null) {
+                introspectionEndpointFilter.setAuthenticationConverter(this.introspectionRequestConverter);
+            }
 
-        if (this.errorResponseHandler != null) {
-            introspectionEndpointFilter.setAuthenticationFailureHandler(this.errorResponseHandler);
-        }
+            if (this.introspectionResponseHandler != null) {
+                introspectionEndpointFilter.setAuthenticationSuccessHandler(this.introspectionResponseHandler);
+            }
 
-        builder.addFilterAfter(this.postProcess(introspectionEndpointFilter), FilterSecurityInterceptor.class);
+            if (this.errorResponseHandler != null) {
+                introspectionEndpointFilter.setAuthenticationFailureHandler(this.errorResponseHandler);
+            }
+
+            builder.addFilterAfter(this.postProcess(introspectionEndpointFilter), FilterSecurityInterceptor.class);
+        }
     }
 
     public RequestMatcher getRequestMatcher() {

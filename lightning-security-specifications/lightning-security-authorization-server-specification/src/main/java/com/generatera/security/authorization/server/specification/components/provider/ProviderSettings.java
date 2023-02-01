@@ -1,6 +1,7 @@
 package com.generatera.security.authorization.server.specification.components.provider;
 
 import com.generatera.security.authorization.server.specification.AbstractSettings;
+import com.generatera.security.authorization.server.specification.AuthServerProvider;
 import com.generatera.security.authorization.server.specification.ConfigurationSettingNames;
 import org.springframework.util.Assert;
 
@@ -11,7 +12,7 @@ import java.util.Map;
  *
  * oauth2 ProviderSettings copy ...
  */
-public  class ProviderSettings extends AbstractSettings {
+public  class ProviderSettings extends AbstractSettings implements AuthServerProvider {
 
     protected ProviderSettings(Map<String, Object> settings) {
         super(settings);
@@ -38,6 +39,10 @@ public  class ProviderSettings extends AbstractSettings {
         return this.getSetting(ConfigurationSettingNames.Provider.TOKEN_INTROSPECTION_ENDPOINT);
     }
 
+    @Override
+    public ProviderSettings getProviderSettings() {
+        return this;
+    }
 
     public static Builder builder() {
         return (new Builder())
@@ -82,4 +87,6 @@ public  class ProviderSettings extends AbstractSettings {
             return new ProviderSettings(this.getSettings());
         }
     }
+
+
 }
