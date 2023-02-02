@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerConfiguration

@@ -1,0 +1,8 @@
+spring:
+  security:
+    oauth2:
+      resource-server:
+        jwt:
+          issuer-uri: http://127.0.0.1:9000
+server:
+  port: 8090

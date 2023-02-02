@@ -1,0 +1,47 @@
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          default:
+            client-id: password-client-id
+            client-name: password-client-name
+            client-secret: secret3
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            scope:
+              - openid
+#              - message.read
+            redirect-uri: "http://127.0.0.1:8080/{action}/oauth2/code/{registrationId}"
+        provider:
+          default:
+            issuer-uri: http://localhost:9000
+  redis:
+    host: 192.168.0.210
+    port: 16379
+    database: 3
+lightning:
+  auth:
+    app:
+      server:
+        oauth2:
+          login:
+            config:
+              no-separation:
+                enable-saved-request-forward: false
+                enable-forward: false
+                success-url: /login-success.html
+                failure-url: /login-failure.html
+              is-separation: true
+              backend-separation:
+                login-success-message: "登陆成功了,亲!!!"
+                login-failure-message: "登陆失败了,亲!!!"
+                enable-auth-error-detail: true
+
+        config:
+          specification:
+            authentication-token-setting:
+              authentication-token-store-kind: redis
+server:
+  port: 8080

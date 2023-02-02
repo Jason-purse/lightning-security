@@ -1,0 +1,28 @@
+package com.generatera.authorization.server.common.configuration.util;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class LogUtil {
+    private LogUtil() {
+
+    }
+    public static void prettyLog(String message) {
+        log.info("###################################################################################################");
+        log.info("{}",message);
+        log.info("###################################################################################################");
+    }
+
+    public static void prettyLogWarning(String message) {
+        log.warn("###################################################################################################");
+        log.warn("{}",message);
+        log.warn("###################################################################################################");
+    }
+
+    public static void prettyLog(String message,Throwable e) {
+        log.info("###################################################################################################");
+        log.info("{}",message);
+        log.info("cause: {}",e.getMessage());
+        log.info("###################################################################################################");
+    }
+}
