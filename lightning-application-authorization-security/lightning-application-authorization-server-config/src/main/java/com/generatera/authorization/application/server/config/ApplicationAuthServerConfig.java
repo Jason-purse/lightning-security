@@ -10,10 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
-import org.springframework.boot.web.servlet.ServletContextInitializer;
-import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
-import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -26,8 +22,6 @@ import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.CollectionUtils;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.util.List;
 
 /**
@@ -64,8 +58,9 @@ public class ApplicationAuthServerConfig {
                     security.setSharedObject(ApplicationAuthServerProperties.class, properties);
                 }
 
-                // 应用 授权服务器 ..utils initilize ..
-                ApplicationAuthServerUtils.getApplicationAuthServerProperties(security);
+                // 应用 授权服务器 ..utils
+                ApplicationAuthServerUtils applicationAuthServerUtils = new ApplicationAuthServerUtils(properties);
+                security.setSharedObject(ApplicationAuthServerUtils.class,applicationAuthServerUtils);
 
 
                 // 配置 普通应用级别的 授权服务器 ..
@@ -92,7 +87,7 @@ public class ApplicationAuthServerConfig {
                 boolean isSeparation = properties.isSeparation();
                 ApplicationAuthServerUtils applicationAuthServerPropertiesUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(securityBuilder);
 
-                if (isSeparation) {
+                if(isSeparation) {
                     // 禁用csrf
                     // 要让应用能够正常退出 ..(无需csrf token 校验)
                     securityBuilder.csrf().disable();
@@ -128,37 +123,6 @@ public class ApplicationAuthServerConfig {
                                     (request, response, authException) -> response.sendRedirect(loginPageUrl)
                             );
                 }
-
-            }
-        };
-    }
-
-
-    /**
-     * 尝试修改 session id name ...
-     * 如果前后端分离,则不做任何事情 ...
-     *
-     * @return
-     */
-    @Bean
-    public WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> sessionIdentifierConfig() {
-        return new WebServerFactoryCustomizer<ConfigurableServletWebServerFactory>() {
-            @Override
-            public void customize(ConfigurableServletWebServerFactory factory) {
-                factory.addInitializers(new ServletContextInitializer() {
-                    @Override
-                    public void onStartup(ServletContext servletContext) throws ServletException {
-                        if (!properties.isSeparation()) {
-                            factory.setSession(new Session());
-                            // 引导 ...
-                            ApplicationAuthServerUtils.bootstrap(properties);
-                            ApplicationAuthServerUtils instance = ApplicationAuthServerUtils.getInstance();
-                            if (org.springframework.util.StringUtils.hasText(instance.getProperties().getNoSeparation().getTokenIdentifier())) {
-                                servletContext.getSessionCookieConfig().setName(instance.getProperties().getNoSeparation().getTokenIdentifier());
-                            }
-                        }
-                    }
-                });
 
             }
         };

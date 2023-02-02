@@ -9,7 +9,6 @@ import com.generatera.authorization.application.server.oauth2.login.config.autho
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.DefaultOAuth2ClientAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2ClientLoginAccessTokenAuthenticationConverter;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2LoginAccessTokenAuthenticationConverter;
-import com.generatera.authorization.application.server.oauth2.login.config.client.register.LightningOAuth2ClientRegistrationRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2AuthenticationEntryPoint;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.DefaultOAuth2AccessTokenResponseClient;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
@@ -30,9 +29,10 @@ import java.util.Map;
 
 /**
  * oauth2 login utils
- * <p>
+ *
  * 提供默认值
  * {@link com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint}
+ *
  */
 public class OAuth2LoginUtils {
 
@@ -40,13 +40,13 @@ public class OAuth2LoginUtils {
 
         DefaultLoginPageGeneratingFilter loginPageGeneratingFilter = builder.getSharedObject(DefaultLoginPageGeneratingFilter.class);
         if (loginPageGeneratingFilter != null) {
-            if (!loginPageGeneratingFilter.isEnabled()) {
+            if(!loginPageGeneratingFilter.isEnabled()) {
                 builder.addFilter(loginPageGeneratingFilter);
             }
             ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(builder);
             // 不强制要求重定向到登录页面 ...(但是需要放行对应的页面才行) ...
             loginPageGeneratingFilter.setOauth2LoginEnabled(true);
-            loginPageGeneratingFilter.setLoginPageUrl(ElvisUtil.stringElvis(loginPage, applicationAuthServerUtils.getProperties().getNoSeparation().getLoginPageUrl()));
+            loginPageGeneratingFilter.setLoginPageUrl(ElvisUtil.stringElvis(loginPage,applicationAuthServerUtils.getProperties().getNoSeparation().getLoginPageUrl()));
             loginPageGeneratingFilter.setFailureUrl(applicationAuthServerUtils.getProperties().getNoSeparation().getFailureForwardOrRedirectUrl());
             String logoutSuccessUrl = applicationAuthServerUtils.getProperties().getNoSeparation().getLogoutSuccessUrl();
             loginPageGeneratingFilter.setLogoutSuccessUrl(logoutSuccessUrl);
@@ -55,23 +55,23 @@ public class OAuth2LoginUtils {
 
     public static LightningOAuth2AccessTokenResponseClient getOAuth2AccessTokenResponseClient(HttpSecurity security) {
         LightningOAuth2AccessTokenResponseClient tokenResponseClient = security.getSharedObject(LightningOAuth2AccessTokenResponseClient.class);
-        if (tokenResponseClient == null) {
-            tokenResponseClient = getOptionalBean(security, LightningOAuth2AccessTokenResponseClient.class);
-            if (tokenResponseClient == null) {
+        if(tokenResponseClient == null) {
+            tokenResponseClient = getOptionalBean(security,LightningOAuth2AccessTokenResponseClient.class);
+            if(tokenResponseClient == null) {
                 tokenResponseClient = new DefaultOAuth2AccessTokenResponseClient();
             }
-            security.setSharedObject(LightningOAuth2AccessTokenResponseClient.class, tokenResponseClient);
+            security.setSharedObject(LightningOAuth2AccessTokenResponseClient.class,tokenResponseClient);
         }
         return tokenResponseClient;
     }
 
     public static <B extends HttpSecurityBuilder<B>> LightningOAuth2UserService getOauth2UserService(B builder) {
         LightningOAuth2UserService oAuth2UserService = builder.getSharedObject(LightningOAuth2UserService.class);
-        if (oAuth2UserService == null) {
+        if(oAuth2UserService == null) {
             oAuth2UserService = getOptionalBean(builder, LightningOAuth2UserService.class);
-            if (oAuth2UserService == null) {
+            if(oAuth2UserService == null) {
                 oAuth2UserService = new DefaultLightningOAuth2UserService(new DefaultOAuth2UserService());
-                builder.setSharedObject(LightningOAuth2UserService.class, oAuth2UserService);
+                builder.setSharedObject(LightningOAuth2UserService.class,oAuth2UserService);
             }
         }
         return oAuth2UserService;
@@ -79,47 +79,43 @@ public class OAuth2LoginUtils {
 
     public static <B extends HttpSecurityBuilder<B>> LightningOidcUserService getOidcUserService(B builder) {
         LightningOidcUserService oAuth2UserService = builder.getSharedObject(LightningOidcUserService.class);
-        if (oAuth2UserService == null) {
+        if(oAuth2UserService == null) {
             oAuth2UserService = getOptionalBean(builder, LightningOidcUserService.class);
-            if (oAuth2UserService == null) {
+            if(oAuth2UserService == null) {
                 oAuth2UserService = new DefaultLightningOidcUserService(new OidcUserService());
             }
-            builder.setSharedObject(LightningOidcUserService.class, oAuth2UserService);
+            builder.setSharedObject(LightningOidcUserService.class,oAuth2UserService);
         }
         return oAuth2UserService;
     }
 
 
-    public static <B extends HttpSecurityBuilder<B>> OAuth2ClientLoginAccessTokenAuthenticationConverter getOAuth2LoginAccessTokenAuthenticationConverter(B builder) {
+    public static <B extends HttpSecurityBuilder<B>>  OAuth2ClientLoginAccessTokenAuthenticationConverter getOAuth2LoginAccessTokenAuthenticationConverter(B builder) {
         OAuth2ClientLoginAccessTokenAuthenticationConverter oAuth2ClientLoginAccessTokenAuthenticationConverter = builder.getSharedObject(OAuth2ClientLoginAccessTokenAuthenticationConverter.class);
-        if (oAuth2ClientLoginAccessTokenAuthenticationConverter == null) {
+        if(oAuth2ClientLoginAccessTokenAuthenticationConverter == null) {
             oAuth2ClientLoginAccessTokenAuthenticationConverter = getOptionalBean(builder, OAuth2ClientLoginAccessTokenAuthenticationConverter.class);
-            if (oAuth2ClientLoginAccessTokenAuthenticationConverter == null) {
+            if(oAuth2ClientLoginAccessTokenAuthenticationConverter == null) {
                 oAuth2ClientLoginAccessTokenAuthenticationConverter = new OAuth2LoginAccessTokenAuthenticationConverter();
             }
-            builder.setSharedObject(OAuth2ClientLoginAccessTokenAuthenticationConverter.class, oAuth2ClientLoginAccessTokenAuthenticationConverter);
+            builder.setSharedObject(OAuth2ClientLoginAccessTokenAuthenticationConverter.class,oAuth2ClientLoginAccessTokenAuthenticationConverter);
         }
         return oAuth2ClientLoginAccessTokenAuthenticationConverter;
     }
 
     public static LightningOAuth2AuthenticationEntryPoint getAuthenticationEntryPoint(HttpSecurity securityBuilder) {
         LightningOAuth2AuthenticationEntryPoint sharedObject = securityBuilder.getSharedObject(LightningOAuth2AuthenticationEntryPoint.class);
-        if (sharedObject == null) {
+        if(sharedObject == null) {
             sharedObject = getOptionalBean(securityBuilder, LightningOAuth2AuthenticationEntryPoint.class);
-            if (sharedObject == null) {
+            if(sharedObject == null) {
                 sharedObject = new DefaultOAuth2ClientAuthenticationEntryPoint(
                         AppAuthConfigurerUtils.getAppAuthServerForTokenAuthenticationProvider(securityBuilder));
             }
-            securityBuilder.setSharedObject(LightningOAuth2AuthenticationEntryPoint.class, sharedObject);
+            securityBuilder.setSharedObject(LightningOAuth2AuthenticationEntryPoint.class,sharedObject);
         }
 
         return sharedObject;
     }
 
-
-    public static LightningOAuth2ClientRegistrationRepository getClientRegistrationRepository(HttpSecurity securityBuilder) {
-        return AppAuthConfigurerUtils.getSharedOrCtxBean(securityBuilder, LightningOAuth2ClientRegistrationRepository.class);
-    }
 
 
     static <B extends HttpSecurityBuilder<B>, T> T getOptionalBean(B builder, Class<T> type) {
@@ -158,6 +154,7 @@ public class OAuth2LoginUtils {
             throw new NoSuchBeanDefinitionException(type);
         }
     }
+
 
 
 }

@@ -3,6 +3,7 @@ package com.generatera.authorization.server.common.configuration;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 import lombok.Data;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.Arrays;
@@ -22,16 +23,17 @@ import static com.generatera.authorization.server.common.configuration.Authoriza
  * 本质上其实和oauth2 类似,保留Oauth2的token 审查端点,token 撤销端点,包括 自己作为第三方提供商的一些提供者配置 ...
  * 能够有效的和 对应的资源服务器进行 token 工作协同,例如opaque token 省查 / jwt token 自解析 ...
  * <p>
- * 那么当前项目主要配置如下:
- * 1. 提供者配置
- * 2. 默认token 配置
- * 需要注意的是对应 oauth2来说,这个token配置仅仅作为 客户端的token 配置兜底 ..
+ *
+ * 本质上,token 版本控制 基于设置不同版本的filter 或者修改filter 代码实现 ...
+ *
+ * 那么如果框架库本身升级,也可以通过设置{@link  ServerProperties#getServlet()} 设置context-path 实现路径区分不同应用,
+ * 例如通过nginx 实现不同版本的 应用转发 ..
  */
 @Data
 @ConfigurationProperties(prefix = AUTH_SERVER_COMPONENT_PREFIX)
 public class AuthorizationServerComponentProperties {
 
-    public static final String AUTH_SERVER_COMPONENT_PREFIX = "lightning.auth.server.common.component";
+    public static final String AUTH_SERVER_COMPONENT_PREFIX = "lightning.security.auth.server.common.component";
     /**
      * token 生成器的名称(暂时没有使用)
      */
@@ -39,6 +41,7 @@ public class AuthorizationServerComponentProperties {
 
 
     private final AuthorizationStoreConfig authorizationStoreConfig = new AuthorizationStoreConfig();
+
 
 
     private final Permission permission = new Permission();

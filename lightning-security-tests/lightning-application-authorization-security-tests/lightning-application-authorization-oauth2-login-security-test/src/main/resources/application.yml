@@ -21,8 +21,6 @@ spring:
     host: 192.168.0.210
     port: 16379
     database: 4
-  profiles:
-    active: jpa
 lightning:
   app:
     auth:
@@ -32,18 +30,9 @@ lightning:
             enable-saved-request-forward: false
             enable-forward: false
             failure-forward-or-redirect-url: /login-failure.html
-            # because central auth server host == current app auth server ..., need modify ..
-            token-identifier: APPJSESSIONID
           backend-separation:
             login-success-message: "登陆成功了,亲!!!"
             login-failure-message: "登陆失败了,亲!!!"
           separation: false
-          # oauth 相关配置 ...
-          oauth2:
-            login:
-              config:
-                # client registration store ..  need introduction  jpa dependencies
-                client-registration-store-kind: jpa
-
 server:
   port: 8080

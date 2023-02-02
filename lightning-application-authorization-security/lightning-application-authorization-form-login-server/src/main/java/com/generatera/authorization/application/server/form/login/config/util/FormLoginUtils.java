@@ -21,6 +21,8 @@ public class FormLoginUtils {
 
         DefaultLoginPageGeneratingFilter loginPageGeneratingFilter = builder.getSharedObject(DefaultLoginPageGeneratingFilter.class);
         if (loginPageGeneratingFilter != null) {
+            // 判断是否存在其他的启用了此过滤器
+            loginPageGeneratingFilter.setFormLoginEnabled(false);
             // 如果已经被启用了,那么就不需要增加
             if(!loginPageGeneratingFilter.isEnabled()) {
                 builder.addFilter(loginPageGeneratingFilter);

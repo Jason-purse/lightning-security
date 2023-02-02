@@ -16,7 +16,7 @@ lightning:
             default-success-url: /login.html
           authorization-store-config:
             store-kind: jpa
-          separation: true
+          separation: false
 
 
 server:

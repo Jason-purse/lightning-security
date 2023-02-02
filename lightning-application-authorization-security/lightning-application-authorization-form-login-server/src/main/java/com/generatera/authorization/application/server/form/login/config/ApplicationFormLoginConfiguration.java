@@ -117,7 +117,7 @@ public class ApplicationFormLoginConfiguration {
 
                 ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(security);
                 // 如果不是前后端分离的 ..
-                if (authServerProperties.isSeparation()) {
+                if (!authServerProperties.isSeparation()) {
                     noSeparationOtherConfig(formLoginConfigurer, patterns, noSeparation, applicationAuthServerUtils);
                 }
 
