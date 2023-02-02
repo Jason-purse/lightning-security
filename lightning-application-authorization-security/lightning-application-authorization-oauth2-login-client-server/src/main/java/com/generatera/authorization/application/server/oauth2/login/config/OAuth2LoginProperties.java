@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,7 +11,7 @@ import static com.generatera.authorization.application.server.oauth2.login.confi
 @Data
 @ConfigurationProperties(prefix = OAUTH2_LOGIN_AUTH_SERVER_PREFIX)
 public class OAuth2LoginProperties {
-    public static final String OAUTH2_LOGIN_AUTH_SERVER_PREFIX = "lightning.auth.app.server.oauth2.login.config";
+    public static final String OAUTH2_LOGIN_AUTH_SERVER_PREFIX = ApplicationAuthServerProperties.APPLICATION_AUTH_SERVER_PREFIX + ".oauth2.login.config";
 
     /**
      * 可能存在多个,所以使用 "*"

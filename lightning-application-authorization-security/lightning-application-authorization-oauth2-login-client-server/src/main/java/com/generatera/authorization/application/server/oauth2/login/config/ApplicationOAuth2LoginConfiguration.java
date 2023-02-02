@@ -119,6 +119,9 @@ public class ApplicationOAuth2LoginConfiguration {
 
                     tokenAccessConfig(oAuth2LoginConfigurer, accessTokenResponseClient);
 
+                    // 设置 clientRegistrationRepository ..
+                    // 默认不会影响 spring oauth2 client的相关配置 ..
+                    oAuth2LoginConfigurer.clientRegistrationRepository(OAuth2LoginUtils.getClientRegistrationRepository(securityBuilder));
                 }
 
 

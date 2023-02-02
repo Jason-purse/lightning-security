@@ -126,6 +126,14 @@ public class ApplicationAuthServerProperties {
 
         public static final String DEFAULT_FAILURE_FORWARD_OR_REDIRECT_URL = "/login?error";
 
+        public static final String DEFAULT_TOKEN_IDENTIFIER = "JSESSIONID";
+
+        /**
+         * 默认可以修改 ..
+         * 如果不填充默认值,则 等价于 DEFAULT_TOKEN_IDENTIFIER
+         */
+        private String tokenIdentifier;
+
         /**
          * 登出页面 url
          */

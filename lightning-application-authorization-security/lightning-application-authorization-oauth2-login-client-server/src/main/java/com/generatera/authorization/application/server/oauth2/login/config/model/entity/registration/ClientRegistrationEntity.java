@@ -1,4 +1,4 @@
-package com.generatera.authorization.application.server.oauth2.login.config.model.entity;
+package com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,22 +11,22 @@ import org.springframework.data.mongodb.core.mapping.MongoId;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Table(name = "client_registration")
+@Table(name = "oauth2_client_registration")
 @Entity
-@Document("client_registration")
+@Document("oauth2_client_registration")
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ClientRegistrationEntity implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @MongoId
     private String id;
 
     @Column(name = "registration_id")
     @Field(name = "registration_id")
     private String registrationId;
+
     @Column(name = "client_id")
     @Field(name = "client_id")
     private String clientId;
@@ -44,12 +44,38 @@ public class ClientRegistrationEntity implements Serializable {
     @Field(name = "redirect_uri")
     private String redirectUri;
 
-    @Column(name = "scopes",length = 1000)
+    @Column(name = "scopes",columnDefinition = "text")
     @Field(name = "scopes")
     private String scopes;
+
+
     @Column(name = "client_name")
     @Field(name = "client_name")
     private String clientName;
+
+    /**
+     * 此参数,对于相同provider下的多个client registration 有很好的标注效果 ..
+     * 当 registrationId 不得已 和其他client registrationId 重复时, 肯定需要先
+     * 修改 registrationId,那么 此时就需要providerName 来标识provider 配置 ..
+     *
+     * 配置流程如下:
+     *  1. 首先这会尝试从 当前项已经提供的完整配置尝试处理 ...
+     *      1.1 其中包括使用issuer uri 进行完整性配置校验
+     *      1.2 否则尝试构建,构建失败继续进行
+     *  2. 当自身的完整配置无法处理时,则通过此providerName(如果存在,否则使用 registrationId) 和 常用提供商的信息进行比对 ..
+     *
+     *
+     *
+     * 这个providerName 目的 仅仅是为了了标准{@link org.springframework.security.config.oauth2.client.CommonOAuth2Provider}的
+     * 相关的提供者名称,例如 GOOGLE / FACEBOOK ...
+     *
+     * 当自身的完整配置无法处理时,则通过此providerName 和 常用提供商的信息进行比对 ..
+     * 如果存在,则创建,否则报错 ...
+     */
+    @Column(name = "provider_name")
+    @Field(name = "provider_name")
+    private String providerName;
+
 
     // ------- provider settings
 
@@ -75,7 +101,7 @@ public class ClientRegistrationEntity implements Serializable {
     @Field(name = "issuer_url")
     private String issuerUri;
 
-    @Column(name = "configuration_metadata",length = 2000)
+    @Column(name = "configuration_metadata",columnDefinition = "text")
     @Field(name = "configuration_metadata")
     private String configurationMetadata;
 }

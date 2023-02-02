@@ -3,6 +3,7 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
+import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.env.Environment;
@@ -56,6 +57,7 @@ public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBi
         }
     }
 
+    // // TODO: 2023/2/2  使用工厂进行重构
     private static void clientRegistrationConfig(OAuth2LoginProperties properties, LinkedList<String> candidates) {
         if (properties.getClientRegistrationStoreKind() != null) {
             if(properties.getClientRegistrationStoreKind() == StoreKind.JPA) {
@@ -64,6 +66,15 @@ public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBi
             else if(properties.getClientRegistrationStoreKind() == StoreKind.MONGO) {
                 candidates.add(ApplicationClientRegistrationConfiguration.MongoClientRegistrationConfiguration.class.getName());
             }
+            else {
+                if (properties.getClientRegistrationStoreKind() != StoreKind.MEMORY) {
+                    properties.setClientRegistrationStoreKind(StoreKind.MEMORY);
+                    // 报告 ..
+                    LogUtil.prettyLogWarning("oauth2 client auth server client registration kind cannot support,so use the default config !!!");
+                }
+            }
+
+            LogUtil.prettyLog("oauth2 client auth server client registration component has registered, storeKind = [" + properties.getClientRegistrationStoreKind().name() + "]");
         }
     }
 

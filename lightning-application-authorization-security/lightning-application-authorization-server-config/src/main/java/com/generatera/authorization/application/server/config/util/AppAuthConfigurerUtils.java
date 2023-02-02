@@ -33,11 +33,19 @@ import org.springframework.core.ResolvableType;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter;
+import org.springframework.security.web.context.HttpRequestResponseHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class AppAuthConfigurerUtils {
 
@@ -46,21 +54,43 @@ public final class AppAuthConfigurerUtils {
     private AppAuthConfigurerUtils() {
     }
 
+    //// TODO: 2023/2/2  代码没有写完
+    @Deprecated
+    public static <B extends HttpSecurityBuilder<B>> SecurityContextRepository getSecurityContextRepository(B builder) {
+        return getBean(builder, SecurityContextRepository.class, new Function<B, SecurityContextRepository>() {
+            @Override
+            public SecurityContextRepository apply(B b) {
+                HttpSessionSecurityContextRepository contextRepository = new HttpSessionSecurityContextRepository();
+                ApplicationAuthServerUtils authServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(b);
+                return new SecurityContextRepository() {
+                    @Override
+                    public org.springframework.security.core.context.SecurityContext loadContext(HttpRequestResponseHolder requestResponseHolder) {
+                        return contextRepository.loadContext(requestResponseHolder);
+                    }
+
+                    @Override
+                    public void saveContext(org.springframework.security.core.context.SecurityContext context, HttpServletRequest request, HttpServletResponse response) {
+                        Cookie[] cookies = request.getCookies();
+
+                    }
+
+                    @Override
+                    public boolean containsContext(HttpServletRequest request) {
+                        return false;
+                    }
+                };
+            }
+        });
+    }
+
 
     public static <B extends HttpSecurityBuilder<B>> AuthServerProvider getProviderSettings(B builder) {
-        AuthServerProvider provider = builder.getSharedObject(AuthServerProvider.class);
-        if (provider == null) {
-            provider = getOptionalBean(builder, AuthServerProvider.class);
-            if (provider == null) {
-                ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(builder);
-                // 是否存在 auth Server ...
-                LightningCentralAuthServer authServer = builder.getSharedObject(LightningCentralAuthServer.class);
-                provider = providerSettings(authServer != null ? applicationAuthServerUtils.getFullConfigProperties() : applicationAuthServerUtils.getProperties());
-                builder.setSharedObject(AuthServerProvider.class, provider);
-            }
-        }
-
-        return provider;
+        return getBean(builder, AuthServerProvider.class, () -> {
+            ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(builder);
+            // 是否存在 auth Server ...
+            LightningCentralAuthServer authServer = builder.getSharedObject(LightningCentralAuthServer.class);
+            return providerSettings(authServer != null ? applicationAuthServerUtils.getFullConfigProperties() : applicationAuthServerUtils.getProperties());
+        });
     }
 
     private static ProviderSettings providerSettings(ApplicationAuthServerProperties authServerProperties) {
@@ -84,27 +114,16 @@ public final class AppAuthConfigurerUtils {
     }
 
     public static <B extends HttpSecurityBuilder<B>> LightningAuthenticationEntryPoint getAuthenticationEntryPoint(B builder) {
-        LightningAuthenticationEntryPoint authenticationEntryPoint = builder.getSharedObject(LightningAuthenticationEntryPoint.class);
-        if (authenticationEntryPoint == null) {
-            // 尝试从bean 工厂中获取
-            LightningAuthenticationEntryPoint bean = getOptionalBean(builder, LightningAuthenticationEntryPoint.class);
-            authenticationEntryPoint = bean;
-            if (bean == null) {
-                ApplicationAuthServerProperties loginProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
-                // todo ...
-                DefaultLightningAbstractAuthenticationEntryPoint entryPoint = new DefaultLightningAbstractAuthenticationEntryPoint(
-                        loginProperties.getBackendSeparation().getEnableAuthFailureDetails(),
-                        loginProperties.getBackendSeparation().getEnableAccountStatusDetails()
-                );
-                entryPointConfig(entryPoint, loginProperties);
-
-                authenticationEntryPoint = entryPoint;
-            }
-            builder.setSharedObject(LightningAuthenticationEntryPoint.class, authenticationEntryPoint);
-        }
-
-        // 认证entry point
-        return authenticationEntryPoint;
+        return getBean(builder, LightningAuthenticationEntryPoint.class, () -> {
+            ApplicationAuthServerProperties loginProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
+            // todo ...
+            DefaultLightningAbstractAuthenticationEntryPoint entryPoint = new DefaultLightningAbstractAuthenticationEntryPoint(
+                    loginProperties.getBackendSeparation().getEnableAuthFailureDetails(),
+                    loginProperties.getBackendSeparation().getEnableAccountStatusDetails()
+            );
+            entryPointConfig(entryPoint, loginProperties);
+            return entryPoint;
+        });
     }
 
     /**
@@ -115,24 +134,16 @@ public final class AppAuthConfigurerUtils {
      * 默认{@link AuthTokenEndpointConfigurer#createDefaultAuthenticationProviders(HttpSecurityBuilder)} 将提供共享对象 ...
      */
     public static <B extends HttpSecurityBuilder<B>> AppAuthServerForTokenAuthenticationProvider getAppAuthServerForTokenAuthenticationProvider(B builder) {
-        AppAuthServerForTokenAuthenticationProvider sharedObject = builder.getSharedObject(AuthAccessTokenAuthenticationProvider.class);
-        if (sharedObject == null) {
-            sharedObject = getOptionalBean(builder, AppAuthServerForTokenAuthenticationProvider.class);
-            if (sharedObject == null) {
-                LightningAuthenticationTokenService authorizationService = AppAuthConfigurerUtils.getAuthorizationService(builder);
-                LightningTokenGenerator<? extends LightningToken> tokenGenerator = AppAuthConfigurerUtils.getTokenGenerator(builder);
-                TokenSettingsProvider tokenSettingProvider = AppAuthConfigurerUtils.getTokenSettingProvider(builder);
-
-                sharedObject = new AuthAccessTokenAuthenticationProvider(
-                        authorizationService,
-                        tokenGenerator,
-                        tokenSettingProvider
-                );
-            }
-            builder.setSharedObject(AppAuthServerForTokenAuthenticationProvider.class, sharedObject);
-        }
-
-        return sharedObject;
+        return getBean(builder, AppAuthServerForTokenAuthenticationProvider.class, () -> {
+            LightningAuthenticationTokenService authorizationService = AppAuthConfigurerUtils.getAuthorizationService(builder);
+            LightningTokenGenerator<? extends LightningToken> tokenGenerator = AppAuthConfigurerUtils.getTokenGenerator(builder);
+            TokenSettingsProvider tokenSettingProvider = AppAuthConfigurerUtils.getTokenSettingProvider(builder);
+            return new AuthAccessTokenAuthenticationProvider(
+                    authorizationService,
+                    tokenGenerator,
+                    tokenSettingProvider
+            );
+        });
     }
 
     private static void entryPointConfig(DefaultLightningAbstractAuthenticationEntryPoint point, ApplicationAuthServerProperties properties) {
@@ -169,32 +180,26 @@ public final class AppAuthConfigurerUtils {
     }
 
     public static <B extends HttpSecurityBuilder<B>> DefaultLogoutPageGeneratingFilter configDefaultLogoutPageGeneratingFilter(B builder) {
-        DefaultLogoutPageGeneratingFilter logoutPageGeneratingFilter = builder.getSharedObject(DefaultLogoutPageGeneratingFilter.class);
-        if (logoutPageGeneratingFilter == null) {
-            // 尝试从bean 工厂中获取
-            logoutPageGeneratingFilter = getOptionalBean(builder, DefaultLogoutPageGeneratingFilter.class);
-            if (logoutPageGeneratingFilter == null) {
-                MyDefaultLogoutPageGeneratingFilter pageGeneratingFilter = new MyDefaultLogoutPageGeneratingFilter();
-                logoutPageGeneratingFilter = pageGeneratingFilter;
-                ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(builder);
-                ApplicationAuthServerProperties.NoSeparation noSeparation = applicationAuthServerUtils.getProperties().getNoSeparation();
+        DefaultLogoutPageGeneratingFilter logoutPageGeneratingFilter =
+                getBean(builder, DefaultLogoutPageGeneratingFilter.class, () -> {
+                    MyDefaultLogoutPageGeneratingFilter pageGeneratingFilter = new MyDefaultLogoutPageGeneratingFilter();
+                    ApplicationAuthServerUtils applicationAuthServerUtils = ApplicationAuthServerUtils.getApplicationAuthServerProperties(builder);
+                    ApplicationAuthServerProperties.NoSeparation noSeparation = applicationAuthServerUtils.getProperties().getNoSeparation();
 
-                // 登出页面配置,
-                // 登出处理路径配置
-                // 使用自己的 登出页面生成过滤器 ..
+                    // 登出页面配置,
+                    // 登出处理路径配置
+                    // 使用自己的 登出页面生成过滤器 ..
 
-                // 配置 logoutprocess url (用于渲染对应的页面) ..
-                pageGeneratingFilter.setMatcher(new AntPathRequestMatcher(noSeparation.getLogoutPageUrl(), "GET"));
-                if (StringUtils.hasText(noSeparation.getLogoutProcessUrl())) {
-                    String logoutProcessUrl = noSeparation.getLogoutProcessUrl();
-                    pageGeneratingFilter.setLogoutProcessUrl(logoutProcessUrl);
-                } else {
-                    pageGeneratingFilter.setLogoutProcessUrl(noSeparation.getLogoutPageUrl());
-                }
-                // 前缀处理 ...
-                builder.setSharedObject(DefaultLogoutPageGeneratingFilter.class, logoutPageGeneratingFilter);
-            }
-        }
+                    // 配置 logoutprocess url (用于渲染对应的页面) ..
+                    pageGeneratingFilter.setMatcher(new AntPathRequestMatcher(noSeparation.getLogoutPageUrl(), "GET"));
+                    if (StringUtils.hasText(noSeparation.getLogoutProcessUrl())) {
+                        String logoutProcessUrl = noSeparation.getLogoutProcessUrl();
+                        pageGeneratingFilter.setLogoutProcessUrl(logoutProcessUrl);
+                    } else {
+                        pageGeneratingFilter.setLogoutProcessUrl(noSeparation.getLogoutPageUrl());
+                    }
+                    return pageGeneratingFilter;
+                });
 
         if (builder.getSharedObject(MyDefaultLogoutPageGeneratingFilter.class) == null) {
             // 用于标识,已经注册了logoutPageGeneratingFilter ..
@@ -215,37 +220,29 @@ public final class AppAuthConfigurerUtils {
         return authorizationService;
     }
 
-
+    @SuppressWarnings("unchecked")
     public static <B extends HttpSecurityBuilder<B>> LightningTokenGenerator<? extends LightningToken> getTokenGenerator(B builder) {
-        LightningTokenGenerator<? extends LightningToken> tokenGenerator = (LightningTokenGenerator<? extends LightningToken>) builder.getSharedObject(LightningTokenGenerator.class);
-        TokenSettingsProvider settingsProvider = builder.getSharedObject(TokenSettingsProvider.class);
-        if (tokenGenerator == null) {
-            tokenGenerator = (LightningTokenGenerator<? extends LightningToken>) getOptionalBean(builder, LightningTokenGenerator.class);
-            if (tokenGenerator == null) {
-                LightningJwtGenerator jwtGenerator = getJwtGenerator(builder);
-                DefaultLightningAccessTokenGenerator accessTokenGenerator = new DefaultLightningAccessTokenGenerator();
-                LightningTokenCustomizer<LightningTokenClaimsContext> accessTokenCustomizer = getAccessTokenCustomizer(builder);
-                if (accessTokenCustomizer != null) {
-                    accessTokenGenerator.setAccessTokenCustomizer(
-                            new DelegateLightningTokenCustomizer<>(
-                                    accessTokenCustomizer,
-                                    new DefaultTokenDetailAwareTokenCustomizer(settingsProvider)::customize,
-                                    new DefaultOpaqueAwareTokenCustomizer()::customize
-                            ));
-                }
-
-                DefaultLightningRefreshTokenGenerator refreshTokenGenerator = new DefaultLightningRefreshTokenGenerator();
-                if (jwtGenerator != null) {
-                    tokenGenerator = new DelegatingLightningTokenGenerator(jwtGenerator, accessTokenGenerator, refreshTokenGenerator);
-                } else {
-                    tokenGenerator = new DelegatingLightningTokenGenerator(accessTokenGenerator, refreshTokenGenerator);
-                }
+        return getBean(builder, LightningTokenGenerator.class, () -> {
+            LightningJwtGenerator jwtGenerator = getJwtGenerator(builder);
+            DefaultLightningAccessTokenGenerator accessTokenGenerator = new DefaultLightningAccessTokenGenerator();
+            LightningTokenCustomizer<LightningTokenClaimsContext> accessTokenCustomizer = getAccessTokenCustomizer(builder);
+            if (accessTokenCustomizer != null) {
+                TokenSettingsProvider settingsProvider = builder.getSharedObject(TokenSettingsProvider.class);
+                accessTokenGenerator.setAccessTokenCustomizer(
+                        new DelegateLightningTokenCustomizer<>(
+                                accessTokenCustomizer,
+                                new DefaultTokenDetailAwareTokenCustomizer(settingsProvider)::customize,
+                                new DefaultOpaqueAwareTokenCustomizer()::customize
+                        ));
             }
 
-            builder.setSharedObject(LightningTokenGenerator.class, tokenGenerator);
-        }
-
-        return tokenGenerator;
+            DefaultLightningRefreshTokenGenerator refreshTokenGenerator = new DefaultLightningRefreshTokenGenerator();
+            if (jwtGenerator != null) {
+                return new DelegatingLightningTokenGenerator(jwtGenerator, accessTokenGenerator, refreshTokenGenerator);
+            } else {
+                return new DelegatingLightningTokenGenerator(accessTokenGenerator, refreshTokenGenerator);
+            }
+        });
     }
 
     private static <B extends HttpSecurityBuilder<B>> LightningJwtGenerator getJwtGenerator(B builder) {
@@ -443,5 +440,32 @@ public final class AppAuthConfigurerUtils {
         ApplicationContext context = builder.getSharedObject(ApplicationContext.class);
         String[] beanNamesForType = context.getBeanNamesForType(type);
         return beanNamesForType.length;
+    }
+
+    public static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, Class<T> type, Function<B, T> defaultSupplier) {
+        T object = builder.getSharedObject(type);
+        if (object == null) {
+            object = getOptionalBean(builder, type);
+            if (object == null) {
+                object = defaultSupplier.apply(builder);
+            }
+            Assert.notNull(object, "the default supplier cannot provide null !!!");
+            builder.setSharedObject(type, object);
+        }
+        return object;
+    }
+
+    public static <B extends HttpSecurityBuilder<B>, T> T getBean(B builder, Class<T> type, Supplier<T> defaultSupplier) {
+        return getBean(builder, type, security -> defaultSupplier.get());
+    }
+
+    public static <B extends HttpSecurityBuilder<B>,T> T getSharedOrCtxBean(B builder,Class<T> tClass) {
+
+        T bean = builder.getSharedObject(tClass);
+        if(bean == null) {
+            bean = getBean(builder, tClass);
+            builder.setSharedObject(tClass,bean);
+        }
+        return bean;
     }
 }
