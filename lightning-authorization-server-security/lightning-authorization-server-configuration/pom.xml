@@ -74,6 +74,11 @@
             <groupId>com.jianyue</groupId>
             <artifactId>lightning-boot-starter-utils</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.jianyue</groupId>
+            <artifactId>lightning-boot-starter-web</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

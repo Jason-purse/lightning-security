@@ -72,6 +72,8 @@ public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBi
                     // 报告 ..
                     LogUtil.prettyLogWarning("oauth2 client auth server client registration kind cannot support,so use the default config !!!");
                 }
+
+                candidates.add(ApplicationClientRegistrationConfiguration.DefaultClientRegistrationConfiguration.class.getName());
             }
 
             LogUtil.prettyLog("oauth2 client auth server client registration component has registered, storeKind = [" + properties.getClientRegistrationStoreKind().name() + "]");

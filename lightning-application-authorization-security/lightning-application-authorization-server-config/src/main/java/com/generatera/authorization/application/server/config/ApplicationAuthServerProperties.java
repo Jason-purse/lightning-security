@@ -15,7 +15,7 @@ import static com.generatera.authorization.application.server.config.Application
 @ConfigurationProperties(prefix = APPLICATION_AUTH_SERVER_PREFIX)
 public class ApplicationAuthServerProperties {
 
-    public static final String APPLICATION_AUTH_SERVER_PREFIX = "lightning.app.auth.server.config";
+    public static final String APPLICATION_AUTH_SERVER_PREFIX = "lightning.security.app.auth.server.config";
 
     private final ServerMetaDataEndpointConfig serverMetaDataEndpointConfig = new ServerMetaDataEndpointConfig();
     /**

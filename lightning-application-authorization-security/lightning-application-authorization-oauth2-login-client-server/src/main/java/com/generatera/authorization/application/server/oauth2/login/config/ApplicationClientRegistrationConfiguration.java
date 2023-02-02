@@ -1,13 +1,16 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.oauth2.login.config.client.register.JpaClientRegistrationRepository;
-import com.generatera.authorization.application.server.oauth2.login.config.repository.client.registration.JpaInternalClientRegistrationRepository;
+import com.generatera.authorization.application.server.oauth2.login.config.client.register.LightningOAuth2ClientRegistrationRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.client.register.MongoClientRegistrationRepository;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.client.registration.JpaInternalClientRegistrationRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 /**
@@ -19,7 +22,7 @@ public class ApplicationClientRegistrationConfiguration {
     public static class MongoClientRegistrationConfiguration {
 
         @Bean
-        public ClientRegistrationRepository clientRegistrationRepository(MongoTemplate mongoTemplate) {
+        public LightningOAuth2ClientRegistrationRepository clientRegistrationRepository(MongoTemplate mongoTemplate) {
             return new MongoClientRegistrationRepository(mongoTemplate);
         }
     }
@@ -29,8 +32,26 @@ public class ApplicationClientRegistrationConfiguration {
     public static class JPAClientRegistrationConfiguration {
 
         @Bean
-        public ClientRegistrationRepository clientRegistrationRepository(JpaInternalClientRegistrationRepository repository) {
+        public LightningOAuth2ClientRegistrationRepository clientRegistrationRepository(JpaInternalClientRegistrationRepository repository) {
             return new JpaClientRegistrationRepository(repository);
+        }
+    }
+
+    public static class DefaultClientRegistrationConfiguration {
+
+        @Bean
+        public LightningOAuth2ClientRegistrationRepository lightningClientRegistrationRepository(@Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
+            if (clientRegistrationRepository == null) {
+                // 说明,默认配置没有生效 ...
+                // 直接给出一个 默认值(这将有效的输出一个 什么也无法登录的 oauth2 client auth server服务器)
+                clientRegistrationRepository = new ClientRegistrationRepository() {
+                    @Override
+                    public ClientRegistration findByRegistrationId(String registrationId) {
+                        return null;
+                    }
+                };
+            }
+            return clientRegistrationRepository::findByRegistrationId;
         }
     }
 

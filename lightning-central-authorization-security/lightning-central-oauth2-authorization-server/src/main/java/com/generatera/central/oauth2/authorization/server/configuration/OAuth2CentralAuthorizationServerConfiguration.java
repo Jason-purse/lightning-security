@@ -6,15 +6,15 @@ import com.generatera.authorization.server.common.configuration.AuthorizationSer
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
-import com.generatera.central.oauth2.authorization.server.configuration.components.token.*;
+import com.generatera.central.oauth2.authorization.server.configuration.components.token.DefaultOpaqueAwareOAuth2TokenCustomizer;
+import com.generatera.central.oauth2.authorization.server.configuration.components.token.DefaultTokenDetailAwareOAuth2TokenCustomizer;
+import com.generatera.central.oauth2.authorization.server.configuration.components.token.DelegateCentralOauth2TokenCustomizer;
+import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer.LightningCentralOAuth2AccessTokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer.LightningCentralOAuth2JwtTokenCustomizer;
-import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
-import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -73,19 +73,22 @@ public class OAuth2CentralAuthorizationServerConfiguration {
         return properties.getProvider().getOAuth2ProviderSettingsProvider();
     }
 
-    /**
-     * 表示,使用 oauth2 token settings provider ..
-     * 增加了额外的provider 信息
-     */
-    @Bean
-    @Qualifier("oauth2_token_setting_provider")
-    public TokenSettingsProvider oauth2TokenSettingProvider(TokenSettingsProvider tokenSettingsProvider) {
-        TokenSettingsProperties tokenSettings = tokenSettingsProvider.getTokenSettings();
-        return new TokenSettingsProvider(
-                OAuth2ServerTokenSettings.withSettings(tokenSettings.getSettings())
-                        .build()
-        );
-    }
+
+    // // TODO: 2023/2/2  中央授权服务器不需要这些东西
+
+    ///**
+    // * 表示,使用 oauth2 token settings provider ..
+    // * 增加了额外的provider 信息
+    // */
+    //@Bean
+    //@Qualifier("oauth2_token_setting_provider")
+    //public TokenSettingsProvider oauth2TokenSettingProvider(TokenSettingsProvider tokenSettingsProvider) {
+    //    TokenSettingsProperties tokenSettings = tokenSettingsProvider.getTokenSettings();
+    //    return new TokenSettingsProvider(
+    //            OAuth2ServerTokenSettings.withSettings(tokenSettings.getSettings())
+    //                    .build()
+    //    );
+    //}
 
 
     // -------------------------- token customizer -----------------------------------------------------------------

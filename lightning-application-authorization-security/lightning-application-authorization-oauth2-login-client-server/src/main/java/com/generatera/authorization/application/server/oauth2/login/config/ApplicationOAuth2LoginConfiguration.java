@@ -15,8 +15,10 @@ import com.generatera.authorization.application.server.oauth2.login.config.token
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,6 +41,7 @@ import java.util.List;
  * 同样还也需要一个 token 解析器
  */
 @Configuration
+@AutoConfigureAfter(OAuth2ClientAutoConfiguration.class)
 @AutoConfigureBefore(ApplicationAuthServerConfig.class)
 @Import({ApplicationOAuth2LoginComponentsImportSelector.class})
 public class ApplicationOAuth2LoginConfiguration {
@@ -121,7 +124,7 @@ public class ApplicationOAuth2LoginConfiguration {
 
                     // 设置 clientRegistrationRepository ..
                     // 默认不会影响 spring oauth2 client的相关配置 ..
-                    oAuth2LoginConfigurer.clientRegistrationRepository(OAuth2LoginUtils.getClientRegistrationRepository(securityBuilder));
+                    oAuth2LoginConfigurer.clientRegistrationRepository(OAuth2LoginUtils.getClientRegistrationRepository(securityBuilder)::findByRegistrationId);
                 }
 
 
@@ -227,8 +230,7 @@ public class ApplicationOAuth2LoginConfiguration {
                         // 自定义登录页面
                         oAuth2LoginConfigurer.loginPage(noSeparation.getLoginPageUrl());
                         patterns.add(noSeparation.getLoginPageUrl());
-                    }
-                    else {
+                    } else {
                         // 默认登录页面的处理 ...
                         OAuth2LoginUtils.configDefaultLoginPageGeneratorFilter(
                                 oAuth2LoginConfigurer.and(),
