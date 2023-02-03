@@ -40,7 +40,6 @@ public class ApplicationAuthServerProperties {
     /**
      * 可以自定义的前缀 ...(如果为空,则默认值)
      * 当存在多个不同类型的授权服务器时,用于区分 token 端点的 app auth 前缀 ..
-     *
      */
     public String appAuthPrefix = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX;
 
@@ -126,6 +125,14 @@ public class ApplicationAuthServerProperties {
         public static final String DEFAULT_LOGIN_PAGE_URL = "/login";
 
         public static final String DEFAULT_FAILURE_FORWARD_OR_REDIRECT_URL = "/login?error";
+
+        public static final String DEFAULT_TOKEN_IDENTIFIER = "JSESSIONID";
+
+        /**
+         * 默认可以修改 ..
+         * 如果不填充默认值,则 等价于 DEFAULT_TOKEN_IDENTIFIER
+         */
+        private String tokenIdentifier;
 
         /**
          * 登出页面 url

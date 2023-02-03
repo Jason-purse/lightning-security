@@ -1,5 +1,6 @@
 package com.generatera.security.authorization.server.specification;
 
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -27,9 +28,15 @@ public final class ProviderExtUtils {
         @SuppressWarnings("unchecked")
         JWKSource<SecurityContext> jwkSource = (JWKSource<SecurityContext>) builder.getSharedObject(JWKSource.class);
         if (jwkSource == null) {
-            ResolvableType type = ResolvableType.forClassWithGenerics(JWKSource.class, SecurityContext.class);
-            jwkSource = getOptionalBean(builder, type);
-            if (jwkSource != null) {
+            JWKSourceProvider sourceProvider = builder.getSharedObject(JWKSourceProvider.class);
+            if(sourceProvider == null) {
+                sourceProvider = getOptionalBean(builder, JWKSourceProvider.class);
+            }
+            if(sourceProvider != null) {
+                jwkSource = sourceProvider.getJWKSource();
+            }
+
+            if(jwkSource != null) {
                 builder.setSharedObject(JWKSource.class, jwkSource);
             }
         }

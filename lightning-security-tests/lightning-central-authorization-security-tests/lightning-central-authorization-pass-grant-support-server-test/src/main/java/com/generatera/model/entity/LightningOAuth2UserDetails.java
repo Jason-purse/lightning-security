@@ -7,7 +7,6 @@ import com.generatera.security.authorization.server.specification.LightningUserP
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.CredentialsContainer;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @SafeSerialize
-public class LightningOAuth2UserDetails implements LightningUserPrincipal,CredentialsContainer, Cloneable {
+public class LightningOAuth2UserDetails implements LightningUserPrincipal, Cloneable {
 
     private Long id;
 
@@ -87,15 +86,14 @@ public class LightningOAuth2UserDetails implements LightningUserPrincipal,Creden
 
     @Override
     public void eraseCredentials() {
-
+        this.password = null;
     }
 
     @Override
     public LightningOAuth2UserDetails clone() {
         try {
-            LightningOAuth2UserDetails clone = (LightningOAuth2UserDetails) super.clone();
             // TODO: copy mutable state here, so the clone can't change the internals of the original
-            return clone;
+            return (LightningOAuth2UserDetails) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }

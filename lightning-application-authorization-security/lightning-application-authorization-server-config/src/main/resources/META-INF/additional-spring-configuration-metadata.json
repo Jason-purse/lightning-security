@@ -1,48 +1,48 @@
 {
   "properties": [
     {
-      "name": "lightning.app.auth.server.config.authorization-store-config.redis.expired-time-duration",
+      "name": "lightning.security.app.auth.server.config.authorization-store-config.redis.expired-time-duration",
       "type": "java.lang.Long",
       "sourceType": "com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties$Redis"
     },
     {
-      "name": "lightning.app.auth.server.config.authorization-store-config.redis.key-prefix",
+      "name": "lightning.security.app.auth.server.config.authorization-store-config.redis.key-prefix",
       "type": "java.lang.String",
       "description": "key 前缀",
       "sourceType": "com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties$Redis"
     },
     {
-      "name": "lightning.app.auth.server.config.authorization-store-config.store-kind",
+      "name": "lightning.security.app.auth.server.config.authorization-store-config.store-kind",
       "type": "com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties$StoreKind",
       "description": "授权存储方式",
       "sourceType": "com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties$AuthorizationStoreConfig"
     },
     {
-      "name": "lightning.app.auth.server.config.provider-setting-properties.issuer",
+      "name": "lightning.security.app.auth.server.config.provider-setting-properties.issuer",
       "type": "java.lang.String",
       "description": "issuer url",
       "sourceType": "com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties"
     },
     {
-      "name": "lightning.app.auth.server.config.authorization-store-config.provider-setting-properties.jwk-set-endpoint",
+      "name": "lightning.security.app.auth.server.config.authorization-store-config.provider-setting-properties.jwk-set-endpoint",
       "type": "java.lang.String",
       "description": "jwk-set-endpoint",
       "sourceType": "com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties"
     },
     {
-      "name": "lightning.app.auth.server.config.provider-setting-properties.token-revocation-endpoint",
+      "name": "lightning.security.app.auth.server.config.provider-setting-properties.token-revocation-endpoint",
       "type": "java.lang.String",
       "description": "token revocation endpoint",
       "sourceType": "com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties"
     },
     {
-      "name": "lightning.app.auth.server.config.provider-setting-properties.token-introspection-endpoint",
+      "name": "lightning.security.app.auth.server.config.provider-setting-properties.token-introspection-endpoint",
       "type": "java.lang.String",
       "description": "token introspection endpoint",
       "sourceType": "com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties"
     },
     {
-      "name": "lightning.app.auth.server.config.provider-setting-properties.token-endpoint",
+      "name": "lightning.security.app.auth.server.config.provider-setting-properties.token-endpoint",
       "type": "java.lang.String",
       "description": "token endpoint",
       "sourceType": "com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties"

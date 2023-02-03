@@ -9,6 +9,7 @@ import com.generatera.authorization.application.server.oauth2.login.config.autho
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.DefaultOAuth2ClientAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2ClientLoginAccessTokenAuthenticationConverter;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2LoginAccessTokenAuthenticationConverter;
+import com.generatera.authorization.application.server.oauth2.login.config.client.register.LightningOAuth2ClientRegistrationRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2AuthenticationEntryPoint;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.DefaultOAuth2AccessTokenResponseClient;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
@@ -26,6 +27,8 @@ import org.springframework.security.web.authentication.ui.DefaultLoginPageGenera
 import org.springframework.util.StringUtils;
 
 import java.util.Map;
+
+import static com.generatera.security.authorization.server.specification.util.HttpSecurityBuilderUtils.getSharedOrCtxBean;
 
 /**
  * oauth2 login utils
@@ -116,6 +119,10 @@ public class OAuth2LoginUtils {
         return sharedObject;
     }
 
+
+    public static LightningOAuth2ClientRegistrationRepository getClientRegistrationRepository(HttpSecurity securityBuilder) {
+        return getSharedOrCtxBean(securityBuilder, LightningOAuth2ClientRegistrationRepository.class);
+    }
 
 
     static <B extends HttpSecurityBuilder<B>, T> T getOptionalBean(B builder, Class<T> type) {

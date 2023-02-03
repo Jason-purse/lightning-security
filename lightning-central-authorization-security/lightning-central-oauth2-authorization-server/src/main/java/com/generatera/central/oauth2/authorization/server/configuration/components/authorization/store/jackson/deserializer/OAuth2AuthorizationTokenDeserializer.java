@@ -3,7 +3,6 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonStreamContext;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -71,8 +70,12 @@ public class OAuth2AuthorizationTokenDeserializer extends StdDeserializer<OAuth2
                 JsonNode claims = token.get("claims");
                 Map<String, Object> claimsMap = Collections.emptyMap();
                 if (!claims.isNull()) {
-                    claimsMap = JsonUtil.getDefaultJsonUtil().fromJson(claims.asText(), new TypeReference<Map<String, Object>>() {
-                    });
+                    JavaType javaType = JsonUtil.getDefaultJsonUtil().createJavaType(Map.class, String.class, Object.class);
+                    try {
+                        claimsMap = deserializationContext.readTreeAsValue(claims, javaType);
+                    }catch (Exception e) {
+                        throw new IllegalStateException("oidc claims cannot resolve !!!");
+                    }
                 }
                 return new OidcIdToken(tokenValue, JsonUtil.getDefaultJsonUtil().fromJson(issuedAt, Instant.class),
                         JsonUtil.getDefaultJsonUtil().fromJson(expiresAt, Instant.class), claimsMap);

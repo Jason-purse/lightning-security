@@ -31,7 +31,25 @@ public class OAuth2CentralAuthorizationServerProperties {
 
         private String loginProcessUrl = "/auth/v1/form/login";
 
+        /**
+         * 默认配置,当没有之前的请求时使用 ..
+         */
         private String defaultSuccessForwardUrl = "/default_success.html";
+
+        /**
+         * 成功之后的转发url
+         */
+        private String successForwardUrl = "/default_success.html";
+
+        /**
+         * 成功之后的 重定向url
+         */
+        private String successRedirectUrl;
+
+        /**
+         * 设置默认的成功重定向地址 ...
+         */
+        private String defaultSuccessRedirectUrl;
 
     }
 

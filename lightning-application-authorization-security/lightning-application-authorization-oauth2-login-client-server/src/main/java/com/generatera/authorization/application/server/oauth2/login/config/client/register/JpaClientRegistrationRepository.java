@@ -1,10 +1,12 @@
 package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
-import com.generatera.authorization.application.server.oauth2.login.config.model.entity.ClientRegistrationEntity;
-import com.generatera.authorization.application.server.oauth2.login.config.repository.client.JpaInternalClientRegistrationRepository;
+import com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration.ClientRegistrationEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.client.registration.JpaInternalClientRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Example;
+
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -23,5 +25,10 @@ public class JpaClientRegistrationRepository extends AbstractClientRegistrationR
                                 .build()
                 ))
                 .orElse(null);
+    }
+
+    @Override
+    protected List<ClientRegistrationEntity> internalFindAllRegistrations() {
+        return repository.findAll();
     }
 }

@@ -15,7 +15,6 @@ import com.generatera.authorization.application.server.oauth2.login.config.token
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
@@ -41,8 +40,7 @@ import java.util.List;
  * 同样还也需要一个 token 解析器
  */
 @Configuration
-@AutoConfigureAfter(OAuth2ClientAutoConfiguration.class)
-@AutoConfigureBefore(ApplicationAuthServerConfig.class)
+@AutoConfigureBefore({OAuth2ClientAutoConfiguration.class,ApplicationAuthServerConfig.class})
 @Import({ApplicationOAuth2LoginComponentsImportSelector.class})
 public class ApplicationOAuth2LoginConfiguration {
 
@@ -124,7 +122,7 @@ public class ApplicationOAuth2LoginConfiguration {
 
                     // 设置 clientRegistrationRepository ..
                     // 默认不会影响 spring oauth2 client的相关配置 ..
-                    oAuth2LoginConfigurer.clientRegistrationRepository(OAuth2LoginUtils.getClientRegistrationRepository(securityBuilder)::findByRegistrationId);
+                    oAuth2LoginConfigurer.clientRegistrationRepository(OAuth2LoginUtils.getClientRegistrationRepository(securityBuilder));
                 }
 
 

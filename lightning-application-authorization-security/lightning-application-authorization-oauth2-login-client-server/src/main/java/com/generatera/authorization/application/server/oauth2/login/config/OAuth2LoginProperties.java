@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,14 +11,14 @@ import static com.generatera.authorization.application.server.oauth2.login.confi
 @Data
 @ConfigurationProperties(prefix = OAUTH2_LOGIN_AUTH_SERVER_PREFIX)
 public class OAuth2LoginProperties {
-    public static final String OAUTH2_LOGIN_AUTH_SERVER_PREFIX = "lightning.auth.app.server.oauth2.login.config";
+    public static final String OAUTH2_LOGIN_AUTH_SERVER_PREFIX = ApplicationAuthServerProperties.APPLICATION_AUTH_SERVER_PREFIX + ".oauth2.login.config";
 
     /**
      * 可能存在多个,所以使用 "*"
      *
      * oauth2 client 登录的处理方式使用默认形式 ...
      */
-    private String loginProcessUrl = "/auth/v1/oauth2/login/code/*";
+    private String loginProcessUrl = "/oauth2/login/code/*";
 
     private NoSeparation noSeparation = new NoSeparation();
 
@@ -101,27 +102,11 @@ public class OAuth2LoginProperties {
 
     @Data
     public static class NoSeparation {
-
-        public static final String DEFAULT_TOKEN_IDENTIFIER  = "JSESSIONID";
         /**
          * 可以自定义的登录页面 ..
          */
         private String loginPageUrl;
 
-        /**
-         * token identifier
-         *
-         * 默认是 app_jsession_id
-         *
-         * 使用它的原因是,当 oauth2-client 和 oauth2 central server 属于同域下的应用时,
-         * session identifier 存储机制导致,token identifier会在相互切换访问两个应用时发生
-         * token identifier的 重新生成 ..
-         *
-         * 现象就是 一个应用已经登陆,但是同一个浏览器访问另一个应用时,会使用这个应用的
-         * token identifier 进行 security context 加载,但是没有登陆就必然没有对应的
-         * security context ..
-         */
-        private String tokenIdentifier = "APP_JSESSIONID";
     }
 
 

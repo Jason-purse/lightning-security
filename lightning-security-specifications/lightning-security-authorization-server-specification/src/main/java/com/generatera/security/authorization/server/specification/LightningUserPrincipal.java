@@ -1,6 +1,7 @@
 package com.generatera.security.authorization.server.specification;
 
 import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
+import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
@@ -22,7 +23,7 @@ import java.io.Serializable;
  * @see JwtClaimsToUserPrincipalMapper
  *
  */
-public interface LightningUserPrincipal extends UserDetails, Serializable {
+public interface LightningUserPrincipal extends UserDetails, CredentialsContainer, Serializable {
 
 
     default String getName() {
@@ -32,5 +33,13 @@ public interface LightningUserPrincipal extends UserDetails, Serializable {
 
     default boolean isAuthenticated() {
         return isEnabled() && isAccountNonExpired() && isAccountNonLocked() && isCredentialsNonExpired();
+    }
+
+    /**
+     * 子类可以选择,擦除掉凭证信息,保证账户安全 ..
+     */
+    @Override
+    default void eraseCredentials() {
+        // 默认不做任何事情 ..
     }
 }

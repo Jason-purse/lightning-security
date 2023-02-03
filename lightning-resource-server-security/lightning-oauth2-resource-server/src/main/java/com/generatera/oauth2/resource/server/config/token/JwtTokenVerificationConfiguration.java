@@ -1,13 +1,9 @@
 package com.generatera.oauth2.resource.server.config.token;
 
-import com.generatera.oauth2.resource.server.config.token.jose.NimbusJwtDecoderExtUtils;
+import com.generatera.oauth2.resource.server.config.OAuth2ResourceServerUtils;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
 import com.generatera.resource.server.config.LogUtil;
-import com.generatera.resource.server.config.ResourceServerProperties;
-import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -19,7 +15,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 
 import java.util.Collection;
 
@@ -56,29 +52,19 @@ public class JwtTokenVerificationConfiguration {
     @Bean
     public LightningResourceServerConfigurer resourceServerConfigurer(
             OAuth2ResourceServerProperties oAuth2ResourceServerProperties,
-            ResourceServerProperties resourceServerProperties,
             LightningJwtAuthenticationConverter authenticationConverter
     ) {
         return new LightningResourceServerConfigurer() {
             @Override
             public void configure(HttpSecurity security) throws Exception {
+                security.setSharedObject(OAuth2ResourceServerProperties.class,oAuth2ResourceServerProperties);
                 OAuth2ResourceServerConfigurer<HttpSecurity> configurer = security.oauth2ResourceServer();
                 OAuth2ResourceServerConfigurer<HttpSecurity>.JwtConfigurer jwtConfigurer = configurer.jwt();
-
-                ResourceServerProperties.TokenVerificationConfig tokenVerificationConfig = resourceServerProperties.getTokenVerificationConfig();
-                ResourceServerProperties.TokenVerificationConfig.TokenType tokenType = tokenVerificationConfig.getTokenType();
-                // jwt 形式下需要配置解析器 ...
-                if (tokenType == ResourceServerProperties.TokenVerificationConfig.TokenType.JWT) {
-                    // 存在 jwt Source(存在授权服务器配置) ...
-                    // 当不存在的时候 ..
-                    // 否则 根据spring.oauth2.resource.server.jwkSetUrl 进行配置 ..
-                    JWKSource<SecurityContext> jwkSource = ProviderExtUtils.getJwkSource(security);
-                    if (jwkSource != null) {
-                        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoderExtUtils.fromJwkSource(jwkSource, oAuth2ResourceServerProperties.getJwt());
-                        jwtConfigurer.decoder(jwtDecoder);
-                    }
-                }
-
+                // 存在 jwt Source(存在授权服务器配置) ...
+                // 当不存在的时候 ..
+                // 否则 根据spring.oauth2.resource.server.jwkSetUrl 进行配置 ..
+                JwtDecoder jwtDecoder = OAuth2ResourceServerUtils.jwtDecoder(security, oAuth2ResourceServerProperties);
+                jwtConfigurer.decoder(jwtDecoder);
 
                 // 转换器, 转换到兼容 LightningUserPrincipal的状态下 ..
                 jwtConfigurer.jwtAuthenticationConverter(authenticationConverter);

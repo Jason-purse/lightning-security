@@ -2,6 +2,7 @@ package com.generatera.authorization.application.server.config;
 
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
@@ -28,9 +29,14 @@ public class MyDefaultLogoutPageGeneratingFilter extends DefaultLogoutPageGenera
 
     private String logoutProcessUrl = "/logout";
 
+    /**
+     * 在 非分离的情况下,需要获取 token ...
+     */
     private Function<HttpServletRequest, Map<String, String>> resolveHiddenInputs = (request) -> {
-        return Collections.emptyMap();
+        CsrfToken token = (CsrfToken)request.getAttribute(CsrfToken.class.getName());
+        return token != null ? Collections.singletonMap(token.getParameterName(), token.getToken()) : Collections.emptyMap();
     };
+
 
     public MyDefaultLogoutPageGeneratingFilter() {
     }

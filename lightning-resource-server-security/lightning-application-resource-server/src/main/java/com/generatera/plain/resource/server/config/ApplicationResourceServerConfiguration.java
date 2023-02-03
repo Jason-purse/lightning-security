@@ -9,11 +9,9 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
  * @time 10:07
  * @Description 简单资源服务器配置 ..
  * <p>
- * 目前先借用 oauth2 resource server
+ * 直接借用 oauth2 resource server,因为已经写的非常好了 .....
  */
 @AutoConfigureBefore(OAuth2ResourceServerConfiguration.class)
 public class ApplicationResourceServerConfiguration {
-
-
 
 }

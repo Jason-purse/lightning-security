@@ -6,12 +6,16 @@ import com.generatera.authorization.server.common.configuration.AuthorizationSer
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authentication.DefaultOAuth2CentralServerAuthenticationSuccessHandler;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authentication.LightningOAuth2CentralServerAuthenticationSuccessHandler;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.OptimizedForOAuth2AuthorizationEndpointFilter;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.DefaultOpaqueAwareOAuth2TokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.DefaultTokenDetailAwareOAuth2TokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.DelegateCentralOauth2TokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer.LightningCentralOAuth2AccessTokenCustomizer;
 import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer.LightningCentralOAuth2JwtTokenCustomizer;
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +27,18 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -162,7 +172,9 @@ public class OAuth2CentralAuthorizationServerConfiguration {
     @SuppressWarnings("unchecked")
     public LightningAuthServerConfigurer configurer(
             @Autowired(required = false)
-                    List<LightningOAuth2CentralAuthorizationServerBootstrapConfigurer> extConfigurers
+                    List<LightningOAuth2CentralAuthorizationServerBootstrapConfigurer> extConfigurers,
+            @Autowired(required = false)
+                    LightningOAuth2CentralServerAuthenticationSuccessHandler successHandler
     ) {
         return new LightningAuthServerConfigurer() {
             @Override
@@ -189,6 +201,12 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                 // 忽略对这些端点的csrf 处理
                 securityBuilder.csrf()
                         .ignoringRequestMatchers(configurer.getEndpointsMatcher());
+
+                // 最后增加解码器解码访问token
+                // 默认使用jwt, 因为只需要将用户信息传出即可 ..
+                securityBuilder
+                        .oauth2ResourceServer()
+                        .jwt();
             }
 
             private void formLoginSupport(HttpSecurity securityBuilder) throws Exception {
@@ -211,9 +229,43 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                     formLoginConfigurer.defaultSuccessUrl(config.getDefaultSuccessForwardUrl());
                 }
 
+                // 增加 授权码流程未登录用户 信息感知 ...
+                OptimizedForOAuth2AuthorizationEndpointFilter forOAuth2AuthorizationEndpointFilter = new OptimizedForOAuth2AuthorizationEndpointFilter();
+                if(StringUtils.hasText(config.getLoginPageUrl())) {
+                    // 必须设置
+                    forOAuth2AuthorizationEndpointFilter.setLoginPageUrl(config.getLoginPageUrl());
+                }
+
+                // 在它之前增加 ... 这个过滤器 ...
+                securityBuilder.addFilterBefore(forOAuth2AuthorizationEndpointFilter, AbstractPreAuthenticatedProcessingFilter.class);
+
+
+                // 实现后置处理 , 修改默认的认证端点 ....
+                formLoginConfigurer
+                        .addObjectPostProcessor(new ObjectPostProcessor<AbstractAuthenticationProcessingFilter>() {
+                            @Override
+                            public <O extends AbstractAuthenticationProcessingFilter> O postProcess(O filter) {
+                                DefaultOAuth2CentralServerAuthenticationSuccessHandler handler = new DefaultOAuth2CentralServerAuthenticationSuccessHandler();
+                                if (successHandler != null) {
+                                    handler.setAuthenticationSuccessHandler(successHandler);
+                                }
+                                filter.setAuthenticationSuccessHandler(handler);
+                                return filter;
+                            }
+                        });
+
+                securityBuilder.sessionManagement()
+                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+
                 LogUtil.prettyLog("central oauth2 auth server enable form login noSeparation support !!!");
             }
         };
+    }
+
+
+    @Bean
+    public JwtDecoder jwtDecoder(JWKSourceProvider provider) {
+        return OAuth2AuthorizationServerConfiguration.jwtDecoder(provider.getJWKSource());
     }
 
 }

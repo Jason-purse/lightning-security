@@ -2,10 +2,10 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.DefaultOAuth2Authorization;
-import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization.OAuth2AuthorizationRequestEntity;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.authorization.RedisOAuth2AuthorizationEntity;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.jianyue.lightning.util.JsonUtil;
 import lombok.AllArgsConstructor;
@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationCode;
 import org.springframework.security.oauth2.core.OAuth2RefreshToken;
@@ -25,12 +26,11 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.token.DefaultOAuth2TokenContext;
 
 import java.security.Principal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import static org.springframework.security.oauth2.core.OAuth2TokenType.ACCESS_TOKEN;
 
 /**
  * oauth2 authorization service
@@ -56,6 +56,7 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
     private final static String AUTHORIZATION_CODE_TOKEN_TYPE = "authorization_code_token_type";
     private final static String OIDC_TOKEN_TYPE = "oidc_token_type";
     private final static String REFRESH_TOKEN_TYPE = "refresh_token_type";
+    private final static String ACCESS_TOKEN_TYPE = "access_token_type";
 
     private final static String ACCESS_TOKEN_KEY = "access_tokens-";
     private final static String REFRESH_TOKEN_KEY = "refresh_tokens-";
@@ -156,6 +157,13 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
                     }
 
                     Object scopes = values.remove(OAuth2Authorization.AUTHORIZED_SCOPE_ATTRIBUTE_NAME);
+
+                    // OAuth2AuthorizationCodeAuthenticationProvider 在生成 token 上下文的时候, 需要获取这个属性,并且是Set集合 ..
+                    /**
+                     * {@link org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeAuthenticationProvider#authenticate(Authentication)}*
+                     * {@link DefaultOAuth2TokenContext#getAuthorizedScopes()}
+                     *  @see DefaultOAuth2TokenContext ...
+                     */
                     // arraylist -> set
                     if(scopes != null) {
                         values.put(OAuth2Authorization.AUTHORIZED_SCOPE_ATTRIBUTE_NAME,new LinkedHashSet<>(((Collection<String>) scopes)));
@@ -186,7 +194,7 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
         if (accessToken != null) {
             // access token
             final OAuth2AccessToken token = accessToken.getToken();
-            final String accessTokenKey = constructKey(token.getTokenType().getValue(), token.getTokenValue());
+            final String accessTokenKey = constructKey(ACCESS_TOKEN_TYPE, token.getTokenValue());
             entity.setAccessToken(authorization.getAccessToken());
             // but token -> id ref
             tokenSet(ACCESS_TOKEN_KEY, accessTokenKey, authorization.getId());
@@ -350,7 +358,7 @@ public class RedisOAuth2AuthorizationService implements OAuth2AuthorizationServi
 
     @Nullable
     private Object tokenForAccess(String token) {
-        return redisTemplate.opsForValue().get(ACCESS_TOKEN_KEY + constructKey(ACCESS_TOKEN.getValue(), token));
+        return redisTemplate.opsForValue().get(ACCESS_TOKEN_KEY + constructKey(ACCESS_TOKEN_TYPE, token));
     }
 
     private void tokenSet(String keyPrefix, String key, String id) {

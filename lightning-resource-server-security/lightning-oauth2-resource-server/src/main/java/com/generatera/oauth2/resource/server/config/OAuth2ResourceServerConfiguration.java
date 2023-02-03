@@ -6,7 +6,6 @@ import com.generatera.resource.server.config.LightningResourceServerConfig;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
 import com.generatera.resource.server.config.LogUtil;
 import com.generatera.resource.server.config.ResourceServerProperties;
-import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -43,14 +42,11 @@ public class OAuth2ResourceServerConfiguration {
             @Override
             public void configure(HttpSecurity security) throws Exception {
                 OAuth2ResourceServerConfigurer<HttpSecurity> configurer = security.oauth2ResourceServer();
-                ElvisUtil.isNotEmptyConsumer(properties.getTokenVerificationConfig().getBearerTokenConfig().getNeedPrefix(),
-                        status -> {
-                            if (!status) {
-                                // header 直接解析
-                                configurer.bearerTokenResolver(
-                                        new HeaderBearerTokenResolver(LightningAuthenticationTokenResolver.TOKEN_IDENTITY_NAME));
-                            }
-                        });
+                if (properties.getTokenVerificationConfig().getBearerTokenConfig().isUseHeader()) {
+                    // header 直接解析
+                    configurer.bearerTokenResolver(
+                            new HeaderBearerTokenResolver(LightningAuthenticationTokenResolver.TOKEN_IDENTITY_NAME));
+                }
 
                 LogUtil.prettyLog("oauth2 resource server enabled !!!!");
             }

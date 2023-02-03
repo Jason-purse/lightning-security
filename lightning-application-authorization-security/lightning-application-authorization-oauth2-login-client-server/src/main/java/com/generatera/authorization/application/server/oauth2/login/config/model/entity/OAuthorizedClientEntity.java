@@ -21,7 +21,6 @@ public class OAuthorizedClientEntity implements Serializable {
 
     @Id
     @MongoId
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     @Column(name = "client_registration_id")
