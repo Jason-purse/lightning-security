@@ -5,7 +5,6 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author FLJ
@@ -29,7 +28,7 @@ public class JWKSourceProvider {
         this.tokenIssueFormat = tokenIssueFormat;
     }
 
-    @Nullable
+    @NotNull
     public  JWKSource<SecurityContext> getJWKSource() {
         return source;
     }

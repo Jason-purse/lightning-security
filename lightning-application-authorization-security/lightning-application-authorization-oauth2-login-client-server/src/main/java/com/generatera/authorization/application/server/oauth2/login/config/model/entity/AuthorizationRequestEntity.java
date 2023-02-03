@@ -23,7 +23,6 @@ import java.io.Serializable;
 @Document("authorization_request")
 public class AuthorizationRequestEntity implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @MongoId
     private String id;
 

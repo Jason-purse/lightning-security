@@ -2,12 +2,19 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.oauth2.login.config.client.register.*;
 import com.generatera.authorization.application.server.oauth2.login.config.repository.client.registration.JpaInternalClientRegistrationRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 /**
@@ -34,19 +41,33 @@ public class ApplicationClientRegistrationConfiguration {
         }
     }
 
+    @Configuration(proxyBeanMethods = false)
     public static class DefaultClientRegistrationConfiguration {
 
+        /**
+         * 如果配置, 则拿取
+         */
         @Bean
-        public LightningOAuth2ClientRegistrationRepository lightningClientRegistrationRepository(@Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
-            if (clientRegistrationRepository == null) {
-                // 说明,默认配置没有生效 ...
-                // 直接给出一个 默认值(这将有效的输出一个 什么也无法登录的 oauth2 client auth server服务器)
-                clientRegistrationRepository = new DefaultClientRegistrationRepository();
-            }
+        @Conditional({ClientsConfiguredCondition.class})
+        @Order(Ordered.HIGHEST_PRECEDENCE + 2)
+        public LightningAuthServerConfigurer registrationRepositoryHandle(ClientRegistrationRepository clientRegistrationRepository) {
+            LightningOAuth2ClientRegistrationRepository oAuth2ClientRegistrationRepository = new DelegateClientRegistrationRepository(clientRegistrationRepository);
 
-
-            return new DelegateClientRegistrationRepository(clientRegistrationRepository);
+            return new LightningAuthServerConfigurer() {
+                @Override
+                public void configure(HttpSecurity securityBuilder) throws Exception {
+                    securityBuilder.setSharedObject(LightningOAuth2ClientRegistrationRepository.class, oAuth2ClientRegistrationRepository);
+                }
+            };
         }
+
+        @Bean
+        @ConditionalOnMissingBean(ClientRegistrationRepository.class)
+        public LightningOAuth2ClientRegistrationRepository fillRegistrationRepository() {
+            return new DefaultClientRegistrationRepository();
+        }
+
+
     }
 
 }

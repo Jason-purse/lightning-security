@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +39,7 @@ import java.util.List;
  * 同样还也需要一个 token 解析器
  */
 @Configuration
-@AutoConfigureBefore({OAuth2ClientAutoConfiguration.class,ApplicationAuthServerConfig.class})
+@AutoConfigureBefore({ApplicationAuthServerConfig.class})
 @Import({ApplicationOAuth2LoginComponentsImportSelector.class})
 public class ApplicationOAuth2LoginConfiguration {
 
