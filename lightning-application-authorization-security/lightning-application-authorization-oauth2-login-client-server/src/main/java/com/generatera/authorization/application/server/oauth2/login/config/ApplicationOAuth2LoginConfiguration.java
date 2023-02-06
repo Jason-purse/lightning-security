@@ -1,6 +1,5 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
-import com.generatera.authorization.application.server.config.ApplicationAuthServerConfig;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.DefaultLightningOidcUserService;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2GrantedAuthoritiesMapper;
@@ -15,8 +14,9 @@ import com.generatera.authorization.application.server.oauth2.login.config.token
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,11 +39,11 @@ import java.util.List;
  * 同样还也需要一个 token 解析器
  */
 @Configuration
-@AutoConfigureBefore({ApplicationAuthServerConfig.class})
+@AutoConfigureAfter({OAuth2ClientAutoConfiguration.class})
 @Import({ApplicationOAuth2LoginComponentsImportSelector.class})
 public class ApplicationOAuth2LoginConfiguration {
 
-    @Configuration
+
     @EnableConfigurationProperties(OAuth2LoginProperties.class)
     @RequiredArgsConstructor
     public static class OAuth2LoginConfiguration {

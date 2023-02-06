@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 /**
  * in memory 形式 spring 自动注入 ...
  */
+@Configuration
 @AutoConfiguration
 public class ApplicationClientRegistrationConfiguration {
 
@@ -41,7 +42,13 @@ public class ApplicationClientRegistrationConfiguration {
         }
     }
 
-    @Configuration(proxyBeanMethods = false)
+    /**
+     * 一个 坑记录 ..
+     * 这些配置都属于自动配置,如果被componentsScan 提前扫描到,则将会存在bean 提前注入的情况,这可能是错误的 ..
+     *
+     * 由于组件扫描同样会扫描内嵌类,所以 要么不添加@Configuration 注解,否则
+     * 同时添加@Configuration 以及 @AutoConfiguration 注解(来逃避 候选选择) ...
+     */
     public static class DefaultClientRegistrationConfiguration {
 
         /**
