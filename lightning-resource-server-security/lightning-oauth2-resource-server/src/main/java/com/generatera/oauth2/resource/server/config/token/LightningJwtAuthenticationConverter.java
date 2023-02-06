@@ -58,8 +58,8 @@ class LightningJwtAuthenticationConverter implements Converter<Jwt, AbstractAuth
         return this.jwtGrantedAuthoritiesConverter.convert(jwt);
     }
 
-    public void setJwtGrantedAuthoritiesConverter(Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter) {
+    public void setJwtGrantedAuthoritiesConverter(LightningJwtGrantAuthorityMapper jwtGrantedAuthoritiesConverter) {
         Assert.notNull(jwtGrantedAuthoritiesConverter, "jwtGrantedAuthoritiesConverter cannot be null");
-        this.jwtGrantedAuthoritiesConverter = jwtGrantedAuthoritiesConverter;
+        this.jwtGrantedAuthoritiesConverter = new LightningJwtGrantAuthorityMapperAdapter(jwtGrantedAuthoritiesConverter);
     }
 }

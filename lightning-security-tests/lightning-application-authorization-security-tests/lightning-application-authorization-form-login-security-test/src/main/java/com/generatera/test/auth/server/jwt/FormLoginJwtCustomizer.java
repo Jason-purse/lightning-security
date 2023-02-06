@@ -13,6 +13,7 @@ public class FormLoginJwtCustomizer  implements LightningJwtCustomizer {
     @Override
     public void customizeToken(JwtEncodingContext context) {
         JwtClaimsSet.Builder claims = context.getClaims();
-        claims.claim("authorities","1 2 3 4 5 6");
+        claims.claim("authorities",claims.getClaim("scope"));
+        claims.removeClaim("scope");
     }
 }

@@ -83,7 +83,7 @@ public class DefaultLightningAccessTokenGenerator implements LightningAccessToke
 
             // lazy resolve
             if (claimsBuilder.hasClaim(authoritiesName)) {
-                claimsBuilder.claim(authoritiesName, context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new));
+                claimsBuilder.claim(authoritiesName, context.getPrincipal().getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
             }
 
             LightningTokenClaimsSet accessTokenClaimsSet = claimsBuilder.build();

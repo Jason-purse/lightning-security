@@ -27,6 +27,9 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
 
     private final LightningJwtEncoder jwtEncoder;
 
+    /**
+     * 可以通过它修改,authorities 名称(默认是 scope) ...
+     */
     private List<String> authoritiesName = Arrays.asList(JwtExtClaimNames.SCOPE_CLAIM,JwtExtClaimNames.SCOPE_SHORT_CLAIM);
 
     public void setAuthoritiesName(List<String> authoritiesName) {
@@ -74,19 +77,8 @@ public class DefaultLightningJwtGenerator implements LightningJwtGenerator {
                     claimsBuilder.notBefore(issuedAt);
                     if (!CollectionUtils.isEmpty(principal.getAuthorities())) {
                         // 取第一个 ...
-                        claimsBuilder.claim(authoritiesName.get(0), org.apache.commons.lang3.StringUtils.joinWith(" ",principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toArray(Object[]::new)));
+                        claimsBuilder.claim(authoritiesName.get(0), principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
                     }
-                } else {
-                    // oidc 处理 ...
-                    // 但是没有,所以不需要 ..
-                    //claimsBuilder.claim("azp", registeredClient.getClientId());
-                    //if (AuthorizationGrantType.AUTHORIZATION_CODE.equals(context.getAuthorizationGrantType())) {
-                    //    OAuth2AuthorizationRequest authorizationRequest = (OAuth2AuthorizationRequest)context.getAuthorization().getAttribute(OAuth2AuthorizationRequest.class.getName());
-                    //    String nonce = (String)authorizationRequest.getAdditionalParameters().get("nonce");
-                    //    if (StringUtils.hasText(nonce)) {
-                    //        claimsBuilder.claim("nonce", nonce);
-                    //    }
-                    //}
                 }
 
                 // 加密算法可以定制 ...

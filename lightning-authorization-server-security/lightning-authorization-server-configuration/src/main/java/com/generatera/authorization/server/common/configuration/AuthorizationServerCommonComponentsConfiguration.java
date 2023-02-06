@@ -2,6 +2,7 @@ package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.security.authorization.server.specification.BootstrapContext;
 import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
@@ -62,6 +63,14 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
 
 
     private final AuthorizationServerComponentProperties properties;
+
+    /**
+     * bootstrap Context
+     */
+    @Bean
+    public BootstrapContext bootstrapContext() {
+        return BootstrapContext.of();
+    }
 
 
     /**

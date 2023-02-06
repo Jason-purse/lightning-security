@@ -1,5 +1,6 @@
-package com.generatera.security.authorization.server.specification.components.token;
+package com.generatera.security.authorization.server.specification;
 
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 

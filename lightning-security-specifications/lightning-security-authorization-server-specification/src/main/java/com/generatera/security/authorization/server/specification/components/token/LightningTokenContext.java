@@ -1,5 +1,6 @@
 package com.generatera.security.authorization.server.specification.components.token;
 
+import com.generatera.security.authorization.server.specification.Context;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.TokenIssueFormat;
 import com.generatera.security.authorization.server.specification.TokenSettingsProperties;

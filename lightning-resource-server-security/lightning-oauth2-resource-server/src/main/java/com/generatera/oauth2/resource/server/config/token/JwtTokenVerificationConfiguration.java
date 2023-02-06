@@ -6,18 +6,13 @@ import com.generatera.resource.server.config.LogUtil;
 import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-
-import java.util.Collection;
 
 /**
  * @author FLJ
@@ -29,22 +24,26 @@ import java.util.Collection;
 @Configuration
 public class JwtTokenVerificationConfiguration {
 
+
+
     /**
-     * 一般来说,应用都需要自定义自己的转换器 ..
+     *  使用默认的转换器,来将 oauth2 内容迁移到 lightning 相关的内容 ...
      */
     @Bean
-    @ConditionalOnMissingBean(LightningJwtAuthenticationConverter.class)
+    @Primary
     public PlainJwtAuthenticationConverter jwtAuthenticationConverter(
             @Autowired(required = false)
                     JwtClaimsToUserPrincipalMapper principalMapper,
             @Autowired(required = false)
-                    Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter
+                    LightningJwtGrantAuthorityMapper jwtGrantedAuthoritiesConverter
     ) {
         PlainJwtAuthenticationConverter lightningJwtAuthenticationConverter = new PlainJwtAuthenticationConverter();
+
         // grantedAuthorities handle
         if (jwtGrantedAuthoritiesConverter != null) {
             lightningJwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         }
+
         lightningJwtAuthenticationConverter.setJwtClaimsMapper(principalMapper);
         return lightningJwtAuthenticationConverter;
     }
