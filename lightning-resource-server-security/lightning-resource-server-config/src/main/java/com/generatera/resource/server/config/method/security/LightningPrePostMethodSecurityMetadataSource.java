@@ -1,4 +1,4 @@
-package com.generatera.resource.server.config;
+package com.generatera.resource.server.config.method.security;
 
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.security.access.ConfigAttribute;
@@ -36,25 +36,13 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
             return Collections.emptyList();
         } else {
 
-            StringBuilder builder = new StringBuilder();
-            if (preAuthorize != null) {
-                handleRolesAndAuthorities(preAuthorize.roles(), preAuthorize.authorities(), builder);
-            }
-
             ArrayList<ConfigAttribute> attrs = new ArrayList<>(2);
-
-            String preAuthorizeAttribute = builder.toString();
-            PreInvocationAttribute pre = this.attributeFactory.createPreInvocationAttribute(null, null, preAuthorizeAttribute.length() > 0 ? preAuthorizeAttribute : null);
+            PreInvocationAttribute pre = getPreInvocationAttribute(method,targetClass,preAuthorize);
             if (pre != null) {
                 attrs.add(pre);
             }
-            builder = new StringBuilder();
-            if(postAuthorize != null) {
-                handleRolesAndAuthorities(postAuthorize.roles(), postAuthorize.authorities(), builder);
-            }
 
-            String postAuthorizeAttribute = builder.toString();
-            PostInvocationAttribute post = this.attributeFactory.createPostInvocationAttribute(null, postAuthorizeAttribute.length() > 0 ? postAuthorizeAttribute : null);
+            PostInvocationAttribute post = getPostInvocationAttribute(method,targetClass,postAuthorize);
             if (post != null) {
                 attrs.add(post);
             }
@@ -64,7 +52,26 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
         }
     }
 
-     static void handleRolesAndAuthorities(String[] roles,String[] authorities, StringBuilder builder) {
+    protected PostInvocationAttribute getPostInvocationAttribute(Method method, Class<?> targetClass,LightningPostAuthorize postAuthorize) {
+        StringBuilder builder = new StringBuilder();
+        if(postAuthorize != null) {
+            handleRolesAndAuthorities(postAuthorize.roles(), postAuthorize.authorities(), builder);
+        }
+        String postAuthorizeAttribute = builder.toString();
+        return this.attributeFactory.createPostInvocationAttribute(null, postAuthorizeAttribute.length() > 0 ? postAuthorizeAttribute : null);
+    }
+
+    protected PreInvocationAttribute getPreInvocationAttribute(Method method, Class<?> targetClass,LightningPreAuthorize preAuthorize) {
+        StringBuilder builder = new StringBuilder();
+        if (preAuthorize != null) {
+            handleRolesAndAuthorities(preAuthorize.roles(), preAuthorize.authorities(), builder);
+        }
+
+        String preAuthorizeAttribute = builder.toString();
+        return this.attributeFactory.createPreInvocationAttribute(null, null, preAuthorizeAttribute.length() > 0 ? preAuthorizeAttribute : null);
+    }
+
+    static void handleRolesAndAuthorities(String[] roles,String[] authorities, StringBuilder builder) {
         if (!ObjectUtils.isEmpty(roles)) {
             handleRoles(roles, builder);
         }
@@ -104,5 +111,9 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
     @Override
     public Collection<ConfigAttribute> getAllConfigAttributes() {
         return null;
+    }
+
+    protected PrePostInvocationAttributeFactory  getAttributeFactory() {
+        return attributeFactory;
     }
 }

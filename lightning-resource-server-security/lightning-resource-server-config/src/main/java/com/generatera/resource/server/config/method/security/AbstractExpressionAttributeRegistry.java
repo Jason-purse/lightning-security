@@ -1,5 +1,6 @@
-package com.generatera.resource.server.config;
+package com.generatera.resource.server.config.method.security;
 
+import com.generatera.resource.server.config.method.security.ExpressionAttribute;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.core.MethodClassKey;
 import org.springframework.lang.NonNull;

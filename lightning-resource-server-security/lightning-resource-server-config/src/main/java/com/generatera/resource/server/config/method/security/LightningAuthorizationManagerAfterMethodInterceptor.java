@@ -1,4 +1,4 @@
-package com.generatera.resource.server.config;
+package com.generatera.resource.server.config.method.security;
 
 import org.aopalliance.aop.Advice;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -16,19 +16,14 @@ import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationEventPublisher;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.method.AuthorizationInterceptorsOrder;
+import org.springframework.security.authorization.method.MethodInvocationResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
 
 import java.util.function.Supplier;
-/**
- * @author FLJ
- * @date 2023/2/6
- * @time 16:10
- * @Description 扫描 权限和权限点的 方法拦截器
- */
-public class LightningAuthorizationManagerBeforeMethodInterceptor implements Ordered, MethodInterceptor, PointcutAdvisor, AopInfrastructureBean {
 
+public class LightningAuthorizationManagerAfterMethodInterceptor implements Ordered, MethodInterceptor, PointcutAdvisor, AopInfrastructureBean {
     static final Supplier<Authentication> AUTHENTICATION_SUPPLIER = () -> {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
@@ -39,33 +34,31 @@ public class LightningAuthorizationManagerBeforeMethodInterceptor implements Ord
     };
     private final Log logger = LogFactory.getLog(this.getClass());
     private final Pointcut pointcut;
-    private final AuthorizationManager<MethodInvocation> authorizationManager;
+    private final AuthorizationManager<MethodInvocationResult> authorizationManager;
     private int order;
-    private AuthorizationEventPublisher eventPublisher;
+    private AuthorizationEventPublisher eventPublisher = LightningAuthorizationManagerAfterMethodInterceptor::noPublish;
 
-    public LightningAuthorizationManagerBeforeMethodInterceptor(Pointcut pointcut, AuthorizationManager<MethodInvocation> authorizationManager) {
-        this.order = AuthorizationInterceptorsOrder.FIRST.getOrder();
-        this.eventPublisher = LightningAuthorizationManagerBeforeMethodInterceptor::noPublish;
+    public LightningAuthorizationManagerAfterMethodInterceptor(Pointcut pointcut, AuthorizationManager<MethodInvocationResult> authorizationManager) {
         Assert.notNull(pointcut, "pointcut cannot be null");
         Assert.notNull(authorizationManager, "authorizationManager cannot be null");
         this.pointcut = pointcut;
         this.authorizationManager = authorizationManager;
     }
 
-    public static LightningAuthorizationManagerBeforeMethodInterceptor preAuthorize() {
-        return preAuthorize(new LightningPreAuthorizeAuthorizationManager());
+    public static LightningAuthorizationManagerAfterMethodInterceptor postAuthorize() {
+        return postAuthorize(new LightningPostAuthorizeAuthorizationManager());
     }
 
-    public static LightningAuthorizationManagerBeforeMethodInterceptor preAuthorize(LightningPreAuthorizeAuthorizationManager authorizationManager) {
-        LightningAuthorizationManagerBeforeMethodInterceptor interceptor = new LightningAuthorizationManagerBeforeMethodInterceptor(AuthorizationMethodPointcuts.forAnnotations(LightningPreAuthorize.class), authorizationManager);
+    public static LightningAuthorizationManagerAfterMethodInterceptor postAuthorize(LightningPostAuthorizeAuthorizationManager authorizationManager) {
+        LightningAuthorizationManagerAfterMethodInterceptor interceptor = new LightningAuthorizationManagerAfterMethodInterceptor(AuthorizationMethodPointcuts.forAnnotations(LightningPostAuthorize.class), authorizationManager);
         interceptor.setOrder(AuthorizationInterceptorsOrder.PRE_AUTHORIZE.getOrder() - 1);
         return interceptor;
     }
 
-
     public Object invoke(MethodInvocation mi) throws Throwable {
-        this.attemptAuthorization(mi);
-        return mi.proceed();
+        Object result = mi.proceed();
+        this.attemptAuthorization(mi, result);
+        return result;
     }
 
     public int getOrder() {
@@ -93,12 +86,13 @@ public class LightningAuthorizationManagerBeforeMethodInterceptor implements Ord
         return true;
     }
 
-    private void attemptAuthorization(MethodInvocation mi) {
+    private void attemptAuthorization(MethodInvocation mi, Object result) {
         this.logger.debug(LogMessage.of(() -> {
             return "Authorizing method invocation " + mi;
         }));
-        AuthorizationDecision decision = this.authorizationManager.check(AUTHENTICATION_SUPPLIER, mi);
-        this.eventPublisher.publishAuthorizationEvent(AUTHENTICATION_SUPPLIER, mi, decision);
+        MethodInvocationResult object = new MethodInvocationResult(mi, result);
+        AuthorizationDecision decision = this.authorizationManager.check(AUTHENTICATION_SUPPLIER, object);
+        this.eventPublisher.publishAuthorizationEvent(AUTHENTICATION_SUPPLIER, object, decision);
         if (decision != null && !decision.isGranted()) {
             this.logger.debug(LogMessage.of(() -> {
                 return "Failed to authorize " + mi + " with authorization manager " + this.authorizationManager + " and decision " + decision;

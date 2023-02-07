@@ -22,6 +22,7 @@
         <module>lightning-oauth2-resource-server</module>
         <module>lightning-resource-server-config</module>
         <module>lightning-application-resource-server</module>
+        <module>lightning-resource-server-maven-plugin</module>
     </modules>
 
 

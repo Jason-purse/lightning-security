@@ -17,6 +17,7 @@ class LightningJwtGrantAuthorityMapperAdapter implements Converter<Jwt, Collecti
     @Override
     public Collection<GrantedAuthority> convert(Jwt source) {
         LightningJwt.Builder builder = LightningJwt.withTokenValue(source.getTokenValue());
+        builder.headers(headers -> headers.putAll(source.getHeaders()));
         LightningJwt lightningJwt = builder.claims(claims -> claims.putAll(source.getClaims())).build();
         return  jwtGrantAuthorityMapper.convert(lightningJwt);
     }

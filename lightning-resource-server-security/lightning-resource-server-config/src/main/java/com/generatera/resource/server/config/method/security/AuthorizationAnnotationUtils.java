@@ -1,4 +1,4 @@
-package com.generatera.resource.server.config;
+package com.generatera.resource.server.config.method.security;
 
 import org.springframework.core.annotation.*;
 

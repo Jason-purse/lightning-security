@@ -1,6 +1,6 @@
 package com.generatera.form.login.resource.test.controller;
 
-import com.generatera.resource.server.config.LightningPreAuthorize;
+import com.generatera.resource.server.config.method.security.LightningPreAuthorize;
 import com.generatera.security.authorization.server.specification.LightningUserContext;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;

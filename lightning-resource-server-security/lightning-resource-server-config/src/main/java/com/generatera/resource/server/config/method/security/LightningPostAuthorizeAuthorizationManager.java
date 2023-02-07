@@ -1,8 +1,7 @@
-package com.generatera.resource.server.config;
+package com.generatera.resource.server.config.method.security;
 
 import org.springframework.aop.support.AopUtils;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.Expression;
 import org.springframework.lang.NonNull;
 import org.springframework.security.access.expression.ExpressionUtils;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;

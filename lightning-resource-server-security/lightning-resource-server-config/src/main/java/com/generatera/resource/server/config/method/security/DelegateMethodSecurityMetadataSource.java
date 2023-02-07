@@ -1,6 +1,7 @@
-package com.generatera.resource.server.config;
+package com.generatera.resource.server.config.method.security;
 
 import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.access.method.AbstractMethodSecurityMetadataSource;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
 
 import java.lang.reflect.Method;
@@ -14,9 +15,7 @@ import java.util.function.Function;
  * @time 14:05
  * @Description 代理方法安全元数据源 ..
  */
-public class DelegateMethodSecurityMetadataSource implements MethodSecurityMetadataSource {
-
-    private final ThreadLocal<MethodSecurityMetadataSource> localSupport = new ThreadLocal<>();
+public class DelegateMethodSecurityMetadataSource extends AbstractMethodSecurityMetadataSource {
 
 
     private final List<MethodSecurityMetadataSource> delegate;
@@ -34,10 +33,6 @@ public class DelegateMethodSecurityMetadataSource implements MethodSecurityMetad
         return handleBy(methodSecurityMetadataSource -> methodSecurityMetadataSource.getAttributes(method, targetClass));
     }
 
-    @Override
-    public Collection<ConfigAttribute> getAttributes(Object object) throws IllegalArgumentException {
-        return handleBy(methodSecurityMetadataSource -> methodSecurityMetadataSource.getAttributes(object));
-    }
 
     @Override
     public Collection<ConfigAttribute> getAllConfigAttributes() {
@@ -45,25 +40,12 @@ public class DelegateMethodSecurityMetadataSource implements MethodSecurityMetad
     }
 
     private <T> T handleBy(Function<MethodSecurityMetadataSource, T> action) {
-        MethodSecurityMetadataSource methodSecurityMetadataSource = localSupport.get();
-        // 设置移除 ...
-        if (methodSecurityMetadataSource == null) {
-            localSupport.remove();
-        }
-        return methodSecurityMetadataSource != null ? action.apply(methodSecurityMetadataSource) : null;
-    }
-
-    @Override
-    public boolean supports(Class<?> clazz) {
-        for (MethodSecurityMetadataSource methodSecurityMetadataSource : delegate) {
-            if (methodSecurityMetadataSource.supports(clazz)) {
-                localSupport.set(methodSecurityMetadataSource);
-                return true;
+        for (MethodSecurityMetadataSource source : delegate) {
+            T apply = action.apply(source);
+            if(apply != null) {
+                return apply;
             }
         }
-
-        return false;
+        return  null;
     }
-
-
 }

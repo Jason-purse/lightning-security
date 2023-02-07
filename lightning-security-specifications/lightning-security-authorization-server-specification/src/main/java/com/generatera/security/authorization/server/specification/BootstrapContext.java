@@ -21,7 +21,7 @@ public interface BootstrapContext extends Context {
     }
 
     public static <H extends HttpSecurityBuilder<H>> BootstrapContext fromHttpSecurity(H builder) {
-        return HttpSecurityBuilderUtils.getBean(builder,BootstrapContext.class);
+        return HttpSecurityBuilderUtils.getBean(builder,BootstrapContext.class,BootstrapContext::of);
     }
 }
 
