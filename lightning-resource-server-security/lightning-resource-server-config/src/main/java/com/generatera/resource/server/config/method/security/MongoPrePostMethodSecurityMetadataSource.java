@@ -8,6 +8,8 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
 
+import java.util.List;
+
 public class MongoPrePostMethodSecurityMetadataSource extends ForDataBasedPrePostMethodSecurityMetadataSource {
 
     public MongoPrePostMethodSecurityMetadataSource(PrePostInvocationAttributeFactory attributeFactory) {
@@ -25,5 +27,11 @@ public class MongoPrePostMethodSecurityMetadataSource extends ForDataBasedPrePos
                                 )).is(methodSecurityIdentifier)
                                 .and(LambdaUtils.getPropertyNameForLambda(ResourceMethodSecurityEntity::getInvokePhase)).is(invokePhase)),
                 ResourceMethodSecurityEntity.class);
+    }
+
+
+    @Override
+    protected void updateResourceMethodSecurityMetadata(List<ResourceMethodSecurityEntity> entities) {
+        throw new RuntimeException("未实现 ..");
     }
 }
