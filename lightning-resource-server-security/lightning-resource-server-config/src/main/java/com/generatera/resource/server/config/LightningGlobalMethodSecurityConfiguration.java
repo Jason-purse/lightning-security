@@ -4,15 +4,12 @@ import com.generatera.resource.server.common.EnableLightningMethodSecurity;
 import com.generatera.resource.server.config.ResourceServerProperties.StoreKind;
 import com.generatera.resource.server.config.method.security.*;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
-import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.access.expression.method.ExpressionBasedAnnotationAttributeFactory;
 import org.springframework.security.access.method.DelegatingMethodSecurityMetadataSource;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
@@ -37,7 +34,6 @@ import java.util.List;
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableLightningMethodSecurity
-@RequiredArgsConstructor
 class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration implements ApplicationListener<ApplicationEvent> {
 
 
@@ -55,7 +51,23 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
     /**
      * 内部的 pre / post 注解的元数据来源 ..
      */
-    private final LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource = createMethodSecurityMetadataSource();
+    private final LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource;
+
+
+
+    @Autowired
+    public LightningGlobalMethodSecurityConfiguration(ApplicationContext context, ResourceServerProperties resourceServerProperties) {
+        //this.preAuthorizeAuthorizationManager.setExpressionHandler(this.expressionHandler);
+        //this.preAuthorizeAuthorizationMethodInterceptor = LightningAuthorizationManagerBeforeMethodInterceptor.preAuthorize(this.preAuthorizeAuthorizationManager);
+        //this.postAuthorizeAuthorizationManager.setExpressionHandler(this.expressionHandler);
+        //this.postAuthorizeAuthorizationMethodInterceptor = LightningAuthorizationManagerAfterMethodInterceptor.postAuthorize(this.postAuthorizeAuthorizationManager);
+        //this.expressionHandler.setApplicationContext(context);
+        //AuthorizationEventPublisher publisher = new SpringAuthorizationEventPublisher(context);
+        //this.preAuthorizeAuthorizationMethodInterceptor.setAuthorizationEventPublisher(publisher);
+        //this.postAuthorizeAuthorizationMethodInterceptor.setAuthorizationEventPublisher(publisher);
+        this.properties = resourceServerProperties;
+        this.methodSecurityMetadataSource = createMethodSecurityMetadataSource();
+    }
 
     /**
      * 必须同步 ...
@@ -65,15 +77,6 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
      */
     @Override
     public void onApplicationEvent(@NotNull ApplicationEvent event) {
-       if(event instanceof ContextRefreshedEvent) {
-           MethodSecurityMetadataSource source = methodSecurityMetadataSource();
-           AllowCacheModifiedMethodSecurityMetadataSource allowCacheModifiedMethodSecurityMetadataSource = (AllowCacheModifiedMethodSecurityMetadataSource) source;
-           // 清理掉 缓存信息 ...
-           allowCacheModifiedMethodSecurityMetadataSource.clearTempAttributeCache();
-
-           // 更新可能存在的新数据 ...
-       }
-
         // 这个时候, 获取 methodSecurityMetadataSource中的 已经被处理过的数据信息
         // 触发内部的逻辑 ... 也就是缓存丢弃 ..  开始真正的权限信息抓取 ..
         // 例如从 数据库中获取 ...
@@ -141,18 +144,6 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
     }
 
 
-    @Autowired
-    public LightningGlobalMethodSecurityConfiguration(ApplicationContext context,ResourceServerProperties resourceServerProperties) {
-        //this.preAuthorizeAuthorizationManager.setExpressionHandler(this.expressionHandler);
-        //this.preAuthorizeAuthorizationMethodInterceptor = LightningAuthorizationManagerBeforeMethodInterceptor.preAuthorize(this.preAuthorizeAuthorizationManager);
-        //this.postAuthorizeAuthorizationManager.setExpressionHandler(this.expressionHandler);
-        //this.postAuthorizeAuthorizationMethodInterceptor = LightningAuthorizationManagerAfterMethodInterceptor.postAuthorize(this.postAuthorizeAuthorizationManager);
-        //this.expressionHandler.setApplicationContext(context);
-        //AuthorizationEventPublisher publisher = new SpringAuthorizationEventPublisher(context);
-        //this.preAuthorizeAuthorizationMethodInterceptor.setAuthorizationEventPublisher(publisher);
-        //this.postAuthorizeAuthorizationMethodInterceptor.setAuthorizationEventPublisher(publisher);
-        this.properties = resourceServerProperties;
-    }
     /**
      * 提供 {@link LightningPreAuthorize} 以及 {@link LightningPostAuthorize} 等注解的处理 的元数据来源 ..
      * @return
@@ -167,14 +158,9 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
         return new DelegateMethodSecurityMetadataSource(methodSecurityMetadataSources);
     }
 
-    @Bean
-    public ExpressionBasedAnnotationAttributeFactory attributeFactory() {
-        return new ExpressionBasedAnnotationAttributeFactory(getExpressionHandler());
-    }
-
     private LightningPrePostMethodSecurityMetadataSource createMethodSecurityMetadataSource() {
 
-        ExpressionBasedAnnotationAttributeFactory attributeFactory = attributeFactory();
+        ExpressionBasedAnnotationAttributeFactory attributeFactory = new ExpressionBasedAnnotationAttributeFactory(getExpressionHandler());
         StoreKind saveKind = properties.getAuthorityConfig().getResourceAuthoritySaveKind();
         if(saveKind != null) {
             saveKind = StoreKind.MEMORY;
@@ -193,7 +179,8 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
     public MethodSecurityMetadataSource methodSecurityMetadataSource() {
         MethodSecurityMetadataSource source = super.methodSecurityMetadataSource();
         DelegatingMethodSecurityMetadataSource delegatingMethodSecurityMetadataSource = (DelegatingMethodSecurityMetadataSource) source;
-        return new AllowCacheModifiedMethodSecurityMetadataSource(new DelegateMethodSecurityMetadataSource(delegatingMethodSecurityMetadataSource.getMethodSecurityMetadataSources()));
+        // 让一部分的method security metadata Source 有能力 不受外部缓存控制,依靠自己进行缓存控制 ..
+        return new AllowPartialCacheMethodSecurityMetadataSource(delegatingMethodSecurityMetadataSource.getMethodSecurityMetadataSources());
     }
 
     @Autowired

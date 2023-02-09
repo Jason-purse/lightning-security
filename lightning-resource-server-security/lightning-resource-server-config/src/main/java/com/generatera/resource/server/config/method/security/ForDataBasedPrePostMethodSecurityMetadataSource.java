@@ -1,6 +1,7 @@
 package com.generatera.resource.server.config.method.security;
 
 import com.generatera.resource.server.config.model.entity.method.security.ResourceMethodSecurityEntity;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,9 +13,11 @@ import org.springframework.security.access.prepost.PostInvocationAttribute;
 import org.springframework.security.access.prepost.PreInvocationAttribute;
 import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -92,28 +95,33 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
 
     @Override
     protected PostInvocationAttribute getPostInvocationAttribute(Method method, Class<?> targetClass, LightningPostAuthorize postAuthorize) {
-        Supplier<String> postInvocationAttributeSupplier = getPostInvocationAttributeSupplier(method, targetClass, postAuthorize);
-        String postInvocationAttribute = postInvocationAttributeSupplier.get();
-
-        if (postInvocationAttribute == null) {
-            return super.getPostInvocationAttribute(method, targetClass, postAuthorize);
-        } else {
-            return getAttributeFactory().createPostInvocationAttribute(
-                    null, postInvocationAttribute
-            );
-        }
+        Supplier<ConfigAttribute> postInvocationAttributeSupplier = getPostInvocationAttributeSupplier(method, targetClass, postAuthorize);
+        return ((PostInvocationAttribute) postInvocationAttributeSupplier.get());
     }
 
     @Override
     protected PreInvocationAttribute getPreInvocationAttribute(Method method, Class<?> targetClass, LightningPreAuthorize preAuthorize) {
-        Supplier<String> preInvocationAttributeSupplier = getPreInvocationAttributeSupplier(method, targetClass, preAuthorize);
-        String preInvocationAttribute = preInvocationAttributeSupplier.get();
+        Supplier<ConfigAttribute> preInvocationAttributeSupplier = getPreInvocationAttributeSupplier(method, targetClass, preAuthorize);
+        return ((PreInvocationAttribute) preInvocationAttributeSupplier.get());
+    }
+
+    protected PreInvocationAttribute getPreInvocationAttribute0(String preInvocationAttribute,Method method,Class<?> targetClass,LightningPreAuthorize preAuthorize) {
         if (preInvocationAttribute == null) {
             return super.getPreInvocationAttribute(method, targetClass, preAuthorize);
         } else {
             return getAttributeFactory().createPreInvocationAttribute(
                     null, null,
                     preInvocationAttribute
+            );
+        }
+    }
+
+    protected PostInvocationAttribute getPostInvocationAttribute0(String postInvocationAttribute,Method method,Class<?> targetClass,LightningPostAuthorize postAuthorize) {
+        if (postInvocationAttribute == null) {
+            return super.getPostInvocationAttribute(method, targetClass, postAuthorize);
+        } else {
+            return getAttributeFactory().createPostInvocationAttribute(
+                    null, postInvocationAttribute
             );
         }
     }
@@ -133,36 +141,78 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
         return cacheKey -> valueSupplier.apply(new Context(cacheKey, method, targetClass));
     }
 
-    private Supplier<String> getPostInvocationAttributeSupplier(Method method, Class<?> targetClass, LightningPostAuthorize postAuthorize) {
-        return handleRolesAndAuthorities(method, targetClass, postAuthorize.identifier());
+    private Supplier<ConfigAttribute> getPostInvocationAttributeSupplier(Method method, Class<?> targetClass, LightningPostAuthorize postAuthorize) {
+        return handleRolesAndAuthorities(method, targetClass,postAuthorize,MethodSecurityInvokePhase.AFTER);
     }
 
 
-    private Supplier<String> getPreInvocationAttributeSupplier(Method method, Class<?> targetClass, LightningPreAuthorize preAuthorize) {
-        return handleRolesAndAuthorities(method, targetClass, preAuthorize.identifier());
+    private Supplier<ConfigAttribute> getPreInvocationAttributeSupplier(Method method, Class<?> targetClass, LightningPreAuthorize preAuthorize) {
+        return handleRolesAndAuthorities(method, targetClass,preAuthorize,MethodSecurityInvokePhase.BEFORE);
     }
 
     @NotNull
-    private Supplier<String> handleRolesAndAuthorities(Method method, Class<?> targetClass, String identifier) {
+    private Supplier<ConfigAttribute> handleRolesAndAuthorities(Method method, Class<?> targetClass, Annotation annotation,MethodSecurityInvokePhase phase) {
         return () -> {
-            if (StringUtils.hasText(identifier)) {
-                ResourceMethodSecurityEntity entity = getResourceMethodSecurityEntity(resolveMethodSecurityIdentifier(
-                        method, targetClass, identifier
-                ), MethodSecurityInvokePhase.BEFORE.name());
+            ResourceMethodSecurityEntity entity = getResourceMethodSecurityEntity(
+                    resolveMethodSecurityIdentifier(method, targetClass), phase.name()
+            );
 
-                if (entity != null) {
-                    StringBuilder builder = new StringBuilder();
-                    LightningPrePostMethodSecurityMetadataSource.handleRolesAndAuthorities(
-                            entity.getRoles().split(","),
-                            entity.getAuthorities().split(","),
-                            builder
-                    );
-                    String value = builder.toString();
-                    return value.length() > 0 ? value : null;
+            if (entity != null) {
+                StringBuilder builder = new StringBuilder();
+                LightningPrePostMethodSecurityMetadataSource.handleRolesAndAuthorities(
+                        entity.getRoles().split(","),
+                        entity.getAuthorities().split(","),
+                        builder
+                );
+                String value = builder.toString();
+                if(value.length() > 0) {
+                    if(phase == MethodSecurityInvokePhase.BEFORE) {
+                        LightningPreAuthorize preAuthorize = (LightningPreAuthorize) annotation;
+                        PreInvocationAttribute preInvocationAttribute0 = getPreInvocationAttribute0(value, method, targetClass, preAuthorize);
+                        return new AnnotationInfoWithPreConfigAttribute(
+                                preInvocationAttribute0,
+                                method,
+                                targetClass,
+                                resolveToList(entity.getRoles()),
+                                resolveToList(entity.getAuthorities()),
+                                ElvisUtil.stringElvis(entity.getIdentifier(),LightningPreAuthorize.DEFAULT_IDENTIFIER),
+                                ElvisUtil.stringElvis(entity.getDescription(),preAuthorize.description())
+                        );
+                    }
+                    else if(phase == MethodSecurityInvokePhase.AFTER) {
+                        LightningPostAuthorize postAuthorize = (LightningPostAuthorize) annotation;
+                        PostInvocationAttribute postInvocationAttribute0 = getPostInvocationAttribute0(value, method, targetClass, postAuthorize);
+                        return new AnnotationInfoWithPostConfigAttribute(
+                                postInvocationAttribute0,
+                                method,
+                                targetClass,
+                                resolveToList(entity.getRoles()),
+                                resolveToList(entity.getAuthorities()),
+                                ElvisUtil.stringElvis(entity.getIdentifier(),LightningPostAuthorize.DEFAULT_IDENTIFIER),
+                                ElvisUtil.stringElvis(entity.getDescription(),postAuthorize.description())
+                        );
+                    }
                 }
             }
+
             return null;
         };
+    }
+
+    private List<String> resolveToList(String value) {
+        if(StringUtils.hasText(value)) {
+            return List.of(value.split(","));
+        }
+        return null;
+    }
+
+    private String toString(List<String> values) {
+        if(values != null) {
+            return org.apache.commons.lang3.StringUtils.join(
+                    values,','
+            );
+        }
+        return "";
     }
 
     abstract ResourceMethodSecurityEntity getResourceMethodSecurityEntity(
@@ -171,14 +221,13 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
     );
 
 
-    private String resolveMethodSecurityIdentifier(Method method, Class<?> targetClass, String identifier) {
+    private String resolveMethodSecurityIdentifier(Method method, Class<?> targetClass) {
         Parameter[] parameters = method.getParameters();
         return this.resolveMethodSecurityIdentifier(method.getName(), targetClass.getName(), nameDiscoverer.getParameterNames(method),
-                Arrays.stream(parameters).map(ele -> ele.getType().getSimpleName()).toArray(String[]::new)
-                , identifier);
+                Arrays.stream(parameters).map(ele -> ele.getType().getSimpleName()).toArray(String[]::new));
     }
 
-    private String resolveMethodSecurityIdentifier(String methodName, String className, @Nullable String[] parameterNames, @Nullable String[] parameterTypes, String identifier) {
+    private String resolveMethodSecurityIdentifier(String methodName, String className, @Nullable String[] parameterNames, @Nullable String[] parameterTypes) {
 
         // 同时为null,则不判断 ..
         if (parameterNames != null || parameterTypes != null) {
@@ -199,7 +248,6 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             }
         }
 
-        builder.append(identifier);
         return builder.toString();
     }
 
@@ -242,9 +290,176 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
 
         List<ResourceMethodSecurityEntity> values = new LinkedList<>();
         attributeCache.forEach((key, value) -> {
+            List<String> preAuthorities = new LinkedList<>();
+            List<String> preRoles = new LinkedList<>();
+            List<String> postAuthorities = new LinkedList<>();
+            List<String> postRoles = new LinkedList<>();
+
+            String preIdentifier = null;
+
+            String postIdentifier = null;
+            String preDescription = null;
+            String postDescription = null;
+
+            // 本质上只有两个 ..
+            // 可以优化代码 ..
+            for (ConfigAttribute configAttribute : value) {
+                if (configAttribute instanceof PostInvocationAttribute) {
+                    AnnotationInfoWithPostConfigAttribute info = (AnnotationInfoWithPostConfigAttribute) configAttribute;
+                    if(!CollectionUtils.isEmpty(info.roles)) {
+                        postRoles.addAll(info.roles);
+                    }
+                    if(!CollectionUtils.isEmpty(info.authorities)) {
+                        postAuthorities.addAll(info.authorities);
+                    }
+                    if (postDescription == null) {
+                        postDescription = info.description;
+                    }
+                    if(postIdentifier == null) {
+                        postIdentifier = info.identifier;
+                    }
+
+                }
+                else {
+                    AnnotationInfoWithPreConfigAttribute info = (AnnotationInfoWithPreConfigAttribute) configAttribute;
+                    if(!CollectionUtils.isEmpty(info.roles)) {
+                        preRoles.addAll(info.roles);
+                    }
+                    if(!CollectionUtils.isEmpty(info.authorities)) {
+                        preAuthorities.addAll(info.authorities);
+                    }
+                    if(preDescription == null) {
+                        preDescription = info.description;
+                    }
+                    if(preIdentifier == null) {
+                        preIdentifier = info.identifier;
+                    }
+                }
+
+            }
+
+            if(!preAuthorities.isEmpty()) {
+                values.add(
+                        ResourceMethodSecurityEntity.builder()
+                                .invokePhase(MethodSecurityInvokePhase.BEFORE.name())
+                                .methodName(key.getMethod().getName())
+                                .methodSecurityIdentifier(resolveMethodSecurityIdentifier(key.getMethod(), key.getTargetClass()))
+                                .authorities(toString(preAuthorities))
+                                .description(preDescription)
+                                .roles(toString(preRoles))
+                                .identifier(preIdentifier)
+                                .build()
+                );
+            }
+
+            if(!postAuthorities.isEmpty()) {
+                values.add(
+                        ResourceMethodSecurityEntity.builder()
+                                .invokePhase(MethodSecurityInvokePhase.AFTER.name())
+                                .methodName(key.getMethod().getName())
+                                .methodSecurityIdentifier(
+                                        resolveMethodSecurityIdentifier(key.getMethod(),
+                                                key.getTargetClass())
+                                )
+                                .roles(toString(postRoles))
+                                .authorities(toString(postAuthorities))
+                                .description(postDescription)
+                                .identifier(postIdentifier)
+                                .build()
+                );
+            }
+
 
         });
+
+
+        updateResourceMethodSecurityMetadata(values);
     }
+
+    protected abstract void updateResourceMethodSecurityMetadata(List<ResourceMethodSecurityEntity> entities);
+
+    @Override
+    public boolean isCacheable() {
+        return false;
+    }
+
+    private static class AnnotationInfoWithPreConfigAttribute implements PreInvocationAttribute {
+
+        private final ConfigAttribute delegate;
+
+        public Method method;
+
+        public Class<?> targetClass;
+
+        public List<String> roles;
+
+        public List<String> authorities;
+
+        public String identifier;
+
+        public String description;
+
+        public AnnotationInfoWithPreConfigAttribute(ConfigAttribute delegate,
+                                                    Method method, Class<?> targetClass,
+                                                    List<String> roles,
+                                                    List<String> authorities,
+                                                    String identifier,
+                                                    String description) {
+            this.delegate = delegate;
+            this.method = method;
+            this.targetClass = targetClass;
+            this.roles = roles;
+            this.authorities = authorities;
+            this.identifier = identifier;
+            this.description = description;
+        }
+
+        @Override
+        public String getAttribute() {
+            return delegate.getAttribute();
+        }
+
+
+    }
+
+    private static class AnnotationInfoWithPostConfigAttribute implements PostInvocationAttribute {
+
+        private final ConfigAttribute delegate;
+
+        public Method method;
+
+        public Class<?> targetClass;
+
+        public List<String> roles;
+
+        public List<String> authorities;
+
+        public String identifier;
+
+        public String description;
+
+        public AnnotationInfoWithPostConfigAttribute(ConfigAttribute delegate,
+                                                    Method method, Class<?> targetClass,
+                                                     List<String> roles,
+                                                     List<String> authorities,
+                                                     String identifier,
+                                                     String description) {
+            this.delegate = delegate;
+            this.method = method;
+            this.targetClass = targetClass;
+            this.roles = roles;
+            this.authorities = authorities;
+            this.identifier = identifier;
+            this.description = description;
+        }
+
+        @Override
+        public String getAttribute() {
+            return delegate.getAttribute();
+        }
+
+    }
+
 
     @AllArgsConstructor
     private static class Context {
@@ -296,7 +511,7 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
 
         public String getMetadataIdentifier() {
             return ForDataBasedPrePostMethodSecurityMetadataSource.this.resolveMethodSecurityIdentifier(
-                    getMethod(), getTargetClass(), identifier
+                    getMethod(), getTargetClass()
             );
         }
 

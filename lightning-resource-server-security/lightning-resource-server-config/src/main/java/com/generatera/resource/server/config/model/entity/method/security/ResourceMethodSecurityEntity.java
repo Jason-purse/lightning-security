@@ -1,6 +1,5 @@
 package com.generatera.resource.server.config.model.entity.method.security;
 
-import com.jianyue.lightning.boot.starter.generic.crud.service.entity.BaseEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +16,9 @@ import java.io.Serializable;
  * @date 2023/2/7
  * @time 10:51
  * @Description 方法资源安全实体
+ *
+ *
+ * crud-generic-service 需要重新抽象,不是很好用 ...
  */
 @Table(name = "method_resource_security")
 @Entity
@@ -24,7 +26,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResourceMethodSecurityEntity extends BaseEntity implements Serializable {
+public class ResourceMethodSecurityEntity implements Serializable {
 
     @Id
     private String id;
@@ -34,7 +36,7 @@ public class ResourceMethodSecurityEntity extends BaseEntity implements Serializ
 
     /**
      * 方法安全identifier ..
-     * 默认通过 类名 + 方法名 + 参数名 + 注解 上的identifier ....
+     * 默认通过 类名 + 方法名 + 参数名
      * 来保证唯一性 ...
      */
     @Column(name = "method_security_identifier",length = 255)

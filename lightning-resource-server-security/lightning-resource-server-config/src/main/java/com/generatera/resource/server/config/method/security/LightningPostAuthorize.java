@@ -39,4 +39,7 @@ public @interface LightningPostAuthorize {
      *
      */
     String[] authorities() default {};
+
+
+    String description() default "";
 }
