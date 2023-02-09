@@ -1,8 +1,10 @@
 package com.generatera.resource.server.config.model.entity.method.security;
 
 import com.jianyue.lightning.boot.starter.generic.crud.service.entity.BaseEntity;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,11 +22,14 @@ import java.io.Serializable;
 @Entity
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResourceMethodSecurityEntity extends BaseEntity implements Serializable {
 
     @Id
     private String id;
 
+    @Column(name = "method_name",length = 255)
     private String methodName;
 
     /**
@@ -32,13 +37,21 @@ public class ResourceMethodSecurityEntity extends BaseEntity implements Serializ
      * 默认通过 类名 + 方法名 + 参数名 + 注解 上的identifier ....
      * 来保证唯一性 ...
      */
+    @Column(name = "method_security_identifier",length = 255)
     private String methodSecurityIdentifier;
+
+    /**
+     * 标识符(简短标识符) ...
+     */
+    @Column(name = "identifier",length = 255)
+    private String identifier;
 
     /**
      * 执行阶段 ...
      *
      * 方法前 / 或者后 ..
      */
+    @Column(name = "invoke_phase",length = 255)
     private String invokePhase;
 
     @Column(columnDefinition = "text")
@@ -47,4 +60,10 @@ public class ResourceMethodSecurityEntity extends BaseEntity implements Serializ
     @Column(columnDefinition = "text")
     private String authorities;
 
+
+    /**
+     * 描述信息...
+     */
+    @Column(name = "description",columnDefinition = "text")
+    private String description;
 }

@@ -13,17 +13,19 @@ import java.lang.annotation.*;
 @Documented
 public @interface LightningPostAuthorize {
 
+    public static final String DEFAULT_IDENTIFIER = "default";
+
     /**
      * 标识符 ..
      */
     @AliasFor("value")
-    String identifier() default "";
+    String identifier() default DEFAULT_IDENTIFIER;
 
     /**
      * 标识符 ..
      */
     @AliasFor("identifier")
-    String value() default "";
+    String value() default DEFAULT_IDENTIFIER;
 
     /**
      * 需要的角色(角色是或者的关系)

@@ -1,14 +1,20 @@
 package com.generatera.resource.server.config;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
+import com.generatera.resource.server.common.EnableLightningMethodSecurity;
+import com.generatera.resource.server.config.ResourceServerProperties.StoreKind;
 import com.generatera.resource.server.config.method.security.*;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.access.expression.method.ExpressionBasedAnnotationAttributeFactory;
+import org.springframework.security.access.method.DelegatingMethodSecurityMetadataSource;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
 import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -30,7 +36,49 @@ import java.util.List;
  */
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
+@EnableLightningMethodSecurity
+@RequiredArgsConstructor
+class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration implements ApplicationListener<ApplicationEvent> {
+
+
+    private final ResourceServerProperties properties;
+
+    private List<LightningExtMethodSecurityMetadataSource> sources;
+
+    //private final LightningAuthorizationManagerBeforeMethodInterceptor preAuthorizeAuthorizationMethodInterceptor;
+    //private final LightningPreAuthorizeAuthorizationManager preAuthorizeAuthorizationManager = new LightningPreAuthorizeAuthorizationManager();
+    //private final LightningAuthorizationManagerAfterMethodInterceptor postAuthorizeAuthorizationMethodInterceptor;
+    //private final LightningPostAuthorizeAuthorizationManager postAuthorizeAuthorizationManager = new LightningPostAuthorizeAuthorizationManager();
+    //private final DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+
+
+    /**
+     * 内部的 pre / post 注解的元数据来源 ..
+     */
+    private final LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource = createMethodSecurityMetadataSource();
+
+    /**
+     * 必须同步 ...
+     *
+     * 可以考虑异步 ...
+     * 为了尽快执行 ...
+     */
+    @Override
+    public void onApplicationEvent(@NotNull ApplicationEvent event) {
+       if(event instanceof ContextRefreshedEvent) {
+           MethodSecurityMetadataSource source = methodSecurityMetadataSource();
+           AllowCacheModifiedMethodSecurityMetadataSource allowCacheModifiedMethodSecurityMetadataSource = (AllowCacheModifiedMethodSecurityMetadataSource) source;
+           // 清理掉 缓存信息 ...
+           allowCacheModifiedMethodSecurityMetadataSource.clearTempAttributeCache();
+
+           // 更新可能存在的新数据 ...
+       }
+
+        // 这个时候, 获取 methodSecurityMetadataSource中的 已经被处理过的数据信息
+        // 触发内部的逻辑 ... 也就是缓存丢弃 ..  开始真正的权限信息抓取 ..
+        // 例如从 数据库中获取 ...
+        methodSecurityMetadataSource.onApplicationEvent(event);
+    }
 
     interface MethodSecurityHandlerProvider extends HandlerFactory.HandlerProvider {
         @Override
@@ -43,6 +91,9 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
         MethodSecurityHandler getHandler();
     }
 
+
+
+
     interface MethodSecurityHandler  extends HandlerFactory.Handler {
         LightningPrePostMethodSecurityMetadataSource getMethodSecurityMetadataSource(PrePostInvocationAttributeFactory prePostInvocationAttributeFactory);
     }
@@ -52,7 +103,7 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
                 new MethodSecurityHandlerProvider() {
                     @Override
                     public boolean support(Object predicate) {
-                        return predicate == AuthorizationServerComponentProperties.StoreKind.JPA;
+                        return predicate == StoreKind.JPA;
                     }
 
                     @NotNull
@@ -83,24 +134,12 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
 
                     @Override
                     public boolean support(Object predicate) {
-                        return predicate == AuthorizationServerComponentProperties.StoreKind.MONGO;
+                        return predicate == StoreKind.MONGO;
                     }
                 }
         );
     }
 
-
-
-
-    private final ResourceServerProperties properties;
-
-    private List<LightningExtMethodSecurityMetadataSource> sources;
-
-    //private final LightningAuthorizationManagerBeforeMethodInterceptor preAuthorizeAuthorizationMethodInterceptor;
-    //private final LightningPreAuthorizeAuthorizationManager preAuthorizeAuthorizationManager = new LightningPreAuthorizeAuthorizationManager();
-    //private final LightningAuthorizationManagerAfterMethodInterceptor postAuthorizeAuthorizationMethodInterceptor;
-    //private final LightningPostAuthorizeAuthorizationManager postAuthorizeAuthorizationManager = new LightningPostAuthorizeAuthorizationManager();
-    //private final DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
 
     @Autowired
     public LightningGlobalMethodSecurityConfiguration(ApplicationContext context,ResourceServerProperties resourceServerProperties) {
@@ -121,12 +160,10 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
     @Override
     protected MethodSecurityMetadataSource customMethodSecurityMetadataSource() {
         LinkedList<MethodSecurityMetadataSource> methodSecurityMetadataSources = new LinkedList<>();
-        methodSecurityMetadataSources.add(createMethodSecurityMetadataSource());
-
+        methodSecurityMetadataSources.add(methodSecurityMetadataSource);
         if (sources != null) {
             methodSecurityMetadataSources.addAll(sources);
         }
-
         return new DelegateMethodSecurityMetadataSource(methodSecurityMetadataSources);
     }
 
@@ -138,9 +175,9 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
     private LightningPrePostMethodSecurityMetadataSource createMethodSecurityMetadataSource() {
 
         ExpressionBasedAnnotationAttributeFactory attributeFactory = attributeFactory();
-        AuthorizationServerComponentProperties.StoreKind saveKind = properties.getAuthorityConfig().getResourceAuthoritySaveKind();
+        StoreKind saveKind = properties.getAuthorityConfig().getResourceAuthoritySaveKind();
         if(saveKind != null) {
-            saveKind = AuthorizationServerComponentProperties.StoreKind.MEMORY;
+            saveKind = StoreKind.MEMORY;
         }
         HandlerFactory.HandlerProvider handler = HandlerFactory.getHandler(MethodSecurityMetadataSource.class, saveKind);
 
@@ -152,6 +189,12 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
         return securityHandler.getMethodSecurityMetadataSource(attributeFactory);
     }
 
+    @Override
+    public MethodSecurityMetadataSource methodSecurityMetadataSource() {
+        MethodSecurityMetadataSource source = super.methodSecurityMetadataSource();
+        DelegatingMethodSecurityMetadataSource delegatingMethodSecurityMetadataSource = (DelegatingMethodSecurityMetadataSource) source;
+        return new AllowCacheModifiedMethodSecurityMetadataSource(new DelegateMethodSecurityMetadataSource(delegatingMethodSecurityMetadataSource.getMethodSecurityMetadataSources()));
+    }
 
     @Autowired
     public void setExtMethodSecurityMetadataSources(@Autowired(required = false) List<LightningExtMethodSecurityMetadataSource> sources) {

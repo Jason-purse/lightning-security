@@ -18,14 +18,13 @@
     <name>lightning-security</name>
     <description>lightning-security</description>
     <properties>
-        <java.version>17</java.version>
         <authorization.server.version>0.3.0</authorization.server.version>
         <lombok.version>1.18.22</lombok.version>
         <kotlin.version>1.6.21</kotlin.version>
         <jose-jwt.version>9.22</jose-jwt.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <maven.version>3.8.1</maven.version>
+        <maven.version>3.6.1</maven.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -37,6 +36,12 @@
                 <version>1.0.0-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.auto.service</groupId>
+                <artifactId>auto-service</artifactId>
+                <version>1.0</version>
             </dependency>
 
             <dependency>
@@ -103,11 +108,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven.version}</version>
                 <configuration>
-                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
                     <compilerArgs>
-                        <arg>-J--add-opens java.base/java.lang=ALL-UNNAMED</arg>
-                        <arg>-J--add-opens java.base/java.lang.reflect=ALL-UNNAMED</arg>
-                        <arg>-J--add-modules java.base</arg>
+                        <arg>-J--add-modules=java.base</arg>
+                        <arg>-J--add-opens=java.base/java.lang=ALL-UNNAMED</arg>
+                        <arg>-J--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

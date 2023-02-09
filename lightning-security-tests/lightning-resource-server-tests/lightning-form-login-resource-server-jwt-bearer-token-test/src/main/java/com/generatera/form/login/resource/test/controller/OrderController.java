@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     @GetMapping
-    @LightningPreAuthorize(roles = {"role1","role2"})
+    @LightningPreAuthorize(roles = {"role1","role2"},authorities = {""})
     public LightningUserPrincipal currentUser() {
         return LightningUserContext.get().getUserPrincipal().get();
     }

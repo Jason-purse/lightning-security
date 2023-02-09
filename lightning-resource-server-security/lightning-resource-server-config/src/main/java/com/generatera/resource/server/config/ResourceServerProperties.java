@@ -1,7 +1,6 @@
 package com.generatera.resource.server.config;
 
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.resource.server.config.method.security.LightningPostAuthorize;
 import com.generatera.resource.server.config.method.security.LightningPreAuthorize;
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
@@ -230,8 +229,6 @@ public class ResourceServerProperties {
 
     public static final String RESOURCE_SERVER_PREFIX = "lightning.security.resource.server";
 
-    private static String module_name;
-
     private final TokenVerificationConfig tokenVerificationConfig = new TokenVerificationConfig();
 
     /**
@@ -273,6 +270,13 @@ public class ResourceServerProperties {
 
     }
 
+    public enum StoreKind {
+        REDIS,
+        JPA,
+        MONGO,
+        MEMORY
+    }
+
     @Data
     public static class AuthorityConfig {
         /**
@@ -287,9 +291,12 @@ public class ResourceServerProperties {
          * 专门针对{@link LightningPreAuthorize} 和{@link LightningPostAuthorize} 处理
          */
         private StoreKind resourceAuthoritySaveKind;
+
+
+        /**
+         * 模块名称
+         */
+        private String moduleName;
     }
 
-    public static String getModuleName() {
-        return module_name;
-    }
 }
