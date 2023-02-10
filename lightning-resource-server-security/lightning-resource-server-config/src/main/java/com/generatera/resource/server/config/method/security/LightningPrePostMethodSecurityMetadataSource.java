@@ -9,6 +9,7 @@ import org.springframework.security.access.method.AbstractMethodSecurityMetadata
 import org.springframework.security.access.prepost.PostInvocationAttribute;
 import org.springframework.security.access.prepost.PreInvocationAttribute;
 import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
+import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Method;
@@ -24,9 +25,13 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
 
     private final PrePostInvocationAttributeFactory attributeFactory;
 
+    protected final String moduleName;
 
-    public LightningPrePostMethodSecurityMetadataSource(PrePostInvocationAttributeFactory attributeFactory) {
+
+    public LightningPrePostMethodSecurityMetadataSource(PrePostInvocationAttributeFactory attributeFactory,String moduleName) {
         this.attributeFactory = attributeFactory;
+        Assert.hasText(moduleName,"moduleName must not be null !!!");
+        this.moduleName = moduleName;
     }
 
     @Override
@@ -53,18 +58,22 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
         if (preAuthorize == null && postAuthorize == null) {
             return Collections.emptyList();
         } else {
-
             ArrayList<ConfigAttribute> attrs = new ArrayList<>(2);
-            PreInvocationAttribute pre = getPreInvocationAttribute(method, targetClass, preAuthorize);
-            if (pre != null) {
-                attrs.add(pre);
+
+            if(preAuthorize != null) {
+                PreInvocationAttribute pre = getPreInvocationAttribute(method, targetClass, preAuthorize);
+                if (pre != null) {
+                    attrs.add(pre);
+                }
             }
 
-            PostInvocationAttribute post = getPostInvocationAttribute(method, targetClass, postAuthorize);
-            if (post != null) {
-                attrs.add(post);
-            }
+            if(postAuthorize != null) {
+                PostInvocationAttribute post = getPostInvocationAttribute(method, targetClass, postAuthorize);
+                if (post != null) {
+                    attrs.add(post);
+                }
 
+            }
             attrs.trimToSize();
             return attrs;
         }

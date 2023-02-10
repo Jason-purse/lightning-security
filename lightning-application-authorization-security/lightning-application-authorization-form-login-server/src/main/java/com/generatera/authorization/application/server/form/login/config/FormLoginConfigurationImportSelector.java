@@ -2,7 +2,7 @@ package com.generatera.authorization.application.server.form.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.application.server.form.login.config.components.BackendSeparationConfiguration;
-import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
+import com.generatera.security.authorization.server.specification.PropertiesBindImportSelector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.env.Environment;

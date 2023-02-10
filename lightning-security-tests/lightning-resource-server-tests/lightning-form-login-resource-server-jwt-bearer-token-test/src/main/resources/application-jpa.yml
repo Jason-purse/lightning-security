@@ -1,0 +1,25 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        format-sql: true
+        jdbc:
+          time_zone: UTC
+          batch_size: 20
+          fetch_size: 200
+          batch_versioned_data: true
+          order_inserts: true
+          order_updates: true
+
+    generate-ddl: false
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL57Dialect
+  datasource:
+    url: jdbc:mysql://company.generatech.ltd:3006/authorization_server_ga?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 6tfc^YHN

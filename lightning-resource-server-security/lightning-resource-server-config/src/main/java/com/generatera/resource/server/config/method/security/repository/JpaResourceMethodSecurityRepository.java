@@ -1,6 +1,6 @@
-package com.generatera.resource.server.config.repository.method.security;
+package com.generatera.resource.server.config.method.security.repository;
 
-import com.generatera.resource.server.config.model.entity.method.security.ResourceMethodSecurityEntity;
+import com.generatera.resource.server.config.method.security.entity.ResourceMethodSecurityEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,9 +1,8 @@
 package com.generatera.resource.server.config.method.security;
 
-import com.generatera.resource.server.config.model.entity.method.security.ResourceMethodSecurityEntity;
-import com.generatera.resource.server.config.repository.method.security.JpaResourceMethodSecurityRepository;
-import com.jianyue.lightning.boot.starter.util.ElvisUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.generatera.resource.server.config.method.security.entity.ResourceMethodSecurityEntity;
+import com.generatera.resource.server.config.method.security.repository.JpaResourceMethodSecurityRepository;
+import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import org.springframework.data.domain.Example;
 import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
 import org.springframework.util.Assert;
@@ -19,27 +18,31 @@ import java.util.stream.Collectors;
  * @date 2023/2/7
  * @time 11:33
  * @Description 进行数据库查询 进而进行 权限获取 ...
+ *
+ * 如果批量save 出现问题,也就是batch size 达到限制,请使用
+ * {spring.jpa.properties.hibernate.jdbc.batch_size} 设置一个系统合适的值 ...
  */
 public class JpaPrePostMethodSecurityMetadataSource extends ForDataBasedPrePostMethodSecurityMetadataSource {
 
-    private JpaResourceMethodSecurityRepository resourceMethodSecurityRepository;
+    private final JpaResourceMethodSecurityRepository resourceMethodSecurityRepository;
 
-    public JpaPrePostMethodSecurityMetadataSource(PrePostInvocationAttributeFactory attributeFactory) {
-        super(attributeFactory);
-    }
-
-
-    @Autowired
-    public void setResourceMethodSecurityRepository(JpaResourceMethodSecurityRepository resourceMethodSecurityRepository) {
+    public JpaPrePostMethodSecurityMetadataSource(PrePostInvocationAttributeFactory attributeFactory,
+                                                  JpaResourceMethodSecurityRepository resourceMethodSecurityRepository,
+                                                  String moduleName) {
+        super(attributeFactory,moduleName);
         Assert.notNull(resourceMethodSecurityRepository,"resource method security must not be null !!!");
         this.resourceMethodSecurityRepository = resourceMethodSecurityRepository;
     }
+
+
 
     @Override
     ResourceMethodSecurityEntity getResourceMethodSecurityEntity(String methodSecurityIdentifier, String invokePhase) {
         return resourceMethodSecurityRepository.findOne(
                 Example.of(
                         ResourceMethodSecurityEntity.builder()
+                                // 需要加上模块名
+                                .moduleName(moduleName)
                                 .methodSecurityIdentifier(methodSecurityIdentifier)
                                 .invokePhase(invokePhase)
                                 .build()
@@ -59,29 +62,35 @@ public class JpaPrePostMethodSecurityMetadataSource extends ForDataBasedPrePostM
                     Collectors.toMap(ResourceMethodSecurityEntity::getMethodSecurityIdentifier, Function.identity())));
 
             List<ResourceMethodSecurityEntity> needInserts = new LinkedList<>();
+
             for (ResourceMethodSecurityEntity ele : entities) {
+
                 Map<String, ResourceMethodSecurityEntity> entityMap = mapMap.get(ele.getInvokePhase());
-                ResourceMethodSecurityEntity resourceMethodSecurityEntity = entityMap.get(ele.getMethodSecurityIdentifier());
+                ResourceMethodSecurityEntity resourceMethodSecurityEntity = null;
+                if(entityMap != null) {
+                    resourceMethodSecurityEntity = entityMap.get(ele.getMethodSecurityIdentifier());
+                }
+                // 新增的 ..
                 if(resourceMethodSecurityEntity == null) {
+                    String s = UuidUtil.nextId();
+                    ele.setId(s);
                     needInserts.add(ele);
                     continue;
                 }
 
-                // 更新
-                resourceMethodSecurityEntity.setIdentifier(ElvisUtil.stringElvis(resourceMethodSecurityEntity.getIdentifier(),ele.getIdentifier()));
-                resourceMethodSecurityEntity.setDescription(ElvisUtil.stringElvis(resourceMethodSecurityEntity.getDescription(),ele.getDescription()));
-                resourceMethodSecurityEntity.setRoles(ElvisUtil.stringElvis(resourceMethodSecurityEntity.getRoles(),ele.getRoles()));
-                resourceMethodSecurityEntity.setAuthorities(ElvisUtil.stringElvis(resourceMethodSecurityEntity.getAuthorities(),ele.getAuthorities()));
+                // 需要更新的 ..
+                if (ResourceMethodSecurityEntity.updateByOptional(resourceMethodSecurityEntity,ele)) {
+                    needInserts.add(ele);
+                }
             }
-
-            needInserts.addAll(eles);
-
             // update and save ..
             resourceMethodSecurityRepository.saveAll(needInserts);
         }
         // 全部插入
         else {
+            // 全部新增
             resourceMethodSecurityRepository.saveAll(entities);
         }
     }
+
 }

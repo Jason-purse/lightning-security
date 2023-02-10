@@ -290,13 +290,38 @@ public class ResourceServerProperties {
          * <p>
          * 专门针对{@link LightningPreAuthorize} 和{@link LightningPostAuthorize} 处理
          */
-        private StoreKind resourceAuthoritySaveKind;
+        private StoreKind resourceAuthoritySaveKind = StoreKind.MEMORY;
 
 
         /**
-         * 模块名称
+         * 模块名称,可以使用 spring.application.name 作为兜底策略 ..
          */
         private String moduleName;
+
+
+        /**
+         * 支持缓存配置 ...
+         */
+        private final CacheConfig cacheConfig = new CacheConfig();
+
+        @Data
+        public static class CacheConfig {
+
+            public static final long DEFAULT_EXPIRED_DURATION = 5 * 60 * 1000;
+
+            /**
+             * 是否支持强制更新
+             * 例如,提供 webhook 给其他 服务器(进行 触发强制更新) ...
+             */
+            private boolean supportForceSupport = false;
+
+
+            /**
+             * 默认5分钟 ..
+             */
+            private long expiredDuration = DEFAULT_EXPIRED_DURATION;
+        }
+
     }
 
 }

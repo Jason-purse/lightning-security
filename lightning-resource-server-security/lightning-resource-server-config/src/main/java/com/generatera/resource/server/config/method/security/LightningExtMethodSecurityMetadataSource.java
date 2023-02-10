@@ -1,5 +1,6 @@
 package com.generatera.resource.server.config.method.security;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
@@ -9,7 +10,7 @@ import org.springframework.security.access.method.MethodSecurityMetadataSource;
  * @time 14:05
  * @Description lightning 扩展的 method security metadata source
  */
-public interface LightningExtMethodSecurityMetadataSource extends MethodSecurityMetadataSource, ApplicationListener<ApplicationEvent> {
+public interface LightningExtMethodSecurityMetadataSource extends MethodSecurityMetadataSource, ApplicationListener<ApplicationEvent>, DisposableBean {
     /**
      * 缓存能力检测
      * 是否是可缓存的 ..
@@ -20,6 +21,14 @@ public interface LightningExtMethodSecurityMetadataSource extends MethodSecurity
      * 如果它是可缓存的,则下一次将不会访问它的函数 ...
      */
     default boolean isCacheable() {
-        return false;
+        return true;
+    }
+
+    /**
+     * 资源释放 回调
+     */
+    @Override
+    default void destroy() throws Exception {
+        // pass
     }
 }

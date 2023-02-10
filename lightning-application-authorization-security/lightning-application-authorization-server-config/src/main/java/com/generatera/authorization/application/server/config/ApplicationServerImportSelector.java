@@ -3,7 +3,7 @@ package com.generatera.authorization.application.server.config;
 import com.generatera.authorization.application.server.config.authorization.store.AuthorizationStoreConfiguration;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.AuthorizationStoreConfig;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
-import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
+import com.generatera.security.authorization.server.specification.PropertiesBindImportSelector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.env.Environment;

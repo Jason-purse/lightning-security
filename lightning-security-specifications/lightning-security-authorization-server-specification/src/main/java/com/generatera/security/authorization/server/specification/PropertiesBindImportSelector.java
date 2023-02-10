@@ -1,4 +1,4 @@
-package com.generatera.authorization.server.common.configuration;
+package com.generatera.security.authorization.server.specification;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;

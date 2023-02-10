@@ -1,23 +1,25 @@
 package com.generatera.resource.server.config.method.security;
 
-import com.generatera.resource.server.config.model.entity.method.security.ResourceMethodSecurityEntity;
+import com.generatera.resource.server.config.method.security.entity.ResourceMethodSecurityEntity;
 import com.jianyue.lightning.boot.starter.util.lambda.LambdaUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
 public class MongoPrePostMethodSecurityMetadataSource extends ForDataBasedPrePostMethodSecurityMetadataSource {
 
-    public MongoPrePostMethodSecurityMetadataSource(PrePostInvocationAttributeFactory attributeFactory) {
-        super(attributeFactory);
+    public MongoPrePostMethodSecurityMetadataSource(PrePostInvocationAttributeFactory attributeFactory,MongoTemplate mongoTemplate,
+                                                    String moduleName) {
+        super(attributeFactory,moduleName);
+        Assert.notNull(mongoTemplate,"mongoTemplate must not be null !!!");
+        this.mongoTemplate = mongoTemplate;
     }
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    private final MongoTemplate mongoTemplate;
 
     @Override
     ResourceMethodSecurityEntity getResourceMethodSecurityEntity(String methodSecurityIdentifier, String invokePhase) {

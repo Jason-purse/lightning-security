@@ -4,5 +4,18 @@ spring:
       resource-server:
         jwt:
           issuer-uri: http://127.0.0.1:8081
+  profiles:
+    active: jpa
+  application:
+    name: lightning-form-login-resource-server-jwt-bearer-token-test
 server:
   port: 8090
+lightning:
+  security:
+    resource:
+      server:
+        authority-config:
+          # 使用jpa 进行缓存
+          resource-authority-save-kind: jpa
+          cache-config:
+            expired-duration: 5000

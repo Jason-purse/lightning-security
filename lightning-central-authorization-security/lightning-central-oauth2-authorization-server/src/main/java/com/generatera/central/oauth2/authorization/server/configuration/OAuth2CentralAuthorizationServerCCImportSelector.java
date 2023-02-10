@@ -1,6 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.configuration;
 
-import com.generatera.authorization.server.common.configuration.PropertiesBindImportSelector;
+import com.generatera.security.authorization.server.specification.PropertiesBindImportSelector;
 import com.generatera.central.oauth2.authorization.server.configuration.OAuth2CentralAuthorizationServerProperties.StoreKind;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.consent.AuthorizationConsentConfiguration.JpaAuthorizationConsentComponentConfiguration;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.store.AuthorizationStoreConfiguration;

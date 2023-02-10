@@ -2,9 +2,9 @@ package com.generatera.oauth2.resource.server.config;
 
 import com.generatera.oauth2.resource.server.config.token.JwtTokenVerificationConfiguration;
 import com.generatera.oauth2.resource.server.config.token.OpaqueTokenVerificationConfiguration;
-import com.generatera.resource.server.config.PropertiesBindImportSelector;
 import com.generatera.resource.server.config.ResourceServerProperties;
 import com.generatera.resource.server.config.ResourceServerProperties.TokenVerificationConfig;
+import com.generatera.security.authorization.server.specification.PropertiesBindImportSelector;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.env.Environment;
@@ -16,7 +16,7 @@ import java.util.List;
 public class OAuth2ResourceServerComponentsImportSelector extends PropertiesBindImportSelector<ResourceServerProperties> {
 
     public OAuth2ResourceServerComponentsImportSelector(BeanFactory beanFactory, Environment environment) {
-        super(beanFactory, environment, ResourceServerProperties.class);
+        super(beanFactory, environment);
     }
 
     @NotNull

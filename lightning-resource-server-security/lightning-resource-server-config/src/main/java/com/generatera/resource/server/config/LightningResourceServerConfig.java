@@ -21,7 +21,7 @@ import java.util.List;
 @AutoConfiguration
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 @EnableConfigurationProperties(ResourceServerProperties.class)
-@Import(LightningGlobalMethodSecurityConfiguration.class)
+@Import({LightningResourceServerComponentsImportSelector.class, LightningGlobalMethodSecurityConfiguration.class})
 public class LightningResourceServerConfig {
 
 
@@ -42,24 +42,24 @@ public class LightningResourceServerConfig {
         }
     }
 
-   @ConditionalOnMissingBean(type = "com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer")
-   public static class NoAuthorizationServerConfiguration {
-       @Bean
-       public SecurityFilterChain resourceServerBootstrap(HttpSecurity security,
-                                                          List<LightningResourceServerConfigurer> configurers) throws Exception {
-           for (LightningResourceServerConfigurer configurer : configurers) {
-               configurer.configure(security);
-           }
+    @ConditionalOnMissingBean(type = "com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer")
+    public static class NoAuthorizationServerConfiguration {
+        @Bean
+        public SecurityFilterChain resourceServerBootstrap(HttpSecurity security,
+                                                           List<LightningResourceServerConfigurer> configurers) throws Exception {
+            for (LightningResourceServerConfigurer configurer : configurers) {
+                configurer.configure(security);
+            }
 
-           // 加入共享对象 ...
-           BootstrapContext.fromHttpSecurity(security);
+            // 加入共享对象 ...
+            BootstrapContext.fromHttpSecurity(security);
 
-           security
-                   .authorizeHttpRequests()
-                   .anyRequest()
-                   .authenticated();
-           return security.build();
-       }
-   }
+            security
+                    .authorizeHttpRequests()
+                    .anyRequest()
+                    .authenticated();
+            return security.build();
+        }
+    }
 
 }
