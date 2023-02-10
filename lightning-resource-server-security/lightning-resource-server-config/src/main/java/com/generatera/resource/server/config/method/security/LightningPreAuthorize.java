@@ -30,14 +30,18 @@ public @interface LightningPreAuthorize {
     String value() default DEFAULT_IDENTIFIER;
 
     /**
-     * 需要的角色(角色是或者的关系)
-     * 自动添加 角色前缀 ...
+     * 需要的角色
+     * 正常来说,访问这个资源,可能需要会有多个角色 控制 ..
+     * 支持基于权限点的角色扩展控制 .. ...
+     *
      */
     String[] roles() default {};
 
 
     /**
-     * 需要的权限点(是and的关系) ...
+     * 需要的权限点信息 正常来说,访问这个资源,只需要一个权限点进行标识 ..
+     *
+     * 给出列表是为了好扩展 ...
      */
     String[] authorities() default {};
 

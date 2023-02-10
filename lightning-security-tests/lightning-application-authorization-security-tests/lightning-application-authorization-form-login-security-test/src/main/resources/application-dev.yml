@@ -21,11 +21,12 @@ lightning:
 server:
   port: 8081
 
-spring:
-  security:
-    user:
-      password: 123456
-      roles:
-        - role1
-        - role2
-        - role3
+#spring:
+#  security:
+#    user:
+#      password: 123456
+#      roles:
+#        - role1
+#        - role2
+#        - role3
+#

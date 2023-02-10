@@ -5,6 +5,9 @@ import com.generatera.resource.server.config.method.security.LightningPostAuthor
 import com.generatera.resource.server.config.method.security.LightningPreAuthorize;
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import lombok.Data;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.autoconfigure.mongo.MongoProperties;
+import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
@@ -320,6 +323,38 @@ public class ResourceServerProperties {
              * 默认5分钟 ..
              */
             private long expiredDuration = DEFAULT_EXPIRED_DURATION;
+
+
+            /**
+             * jpa 缓存配置 ..
+             */
+            private final JpaCacheConfig jpaCacheConfig = new JpaCacheConfig();
+
+            private final MongoCacheConfig mongoCacheConfig = new MongoCacheConfig();
+        }
+
+
+
+        @Data
+        public static class JpaCacheConfig  {
+
+            /**
+             * 配置数据库信息
+             */
+            private final DataSourceProperties properties = new DataSourceProperties();
+
+            /**
+             * 配置jpa 属性信息
+             */
+            private final JpaProperties jpaProperties = new JpaProperties();
+        }
+
+
+        @Data
+        public static class MongoCacheConfig {
+
+            private final MongoProperties mongoProperties = new MongoProperties();
+
         }
 
     }

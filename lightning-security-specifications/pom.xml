@@ -16,6 +16,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>lightning-security-authorization-server-specification</module>
+        <module>lightning-security-authorization-specification</module>
     </modules>
 </project>
