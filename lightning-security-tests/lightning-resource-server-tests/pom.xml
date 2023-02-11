@@ -18,6 +18,7 @@
         <module>lightning-form-login-resource-server-jwt-bearer-token-test</module>
         <module>lightning-form-login-authorization-and-resource-server-jwt-bearer-token-test</module>
         <module>lightning-oauth2-resource-server-opaque-bearer-token-test</module>
+        <module>lightning-security-resource-server-config-utils-tests</module>
     </modules>
 
 

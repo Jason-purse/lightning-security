@@ -12,6 +12,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
 
+import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfig.CacheConfig.MongoCacheConfigPrefix;
+
 /**
  * 授权架构:
  * 1. 权限
@@ -232,6 +234,9 @@ public class ResourceServerProperties {
 
     public static final String RESOURCE_SERVER_PREFIX = "lightning.security.resource.server";
 
+    public final static String AuthorityConfigPrefix = RESOURCE_SERVER_PREFIX + ".authorityConfig";
+
+
     private final TokenVerificationConfig tokenVerificationConfig = new TokenVerificationConfig();
 
     /**
@@ -282,6 +287,8 @@ public class ResourceServerProperties {
 
     @Data
     public static class AuthorityConfig {
+        public static final String JpaCacheConfigPrefix = "jpaCacheConfig";
+
         /**
          * 默认使用{@link JwtExtClaimNames#SCOPE_CLAIM}
          * 可以设定 ...
@@ -309,6 +316,11 @@ public class ResourceServerProperties {
 
         @Data
         public static class CacheConfig {
+
+            public static final String CacheConfigPrefix = AuthorityConfigPrefix + ".cacheConfig";
+
+            public static final String MongoCacheConfigPrefix = AuthorityConfigPrefix + ".mongoCacheConfig";
+
 
             public static final long DEFAULT_EXPIRED_DURATION = 5 * 60 * 1000;
 
@@ -338,22 +350,38 @@ public class ResourceServerProperties {
         @Data
         public static class JpaCacheConfig  {
 
+            public static final String DataSourceConfigPrefix = JpaCacheConfigPrefix + ".dataSourceProperties";
+
+
             /**
              * 配置数据库信息
              */
-            private final DataSourceProperties properties = new DataSourceProperties();
+            private final DataSourceProperties dataSourceProperties = new DataSourceProperties();
 
             /**
              * 配置jpa 属性信息
              */
             private final JpaProperties jpaProperties = new JpaProperties();
+
+
+            /**
+             * 默认false, 需要显式启动 ..
+             */
+            private boolean enable;
         }
 
 
         @Data
         public static class MongoCacheConfig {
 
+            public static final String mongoClientPropertiesPrefix = MongoCacheConfigPrefix + ".mongoProperties";
+
             private final MongoProperties mongoProperties = new MongoProperties();
+
+            /**
+             * 是否连接其他数据库,而不是当前应用的数据库
+             */
+            private boolean enable;
 
         }
 

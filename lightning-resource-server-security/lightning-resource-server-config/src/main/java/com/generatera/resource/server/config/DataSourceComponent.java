@@ -14,6 +14,7 @@ public interface DataSourceComponent {
     <T> T getDataSource();
 
 
+
     interface JdbcOrOdbcDataSourceComponent extends DataSourceComponent {
 
         public static JdbcOrOdbcDataSourceComponent of(DataSource dataSource) {

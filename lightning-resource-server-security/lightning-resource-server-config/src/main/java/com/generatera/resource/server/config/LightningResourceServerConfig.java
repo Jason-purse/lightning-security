@@ -21,7 +21,7 @@ import java.util.List;
 @AutoConfiguration
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 @EnableConfigurationProperties(ResourceServerProperties.class)
-@Import({LightningResourceServerComponentsImportSelector.class, LightningGlobalMethodSecurityConfiguration.class})
+@Import({LightningGlobalMethodSecurityConfiguration.class})
 public class LightningResourceServerConfig {
 
 
