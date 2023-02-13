@@ -7,6 +7,7 @@ import com.generatera.resource.server.config.LightningResourceServerConfig;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
 import com.generatera.resource.server.config.LogUtil;
 import com.generatera.resource.server.config.ResourceServerProperties;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -43,9 +44,14 @@ public class OAuth2ResourceServerConfiguration {
             @Override
             public void configure(HttpSecurity security) throws Exception {
                 OAuth2ResourceServerConfigurer<HttpSecurity> configurer = security.oauth2ResourceServer();
+                OAuth2ResourceServerAuthenticationEntryPoint oAuth2ResourceServerAuthenticationEntryPoint = new OAuth2ResourceServerAuthenticationEntryPoint();
+                ElvisUtil.isNotEmptyConsumer(properties.getAuthorityConfig().getInvalidTokenErrorMessage(), oAuth2ResourceServerAuthenticationEntryPoint::setInvalidTokenErrorMessage);
+                ElvisUtil.isNotEmptyConsumer(properties.getAuthorityConfig().getFilterAccessDeniedErrorMessage(), oAuth2ResourceServerAuthenticationEntryPoint::setAccessDeniedErrorMessage);
+
+                // method security access denied > SpringSecurityMessageSource.getAccessor() 已经处理的非常好了 ...
 
                 // authentication entry point 配置
-                configurer.authenticationEntryPoint(new OAuth2ResourceServerAuthenticationEntryPoint());
+                configurer.authenticationEntryPoint(oAuth2ResourceServerAuthenticationEntryPoint);
 
                 if (properties.getTokenVerificationConfig().getBearerTokenConfig().isUseHeader()) {
                     // header 直接解析

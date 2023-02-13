@@ -14,9 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
-import org.springframework.util.Assert;
-
-import java.util.List;
+import org.springframework.util.StringUtils;
 
 /**
  * @author FLJ
@@ -63,47 +61,6 @@ public class OpaqueTokenVerificationConfiguration {
         LightningOAuth2OpaqueTokenIntrospector getTokenIntrospector(OAuth2ResourceServerProperties properties);
     }
 
-    static {
-        HandlerFactory.registerHandler(
-                new ClientAuthenticationMethodHandlerProvider() {
-                    @Override
-                    public boolean support(Object predicate) {
-                        return ClientAuthenticationMethod.BASIC.getValue().equalsIgnoreCase(predicate.toString());
-                    }
-
-                    @NotNull
-                    @Override
-                    public HandlerFactory.Handler getHandler() {
-                        return (ClientAuthenticationMethodHandler) properties -> DefaultOpaqueTokenIntrospector.clientSecretBasicOf(
-                                properties.getOpaqueTokenConfig().getIntrospectTokenEndpointUrl(),
-                                properties.getOpaqueTokenConfig().getClientId(),
-                                properties.getOpaqueTokenConfig().getClientSecret()
-                        );
-                    }
-                }
-        );
-
-        HandlerFactory.registerHandler(
-                new ClientAuthenticationMethodHandlerProvider() {
-                    @Override
-                    public boolean support(Object predicate) {
-                        return ClientAuthenticationMethod.POST.getValue().equalsIgnoreCase(predicate.toString());
-                    }
-
-                    @NotNull
-                    @Override
-                    public HandlerFactory.Handler getHandler() {
-                        return (ClientAuthenticationMethodHandler) properties -> DefaultOpaqueTokenIntrospector.clientSecretPostOf(
-                                properties.getOpaqueTokenConfig().getIntrospectTokenEndpointUrl(),
-                                properties.getOpaqueTokenConfig().getClientId(),
-                                properties.getOpaqueTokenConfig().getClientSecret()
-                        );
-                    }
-                }
-        );
-    }
-
-
     /**
      * 进行 opaque Token 省查器 ...
      * <p>
@@ -120,23 +77,18 @@ public class OpaqueTokenVerificationConfiguration {
                                                                     @Autowired(required = false)
                                                                             JwtClaimsToUserPrincipalMapper jwtClaimsToUserPrincipalMapper) {
 
-        List<String> clientMethods = properties.getOpaqueTokenConfig().getClientMethods();
-        Assert.notNull(clientMethods, "clientMethods must not be null !!!");
+        String clientMethod = properties.getOpaqueTokenConfig().getClientMethod();
 
-        for (String clientMethod : clientMethods) {
-            HandlerFactory.HandlerProvider handler = HandlerFactory.getHandler(LightningOAuth2OpaqueTokenIntrospector.class, clientMethod);
-            if (handler != null) {
-                LightningOAuth2OpaqueTokenIntrospector tokenIntrospector = ((ClientAuthenticationMethodHandler) handler.getHandler()).getTokenIntrospector(properties);
-                if (tokenIntrospector instanceof DefaultOpaqueTokenIntrospector introspector) {
-                    if (jwtClaimsToUserPrincipalMapper != null) {
-                        introspector.setJwtClaimsToUserPrincipalMapper(jwtClaimsToUserPrincipalMapper);
-                    }
-                }
-                return tokenIntrospector;
+        HandlerFactory.HandlerProvider handler = HandlerFactory.getRequiredHandler(LightningOAuth2OpaqueTokenIntrospector.class, clientMethod);
+        LightningOAuth2OpaqueTokenIntrospector tokenIntrospector = handler.getHandler()
+                .<ClientAuthenticationMethodHandler>nativeHandler()
+                .getTokenIntrospector(properties);
+        if (tokenIntrospector instanceof DefaultOpaqueTokenIntrospector introspector) {
+            if (jwtClaimsToUserPrincipalMapper != null) {
+                introspector.setJwtClaimsToUserPrincipalMapper(jwtClaimsToUserPrincipalMapper);
             }
         }
-
-        throw new UnsupportedOperationException("token introspector handlers must not be null !!!");
+        return tokenIntrospector;
     }
 
 
@@ -167,4 +119,51 @@ public class OpaqueTokenVerificationConfiguration {
             }
         };
     }
+
+
+    static {
+        // client basic or fallback
+        HandlerFactory.registerHandler(
+                new ClientAuthenticationMethodHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return (predicate == null || !StringUtils.hasText(predicate.toString()))
+                                || ClientAuthenticationMethod.BASIC.getValue().equalsIgnoreCase(predicate.toString());
+                    }
+
+                    @NotNull
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return (ClientAuthenticationMethodHandler) properties -> DefaultOpaqueTokenIntrospector.clientSecretBasicOf(
+                                properties.getOpaqueTokenConfig().getIntrospectTokenEndpointUrl(),
+                                properties.getOpaqueTokenConfig().getClientId(),
+                                properties.getOpaqueTokenConfig().getClientSecret()
+                        );
+                    }
+                }
+        );
+
+        // client-post
+        HandlerFactory.registerHandler(
+                new ClientAuthenticationMethodHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return ClientAuthenticationMethod.POST.getValue().equalsIgnoreCase(predicate.toString());
+                    }
+
+                    @NotNull
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return (ClientAuthenticationMethodHandler) properties -> DefaultOpaqueTokenIntrospector.clientSecretPostOf(
+                                properties.getOpaqueTokenConfig().getIntrospectTokenEndpointUrl(),
+                                properties.getOpaqueTokenConfig().getClientId(),
+                                properties.getOpaqueTokenConfig().getClientSecret()
+                        );
+                    }
+                }
+        );
+
+    }
+
+
 }

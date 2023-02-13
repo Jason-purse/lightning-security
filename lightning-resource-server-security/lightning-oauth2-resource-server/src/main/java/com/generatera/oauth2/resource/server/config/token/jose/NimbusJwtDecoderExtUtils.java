@@ -1,5 +1,7 @@
 package com.generatera.oauth2.resource.server.config.token.jose;
 
+import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.Jwks;
+import com.generatera.security.authorization.server.specification.util.RsaKeyConversionUtils;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.JWSKeySelector;
@@ -36,6 +38,18 @@ public class NimbusJwtDecoderExtUtils {
         }
         return jwtDecoder;
     }
+
+    public static NimbusJwtDecoder fromPublicRsaKey(String publicKey) {
+        return NimbusJwtDecoder.withPublicKey(RsaKeyConversionUtils.convertRsaPublicKey(publicKey)).build();
+    }
+
+    public static NimbusJwtDecoder fromSecretKey(String secretKey, String algorithm) {
+        return NimbusJwtDecoder
+                .withSecretKey(
+                        Jwks.forSecretKey(secretKey, algorithm)
+                ).build();
+    }
+
 
     private static OAuth2TokenValidator<Jwt> getValidators(Supplier<OAuth2TokenValidator<Jwt>> defaultValidator, OAuth2ResourceServerProperties.Jwt properties) {
         OAuth2TokenValidator<Jwt> defaultValidators = defaultValidator.get();

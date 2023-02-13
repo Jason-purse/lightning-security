@@ -6,8 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import java.util.List;
-
 
 @Data
 @ConfigurationProperties(OAuth2ResourceServerProperties.OAUTH2_RESOURCE_SERVER_PREFIX)
@@ -21,29 +19,31 @@ public class OAuth2ResourceServerProperties {
 
     private JwtTokenConfig jwtTokenConfig = new JwtTokenConfig();
 
-
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class OpaqueTokenConfig {
 
-        private  String clientId;
+        private String clientId;
 
-        private  String clientSecret;
+        private String clientSecret;
 
         /**
          * 默认 token 校验 url
          */
-        private  String introspectTokenEndpointUrl = ProviderSettingProperties.TOKEN_INTROSPECTION_ENDPOINT;
+        private String introspectTokenEndpointUrl = ProviderSettingProperties.TOKEN_INTROSPECTION_ENDPOINT;
 
         /**
          * 需要配置
+         * "client_secret_basic"
+         * "client_secret_post"
          */
-        private List<String> clientMethods;
+        private String clientMethod = "client_secret_basic";
     }
 
     @Data
     public static class JwtTokenConfig {
 
     }
+
 }

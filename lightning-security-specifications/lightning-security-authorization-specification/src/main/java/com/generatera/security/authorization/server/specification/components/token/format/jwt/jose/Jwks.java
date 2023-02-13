@@ -1,10 +1,12 @@
 package com.generatera.security.authorization.server.specification.components.token.format.jwt.jose;
 
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.*;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.security.KeyPair;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
@@ -26,10 +28,22 @@ public final class Jwks {
 		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
 	}
 
+	public static JWKSource<SecurityContext> customRsaJwkSource(
+			RSAPublicKey publicKey,RSAPrivateKey rsaPrivateKey
+	) {
+		JWKSet jwkSet = new JWKSet(forRsa(publicKey, rsaPrivateKey));
+		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+	}
+
 	public static JWKSource<SecurityContext> defaultSecretRandomJwkSource() {
 		OctetSequenceKey octetSequenceKey = Jwks.generateSecret();
 		JWKSet jwkSet = new JWKSet(octetSequenceKey);
 		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+	}
+
+	public static JWKSource<SecurityContext> customSecretJwkSource(String secret,String algorithm) {
+		JWKSet jwkSet = new JWKSet(forSecret(secret,algorithm));
+		return ((jwkSelector, securityContext) -> jwkSelector.select(jwkSet));
 	}
 
 	public static JWKSource<SecurityContext> defaultEcRandomJwkSource() {
@@ -50,6 +64,14 @@ public final class Jwks {
 			.build();
 	}
 
+	public static RSAKey forRsa(RSAPublicKey publicKey,RSAPrivateKey privateKey) {
+		return new RSAKey.Builder(publicKey)
+				.privateKey(privateKey)
+				.keyID(UUID.randomUUID().toString())
+				.algorithm(JWSAlgorithm.RS256)
+				.build();
+	}
+
 	public static ECKey generateEc() {
 		KeyPair keyPair = KeyGeneratorUtils.generateEcKey();
 		ECPublicKey publicKey = (ECPublicKey) keyPair.getPublic();
@@ -68,6 +90,15 @@ public final class Jwks {
 		return new OctetSequenceKey.Builder(secretKey)
 			.keyID(UUID.randomUUID().toString())
 			.build();
+	}
+
+	public static OctetSequenceKey forSecret(String secret,String algorithm) {
+		return new OctetSequenceKey.Builder(forSecretKey(secret,algorithm))
+				.build();
+	}
+
+	public static SecretKey forSecretKey(String secret,String algorithm) {
+		return new SecretKeySpec(secret.getBytes(),algorithm);
 	}
 	
 }

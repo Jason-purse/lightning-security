@@ -5,7 +5,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 
 import javax.sql.DataSource;
-
+/**
+ * @author FLJ
+ * @date 2023/2/13
+ * @time 10:45
+ * @Description 暂不使用
+ */
 public interface DataSourceComponent {
 
     void close();
@@ -69,7 +74,7 @@ public interface DataSourceComponent {
     }
 
     @AllArgsConstructor
-    class DefaultMongoDataSourceComponent implements MongoDataSourceComponent {
+    static class DefaultMongoDataSourceComponent implements MongoDataSourceComponent {
         private final MongoClient client;
 
         @Override

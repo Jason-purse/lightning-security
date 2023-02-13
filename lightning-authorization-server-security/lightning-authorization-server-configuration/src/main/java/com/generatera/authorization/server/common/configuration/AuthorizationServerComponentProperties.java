@@ -2,6 +2,7 @@ package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
+import com.generatera.security.authorization.server.specification.components.token.MacAlgorithm;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -57,6 +58,58 @@ public class AuthorizationServerComponentProperties {
      * 应用级别的Token配置,从而使得token生成具有可参照的依据 ...
      */
     private TokenSettings tokenSettings = new TokenSettings();
+
+
+    private ProviderConfig providerConfig = new ProviderConfig();
+
+    /**
+     * 提供者配置
+     */
+    @Data
+    public static class ProviderConfig {
+
+        private final JWKSettings jwkSettings = new JWKSettings();
+
+        @Data
+        public static class JWKSettings {
+            /**
+             * 默认是rsa 256
+             */
+            private JWKCategory category = JWKCategory.RANDOM;
+
+            private final RsaJWK rsajwk = new RsaJWK();
+
+            private final SecretJWK secretJWK = new SecretJWK();
+        }
+
+        public static enum JWKCategory {
+            RSA256,
+            SECRET,
+            /**
+             * 随机就生成rsa256
+             */
+            RANDOM
+        }
+        @Data
+        public static class RsaJWK {
+            private String rsaPublicKey;
+
+            private String rsaPrivateKey;
+        }
+
+        @Data
+        public static class SecretJWK {
+
+            private String key;
+
+            /**
+             * 可以指定为其他的算法 ...
+             */
+            private String algorithm = MacAlgorithm.HS256.getName();
+        }
+    }
+
+
 
 
     @Data

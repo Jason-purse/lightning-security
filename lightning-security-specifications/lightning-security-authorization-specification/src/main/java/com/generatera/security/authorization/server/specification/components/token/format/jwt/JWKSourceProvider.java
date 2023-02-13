@@ -2,6 +2,7 @@ package com.generatera.security.authorization.server.specification.components.to
 
 import com.generatera.security.authorization.server.specification.TokenIssueFormat;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.jose.Jwks;
+import com.generatera.security.authorization.server.specification.util.RsaKeyConversionUtils;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +42,20 @@ public class JWKSourceProvider {
 
     public static JWKSourceProvider rsaJWKSourceProvider() {
         return new JWKSourceProvider();
+    }
+
+    public static JWKSourceProvider customRsaJWKSourceProvider(String rsaPublicKey, String rsaPrivateKey) {
+        return new JWKSourceProvider(
+                Jwks.customRsaJwkSource(RsaKeyConversionUtils.convertRsaPublicKey(rsaPublicKey),RsaKeyConversionUtils.convertRsaPrivateKey(rsaPrivateKey)),
+                TokenIssueFormat.REFERENCE
+        );
+    }
+
+    public static JWKSourceProvider customSecretJwkSourceProvider(String secret,String algorithm) {
+        return new JWKSourceProvider(
+                Jwks.customSecretJwkSource(secret,algorithm),
+                TokenIssueFormat.REFERENCE
+        );
     }
 
     public static JWKSourceProvider secretJWKSourceProvider() {

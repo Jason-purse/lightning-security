@@ -4,6 +4,8 @@ package com.generatera.security.authorization.server.specification.components.to
  * @date 2023/1/17
  * @time 10:30
  * @Description mac 算法 ..
+ *
+ * HmacSha256
  */
 public enum MacAlgorithm implements JwsAlgorithm {
     HS256("HS256"),

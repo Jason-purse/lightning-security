@@ -3,6 +3,7 @@ package com.generatera.authorization.server.common.configuration;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.security.authorization.server.specification.BootstrapContext;
+import com.generatera.security.authorization.server.specification.HandlerFactory;
 import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
@@ -26,6 +27,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.time.Duration;
@@ -73,13 +75,17 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
     }
 
 
+
+
+
     /**
      * jwk set(rsa source)
      */
     @Bean
     @ConditionalOnMissingBean(JWKSource.class)
     public JWKSourceProvider jwkSource() {
-        return JWKSourceProvider.rsaJWKSourceProvider();
+        JwkHandler handler = ((JwkHandler)HandlerFactory.getRequiredHandler(JWKSourceProvider.class, properties).getHandler());
+        return handler.getJwkSourceProvider(properties);
     }
 
     /**
@@ -180,5 +186,90 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
         LogUtil.prettyLog("authorization server common component configuration properties print: \n" +
                 JsonUtil.getDefaultJsonUtil().asJSON(properties)
         );
+    }
+
+    interface JwkHandlerProvider extends HandlerFactory.HandlerProvider {
+        @Override
+        default Object key() {
+            return JWKSourceProvider.class;
+        }
+    }
+
+    interface JwkHandler extends HandlerFactory.Handler {
+        JWKSourceProvider getJwkSourceProvider(AuthorizationServerComponentProperties properties);
+    }
+
+    static {
+
+        // rsa 256
+        HandlerFactory.registerHandler(
+                new JwkHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return predicate == AuthorizationServerComponentProperties.ProviderConfig.JWKCategory.RSA256;
+                    }
+
+                    @NotNull
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return new JwkHandler() {
+                            @Override
+                            public JWKSourceProvider getJwkSourceProvider(AuthorizationServerComponentProperties properties) {
+                                AuthorizationServerComponentProperties.ProviderConfig.RsaJWK rsaJWK = properties.getProviderConfig().getJwkSettings().getRsajwk();
+                                Assert.hasText(rsaJWK.getRsaPrivateKey(),"rsa private key must not be null !!!");
+                                Assert.hasText(rsaJWK.getRsaPublicKey(),"rsa public key must not be null !!!");
+                                AuthorizationServerComponentProperties.ProviderConfig.RsaJWK rsajwk = properties.getProviderConfig().getJwkSettings().getRsajwk();
+                                return JWKSourceProvider.customRsaJWKSourceProvider(
+                                       rsajwk.getRsaPublicKey(),
+                                        rsajwk.getRsaPrivateKey()
+                                );
+                            }
+                        };
+                    }
+                }
+        );
+        // secret
+        HandlerFactory.registerHandler(
+                new JwkHandlerProvider() {
+                    @Override
+                    public boolean support(Object predicate) {
+                        return predicate == AuthorizationServerComponentProperties.ProviderConfig.JWKCategory.SECRET;
+                    }
+
+                    @NotNull
+                    @Override
+                    public HandlerFactory.Handler getHandler() {
+                        return new JwkHandler() {
+                            @Override
+                            public JWKSourceProvider getJwkSourceProvider(AuthorizationServerComponentProperties properties) {
+                                AuthorizationServerComponentProperties.ProviderConfig.SecretJWK secretJWK = properties.getProviderConfig().getJwkSettings().getSecretJWK();
+                                String key = secretJWK.getKey();
+                                Assert.hasText(key,"secret key must not be null !!!");
+                                Assert.hasText(secretJWK.getAlgorithm(),"algorithm must not be null !!!");
+                                return JWKSourceProvider.customSecretJwkSourceProvider(key,secretJWK.getAlgorithm());
+                            }
+                        };
+                    }
+                }
+        );
+
+        // fallback
+        HandlerFactory.registerHandler(new JwkHandlerProvider() {
+            @Override
+            public boolean support(Object predicate) {
+                return predicate == AuthorizationServerComponentProperties.ProviderConfig.JWKCategory.RANDOM;
+            }
+
+            @NotNull
+            @Override
+            public HandlerFactory.Handler getHandler() {
+                return new JwkHandler() {
+                    @Override
+                    public JWKSourceProvider getJwkSourceProvider(AuthorizationServerComponentProperties properties) {
+                        return JWKSourceProvider.rsaJWKSourceProvider();
+                    }
+                };
+            }
+        });
     }
 }

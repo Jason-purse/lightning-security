@@ -53,9 +53,22 @@
            <optional>true</optional>
        </dependency>
 
+<!--       对应 的属性被需要-->
        <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-data-mongodb</artifactId>
+           <groupId>org.mongodb</groupId>
+           <artifactId>bson</artifactId>
+           <scope>compile</scope>
+       </dependency>
+
+       <dependency>
+           <groupId>org.mongodb</groupId>
+           <artifactId>mongodb-driver-sync</artifactId>
+           <scope>compile</scope>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.data</groupId>
+           <artifactId>spring-data-mongodb</artifactId>
            <scope>compile</scope>
            <optional>true</optional>
        </dependency>

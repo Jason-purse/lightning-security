@@ -3,6 +3,7 @@ package com.generatera.resource.server.config;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.resource.server.config.method.security.LightningPostAuthorize;
 import com.generatera.resource.server.config.method.security.LightningPreAuthorize;
+import com.generatera.security.authorization.server.specification.components.token.MacAlgorithm;
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -255,7 +256,19 @@ public class ResourceServerProperties {
          */
         private TokenType tokenType = TokenType.JWT;
 
+        /**
+         * 从Url上进一步配置
+         */
+        private JwkSourceCategory jwkSourceCategory = JwkSourceCategory.JWK_OR_ISSUER_URL;
+
+        private final Rsa256Jwk rsa256Jwk = new Rsa256Jwk();
+
+        private final SecretJwk secretJwk = new SecretJwk();
+
+
+
         private final BearerTokenConfig bearerTokenConfig = new BearerTokenConfig();
+
 
         public enum TokenType {
             JWT,
@@ -263,11 +276,33 @@ public class ResourceServerProperties {
         }
 
         @Data
+        public static class Rsa256Jwk {
+            private String value;
+        }
+
+        @Data
+        public static class SecretJwk {
+
+            private String value;
+
+            private String algorithm = MacAlgorithm.HS256.getName();
+        }
+
+
+
+
+        @Data
         public static class BearerTokenConfig {
             /**
              * 需不需要 bearer token 前缀 ..
              */
             private boolean useHeader = Boolean.FALSE;
+        }
+
+        public static enum JwkSourceCategory {
+            RSA256,
+            SECRET,
+            JWK_OR_ISSUER_URL
         }
     }
 
@@ -313,6 +348,16 @@ public class ResourceServerProperties {
          * 支持缓存配置 ...
          */
         private final CacheConfig cacheConfig = new CacheConfig();
+
+
+        private String invalidTokenErrorMessage;
+
+        private String filterAccessDeniedErrorMessage;
+
+        /**
+         * 暂时不用 ...
+         */
+        private String methodSecurityAccessDeniedErrorMessage;
 
         @Data
         public static class CacheConfig {

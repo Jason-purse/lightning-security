@@ -1,7 +1,9 @@
 package com.generatera.resource.server.config.authentication;
 
 import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
+import com.jianyue.lightning.result.Result;
 import com.jianyue.lightning.util.JsonUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -31,11 +33,11 @@ public interface LightningResourceServerAuthenticationEntryPoint extends Authent
     default void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         if(StringUtils.hasText(getInvalidTokenErrorMessage())) {
             AuthHttpResponseUtil.commence(response,
-                    JsonUtil.getDefaultJsonUtil().asJSON(getInvalidTokenErrorMessage()));
+                    JsonUtil.getDefaultJsonUtil().asJSON(Result.error(HttpStatus.UNAUTHORIZED.value(),getInvalidTokenErrorMessage())));
         }
         else {
             AuthHttpResponseUtil.commence(response,
-                    JsonUtil.getDefaultJsonUtil().asJSON("invalid token."));
+                    JsonUtil.getDefaultJsonUtil().asJSON(Result.error(HttpStatus.UNAUTHORIZED.value(), "invalid token.")));
         }
     }
 
@@ -43,11 +45,11 @@ public interface LightningResourceServerAuthenticationEntryPoint extends Authent
     default void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
         if(StringUtils.hasText(getAccessDeniedErrorMessage())) {
             AuthHttpResponseUtil.commence(response,
-                    JsonUtil.getDefaultJsonUtil().asJSON(getAccessDeniedErrorMessage()));
+                    JsonUtil.getDefaultJsonUtil().asJSON(Result.error(HttpStatus.FORBIDDEN.value(), getAccessDeniedErrorMessage())));
         }
         else {
             AuthHttpResponseUtil.commence(response,
-                    JsonUtil.getDefaultJsonUtil().asJSON("access denied."));
+                    JsonUtil.getDefaultJsonUtil().asJSON(Result.error(HttpStatus.FORBIDDEN.value(),"access denied.")));
         }
     }
 }

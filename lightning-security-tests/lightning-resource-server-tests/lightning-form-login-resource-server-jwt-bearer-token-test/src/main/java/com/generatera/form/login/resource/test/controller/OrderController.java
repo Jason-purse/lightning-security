@@ -22,4 +22,10 @@ public class OrderController {
     public LightningUserPrincipal currentUser1() {
         return currentUser();
     }
+
+    @GetMapping("2")
+    @LightningPreAuthorize(roles = {"role10"})
+    public LightningUserPrincipal currentUser2() {
+        return currentUser();
+    }
 }
