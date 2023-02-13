@@ -1,6 +1,7 @@
 package com.generatera.oauth2.resource.server.config;
 
 
+import com.generatera.oauth2.resource.server.config.authentication.OAuth2ResourceServerAuthenticationEntryPoint;
 import com.generatera.oauth2.resource.server.config.token.LightningAuthenticationTokenResolver;
 import com.generatera.resource.server.config.LightningResourceServerConfig;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
@@ -42,6 +43,10 @@ public class OAuth2ResourceServerConfiguration {
             @Override
             public void configure(HttpSecurity security) throws Exception {
                 OAuth2ResourceServerConfigurer<HttpSecurity> configurer = security.oauth2ResourceServer();
+
+                // authentication entry point 配置
+                configurer.authenticationEntryPoint(new OAuth2ResourceServerAuthenticationEntryPoint());
+
                 if (properties.getTokenVerificationConfig().getBearerTokenConfig().isUseHeader()) {
                     // header 直接解析
                     configurer.bearerTokenResolver(
