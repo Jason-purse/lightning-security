@@ -84,7 +84,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
     @Bean
     @ConditionalOnMissingBean(JWKSource.class)
     public JWKSourceProvider jwkSource() {
-        JwkHandler handler = ((JwkHandler)HandlerFactory.getRequiredHandler(JWKSourceProvider.class, properties).getHandler());
+        JwkHandler handler = ((JwkHandler)HandlerFactory.getRequiredHandler(JWKSourceProvider.class, properties.getProviderConfig().getJwkSettings().getCategory()).getHandler());
         return handler.getJwkSourceProvider(properties);
     }
 
@@ -220,7 +220,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                                 Assert.hasText(rsaJWK.getRsaPublicKey(),"rsa public key must not be null !!!");
                                 AuthorizationServerComponentProperties.ProviderConfig.RsaJWK rsajwk = properties.getProviderConfig().getJwkSettings().getRsajwk();
                                 return JWKSourceProvider.customRsaJWKSourceProvider(
-                                       rsajwk.getRsaPublicKey(),
+                                        rsajwk.getRsaPublicKey(),
                                         rsajwk.getRsaPrivateKey()
                                 );
                             }
