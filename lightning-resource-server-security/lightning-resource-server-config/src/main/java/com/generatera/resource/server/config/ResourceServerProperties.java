@@ -258,6 +258,8 @@ public class ResourceServerProperties {
 
         /**
          * 从Url上进一步配置
+         *
+         * 其他类型必须提供jwk 的值 ..
          */
         private JwkSourceCategory jwkSourceCategory = JwkSourceCategory.JWK_OR_ISSUER_URL;
 
