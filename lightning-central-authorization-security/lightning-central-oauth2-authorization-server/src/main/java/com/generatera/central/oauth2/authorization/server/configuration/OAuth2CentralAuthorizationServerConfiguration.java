@@ -27,6 +27,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
@@ -37,6 +38,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenContext;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.util.CollectionUtils;
@@ -106,19 +108,28 @@ public class OAuth2CentralAuthorizationServerConfiguration {
     // 重写,不需要 authorization-server提供的 token 定制器的默认配置 ...
 
     @Bean
+    @Primary
     @ConditionalOnBean(LightningCentralOAuth2AccessTokenCustomizer.class)
     public LightningCentralOAuth2TokenCustomizer<OAuth2TokenClaimsContext> pluginInCentralOAuth2TokenCustomizer(
             AuthorizationServerComponentProperties properties,
             LightningCentralOAuth2AccessTokenCustomizer tokenCustomizer
     ) {
+
+        DefaultOpaqueAwareOAuth2TokenCustomizer defaultOpaqueAwareOAuth2TokenCustomizer = new DefaultOpaqueAwareOAuth2TokenCustomizer();
+
         return new DelegateCentralOauth2TokenCustomizer<>(
                 tokenCustomizer,
-                centralOAuth2TokenCustomizer(properties)
+                new DelegateCentralOauth2TokenCustomizer<>(
+                        // 顺序很重要
+                        new DefaultTokenDetailAwareOAuth2TokenCustomizer(properties.getTokenSettings()),
+                        defaultOpaqueAwareOAuth2TokenCustomizer
+                )::customize
         );
     }
 
 
     @Bean
+    @Primary
     @ConditionalOnMissingBean(LightningCentralOAuth2AccessTokenCustomizer.class)
     public LightningCentralOAuth2TokenCustomizer<OAuth2TokenClaimsContext> centralOAuth2TokenCustomizer(
             AuthorizationServerComponentProperties properties
@@ -133,19 +144,27 @@ public class OAuth2CentralAuthorizationServerConfiguration {
     }
 
     @Bean
+    @Primary
     @ConditionalOnBean(LightningCentralOAuth2JwtTokenCustomizer.class)
     public LightningCentralOAuth2TokenCustomizer<JwtEncodingContext> pluginCentralOAuth2JwtTokenCustomizer(
             AuthorizationServerComponentProperties properties,
             LightningCentralOAuth2JwtTokenCustomizer tokenCustomizer
     ) {
+
+        DefaultOpaqueAwareOAuth2TokenCustomizer defaultOpaqueAwareOAuth2TokenCustomizer = new DefaultOpaqueAwareOAuth2TokenCustomizer();
         return new DelegateCentralOauth2TokenCustomizer<>(
                 tokenCustomizer,
-                centralOAuth2JwtTokenCustomizer(properties)
+                new DelegateCentralOauth2TokenCustomizer<>(
+                        // 顺序很重要
+                        new DefaultTokenDetailAwareOAuth2TokenCustomizer(properties.getTokenSettings())::customize,
+                        defaultOpaqueAwareOAuth2TokenCustomizer::customize
+                )
         );
     }
 
 
     @Bean
+    @Primary
     @ConditionalOnMissingBean(LightningCentralOAuth2JwtTokenCustomizer.class)
     public LightningCentralOAuth2TokenCustomizer<JwtEncodingContext> centralOAuth2JwtTokenCustomizer(
             AuthorizationServerComponentProperties properties
@@ -171,6 +190,8 @@ public class OAuth2CentralAuthorizationServerConfiguration {
     @Bean
     @SuppressWarnings("unchecked")
     public LightningAuthServerConfigurer configurer(
+            LightningCentralOAuth2TokenCustomizer<OAuth2TokenClaimsContext> accessTokenCustomizer,
+            LightningCentralOAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer,
             @Autowired(required = false)
                     List<LightningOAuth2CentralAuthorizationServerBootstrapConfigurer> extConfigurers,
             @Autowired(required = false)
@@ -179,6 +200,7 @@ public class OAuth2CentralAuthorizationServerConfiguration {
         return new LightningAuthServerConfigurer() {
             @Override
             public void configure(HttpSecurity securityBuilder) throws Exception {
+
 
                 OAuth2AuthorizationServerConfigurer<HttpSecurity> configurer = securityBuilder.getConfigurer(OAuth2AuthorizationServerConfigurer.class);
                 // 启动这个配置 ..
@@ -190,7 +212,13 @@ public class OAuth2CentralAuthorizationServerConfiguration {
 
                 formLoginSupport(securityBuilder);
 
-
+                securityBuilder.setSharedObject(LightningCentralOAuth2JwtTokenCustomizer.class,jwtTokenCustomizer::customize);
+                securityBuilder.setSharedObject(LightningCentralOAuth2AccessTokenCustomizer.class,accessTokenCustomizer::customize);
+                // 强制自定义
+                configurer.tokenGenerator(
+                        OAuth2AuthorizationServerConfigurerExtUtils.getTokenGenerator(
+                        securityBuilder
+                ));
                 // 增加扩展
                 if (!CollectionUtils.isEmpty(extConfigurers)) {
                     for (LightningOAuth2CentralAuthorizationServerBootstrapConfigurer extConfigurer : extConfigurers) {

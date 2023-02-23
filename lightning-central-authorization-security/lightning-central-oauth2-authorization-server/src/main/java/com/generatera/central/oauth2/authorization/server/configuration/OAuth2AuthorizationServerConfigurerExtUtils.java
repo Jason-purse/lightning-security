@@ -2,6 +2,8 @@ package com.generatera.central.oauth2.authorization.server.configuration;
 
 import com.generatera.authorization.server.common.configuration.LightningCentralAuthServer;
 import com.generatera.authorization.server.common.configuration.OAuth2AuthorizationServer;
+import com.generatera.central.oauth2.authorization.server.configuration.components.token.LightningCentralOAuth2TokenCustomizer;
+import com.generatera.security.authorization.server.specification.util.HttpSecurityBuilderUtils;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -126,13 +128,22 @@ final class OAuth2AuthorizationServerConfigurerExtUtils {
         }
 
         private static <B extends HttpSecurityBuilder<B>> OAuth2TokenCustomizer<JwtEncodingContext> getJwtCustomizer(B builder) {
-            ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2TokenCustomizer.class, JwtEncodingContext.class);
-            return getOptionalBean(builder, type);
+            try {
+                return HttpSecurityBuilderUtils.getSharedOrCtxBean(builder, LightningCentralOAuth2TokenCustomizer.LightningCentralOAuth2JwtTokenCustomizer.class);
+            }catch (Exception e) {
+                ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2TokenCustomizer.class, JwtEncodingContext.class);
+                return getOptionalBean(builder, type);
+            }
         }
 
         private static <B extends HttpSecurityBuilder<B>> OAuth2TokenCustomizer<OAuth2TokenClaimsContext> getAccessTokenCustomizer(B builder) {
-            ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2TokenCustomizer.class, OAuth2TokenClaimsContext.class);
-            return getOptionalBean(builder, type);
+            try {
+                return HttpSecurityBuilderUtils.getSharedOrCtxBean(builder, LightningCentralOAuth2TokenCustomizer.LightningCentralOAuth2AccessTokenCustomizer.class);
+
+            }catch (Exception e) {
+                ResolvableType type = ResolvableType.forClassWithGenerics(OAuth2TokenCustomizer.class, OAuth2TokenClaimsContext.class);
+                return getBean(builder, type);
+            }
         }
 
 

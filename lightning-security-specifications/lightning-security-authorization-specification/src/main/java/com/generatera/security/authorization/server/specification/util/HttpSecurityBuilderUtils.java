@@ -61,6 +61,7 @@ public class HttpSecurityBuilderUtils {
         return bean;
     }
 
+
     public static <B extends HttpSecurityBuilder<B>, T> T getOptionalBean(B builder, Class<T> type) {
         Map<String, T> beansMap = BeanFactoryUtils.beansOfTypeIncludingAncestors(builder.getSharedObject(ApplicationContext.class), type);
         if (beansMap.size() > 1) {
