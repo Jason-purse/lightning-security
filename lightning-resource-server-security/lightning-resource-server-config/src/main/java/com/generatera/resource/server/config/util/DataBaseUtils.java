@@ -29,7 +29,9 @@ import java.sql.SQLException;
  * @date 2023/2/10
  * @time 16:34
  * @Description 数据库工具类
+ *
  */
+@Deprecated(since = "暂未使用")
 @Component
 @Builder
 public class DataBaseUtils {

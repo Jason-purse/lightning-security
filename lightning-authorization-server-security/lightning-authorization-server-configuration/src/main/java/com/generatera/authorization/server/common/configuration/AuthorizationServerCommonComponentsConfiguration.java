@@ -161,7 +161,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                         .authorizeHttpRequests();
                 if (!CollectionUtils.isEmpty(properties.getPermission().getUrlWhiteList())) {
                     authorizationManagerRequestMatcherRegistry
-                            .mvcMatchers(
+                            .antMatchers(
                                     properties.getPermission().getUrlWhiteList().toArray(String[]::new)
                             )
                             .permitAll();
