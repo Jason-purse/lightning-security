@@ -95,7 +95,9 @@ public class ApplicationAuthServerConfig {
                 if (isSeparation) {
                     // 禁用csrf
                     // 要让应用能够正常退出 ..(无需csrf token 校验)
-                    securityBuilder.csrf().disable();
+                    securityBuilder
+                            .csrf()
+                            .disable();
                 }
 
                 ApplicationAuthServerProperties.NoSeparation noSeparation = applicationAuthServerPropertiesUtils.getProperties().getNoSeparation();

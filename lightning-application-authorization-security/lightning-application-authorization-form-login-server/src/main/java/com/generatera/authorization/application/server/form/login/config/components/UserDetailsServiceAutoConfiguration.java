@@ -1,6 +1,5 @@
 package com.generatera.authorization.application.server.form.login.config.components;
 
-import com.generatera.authorization.application.server.config.token.LightningUserDetailsProvider;
 import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +37,7 @@ public class UserDetailsServiceAutoConfiguration {
 
         @Bean
         @Lazy
-        public InMemoryUserDetailsManager inMemoryUserDetailsManager(SecurityProperties properties, ObjectProvider<PasswordEncoder> passwordEncoder) {
+        public LightningUserDetailService inMemoryUserDetailsManager(SecurityProperties properties, ObjectProvider<PasswordEncoder> passwordEncoder) {
             SecurityProperties.User user = properties.getUser();
             List<String> roles = user.getRoles();
             return new DefaultInMemoryUserDetailsManager(
@@ -63,7 +62,7 @@ public class UserDetailsServiceAutoConfiguration {
 
 }
 
-class DefaultInMemoryUserDetailsManager extends InMemoryUserDetailsManager {
+class DefaultInMemoryUserDetailsManager extends InMemoryUserDetailsManager implements LightningUserDetailService {
     public DefaultInMemoryUserDetailsManager(UserDetails... userDetails) {
         super(userDetails);
     }
@@ -72,4 +71,5 @@ class DefaultInMemoryUserDetailsManager extends InMemoryUserDetailsManager {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return new DefaultLightningUserDetails(super.loadUserByUsername(username));
     }
+
 }

@@ -7,9 +7,7 @@ import com.generatera.authorization.application.server.config.authentication.Red
 import com.generatera.authorization.application.server.config.token.LightningDaoAuthenticationProvider;
 import com.generatera.authorization.application.server.config.token.LightningUserDetailsProvider;
 import com.generatera.authorization.application.server.config.util.ApplicationAuthServerUtils;
-import com.generatera.authorization.application.server.form.login.config.components.FormDaoAuthenticationProvider;
-import com.generatera.authorization.application.server.form.login.config.components.FormLoginUserDetailsProvider;
-import com.generatera.authorization.application.server.form.login.config.components.UserDetailsServiceAutoConfiguration;
+import com.generatera.authorization.application.server.form.login.config.components.*;
 import com.generatera.authorization.application.server.form.login.config.util.FormLoginUtils;
 import com.generatera.authorization.server.common.configuration.util.LogUtil;
 import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
@@ -24,6 +22,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,6 +31,7 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.util.StringUtils;
@@ -59,23 +59,32 @@ public class ApplicationFormLoginConfiguration {
 
     @Bean
     @Qualifier("userAuthenticationProvider")
+    @Primary
     public DaoAuthenticationProvider daoAuthenticationProvider(
-            UserDetailsService userDetailsService,
+            LightningUserDetailService userDetailsService,
             @Autowired(required = false)
                     PasswordEncoder passwordEncoder,
             @Autowired(required = false)
                     UserDetailsPasswordService passwordManager
     ) {
-        UserDetailsService finalUserDetailsService = userDetailsService;
-        userDetailsService = username -> {
-            UserDetails userDetails = finalUserDetailsService.loadUserByUsername(username);
-            if (!LightningUserPrincipal.class.isAssignableFrom(userDetails.getClass())) {
-                return new DefaultLightningUserDetails(userDetails);
+        LightningUserDetailService finalUserDetailsService = userDetailsService;
+        userDetailsService = new LightningUserDetailService() {
+            @Override
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+                UserDetails userDetails = finalUserDetailsService.loadUserByUsername(username);
+                if (!LightningUserPrincipal.class.isAssignableFrom(userDetails.getClass())) {
+                    return new DefaultLightningUserDetails(userDetails);
+                }
+                return userDetails;
             }
-            return userDetails;
+
+            @Override
+            public LightningUserPrincipal mapAuthenticatedUser(LightningUserPrincipal userPrincipal) {
+                return finalUserDetailsService.mapAuthenticatedUser(userPrincipal);
+            }
         };
 
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        OptmizedDaoAuthenticationProvider provider = new OptmizedDaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         if (passwordEncoder != null) {
             provider.setPasswordEncoder(passwordEncoder);

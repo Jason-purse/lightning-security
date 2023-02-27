@@ -1,5 +1,6 @@
 package com.generatera.oauth2.resource.server.config;
 
+import com.generatera.oauth2.resource.server.config.token.JwtDecoderDirectConfiguration;
 import com.generatera.oauth2.resource.server.config.token.JwtTokenVerificationConfiguration;
 import com.generatera.oauth2.resource.server.config.token.OpaqueTokenVerificationConfiguration;
 import com.generatera.resource.server.config.ResourceServerProperties;
@@ -47,7 +48,7 @@ public class OAuth2ResourceServerComponentsImportSelector extends PropertiesBind
         // 如果合适 ...
         if (properties.getTokenVerificationConfig().getJwkSourceCategory() != TokenVerificationConfig.JwkSourceCategory.JWK_OR_ISSUER_URL) {
             candidates.add(
-                    JwtTokenVerificationConfiguration.JwtDecoderDirectConfiguration.class.getName()
+                    JwtDecoderDirectConfiguration.class.getName()
             );
         }
     }

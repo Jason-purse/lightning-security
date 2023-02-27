@@ -25,6 +25,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.Assert;
@@ -160,11 +161,16 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                         authorizationManagerRequestMatcherRegistry = builder
                         .authorizeHttpRequests();
                 if (!CollectionUtils.isEmpty(properties.getPermission().getUrlWhiteList())) {
+                    String[] array = properties.getPermission().getUrlWhiteList().toArray(String[]::new);
                     authorizationManagerRequestMatcherRegistry
-                            .antMatchers(
-                                    properties.getPermission().getUrlWhiteList().toArray(String[]::new)
-                            )
+                            .antMatchers(array)
                             .permitAll();
+
+                    if (builder.getConfigurer(CsrfConfigurer.class) != null) {
+                        authorizationManagerRequestMatcherRegistry.and()
+                                .csrf()
+                                .ignoringAntMatchers(array);
+                    }
                 }
 
 
