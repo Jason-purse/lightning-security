@@ -12,6 +12,7 @@ public interface LightningUserDetailService extends UserDetailsService {
      * 返回的{@code LightningUserPrincipal} 是已经认证的 !!!
      */
     default LightningUserPrincipal mapAuthenticatedUser(LightningUserPrincipal userPrincipal) {
+
         return userPrincipal;
     }
 
