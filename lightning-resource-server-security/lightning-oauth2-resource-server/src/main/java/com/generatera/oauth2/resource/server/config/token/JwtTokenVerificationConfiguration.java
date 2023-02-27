@@ -84,20 +84,7 @@ public class JwtTokenVerificationConfiguration {
 
 
 
-    public static class JwtDecoderDirectConfiguration {
 
-        @Bean
-        public JwtDecoder jwtDecoder(ResourceServerProperties resourceServerProperties) {
-            return HandlerFactory
-                    .getRequiredHandler(
-                            JwtDecoder.class,
-                            resourceServerProperties
-                    )
-                    .getHandler()
-                    .<HandlerFactory.TransformHandler<ResourceServerProperties, JwtDecoder>>nativeHandler()
-                    .get(resourceServerProperties);
-        }
-    }
 
 
 
