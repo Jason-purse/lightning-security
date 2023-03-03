@@ -19,6 +19,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
 
 import java.lang.reflect.Field;
+import java.util.function.Predicate;
 
 /**
  * @author FLJ
@@ -29,21 +30,19 @@ import java.lang.reflect.Field;
 public class RequestHeaderHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor {
     public static final String DEFAULT_TARGET_CLASS_KEY = "lightning.security.method.resolver.request.header.targetClass";
 
-    private ConversionService conversionService;
+    public static final RequestHeaderHandlerMethodArgumentResolver INSTANCE = new RequestHeaderHandlerMethodArgumentResolver();
+    public static final Predicate<MethodParameter> predicate =  parameter -> (parameter.getParameterAnnotation(RequestHeaderInject.class) != null ||
+            AnnotationUtils.findAnnotation(parameter.getParameterType(), RequestHeaderInject.class) != null) ||
+            (ClassUtils.isPrimitiveOrWrapper(parameter.getParameterType()) && parameter.getParameterAnnotation(RequestHeaderArgument.class) != null);
 
-    public RequestHeaderHandlerMethodArgumentResolver() {
-        super(false);
+    private RequestHeaderHandlerMethodArgumentResolver() {
+        super(true);
     }
 
-    public void setConversionService(ConversionService conversionService) {
-        this.conversionService = conversionService;
-    }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return (parameter.getParameterAnnotation(RequestHeaderInject.class) != null ||
-                AnnotationUtils.findAnnotation(parameter.getParameterType(), RequestHeaderInject.class) != null) ||
-                (ClassUtils.isPrimitiveOrWrapper(parameter.getParameterType()) && parameter.getParameterAnnotation(RequestHeaderArgument.class) != null);
+        return predicate.test(parameter);
     }
 
     @NotNull
@@ -131,6 +130,7 @@ public class RequestHeaderHandlerMethodArgumentResolver extends ModelAttributeMe
                         if (field.getType().isAssignableFrom(String.class)) {
                             propertyValues.add(field.getName(), header);
                         } else {
+                            ConversionService conversionService = binder.getConversionService();
                             if (conversionService != null) {
                                 Object convert = conversionService.convert(header, field.getType());
                                 if (convert != null) {

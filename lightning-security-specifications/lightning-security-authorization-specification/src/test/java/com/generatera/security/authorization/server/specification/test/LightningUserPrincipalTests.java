@@ -1,7 +1,7 @@
 package com.generatera.security.authorization.server.specification.test;
 
 import com.generatera.security.authorization.server.specification.DefaultLightningUserPrincipal;
-import com.generatera.security.authorization.server.specification.components.annotations.LightningUserPrincipalPropertyHandlerMethodArgumentResolver;
+import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalPropertyHandlerMethodArgumentResolver;
 import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalInject;
 import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalProperty;
 import lombok.Data;
@@ -30,7 +30,7 @@ import java.util.Collections;
  * 以及 {@link com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalProperty}
  * 注解的使用 ...
  *
- * 2. {@link com.generatera.security.authorization.server.specification.components.annotations.LightningUserPrincipalPropertyHandlerMethodArgumentResolver}
+ * 2. {@link UserPrincipalPropertyHandlerMethodArgumentResolver}
  * 绑定 {@link com.generatera.security.authorization.server.specification.LightningUserPrincipal} 的属性到 Param类对象上 ...
  */
 public class LightningUserPrincipalTests {
@@ -127,7 +127,7 @@ public class LightningUserPrincipalTests {
 
             SecurityContextHolder.setContext(emptyContext);
 
-            LightningUserPrincipalPropertyHandlerMethodArgumentResolver lightningUserPrincipalPropertyHandlerMethodArgumentResolver = new LightningUserPrincipalPropertyHandlerMethodArgumentResolver();
+            UserPrincipalPropertyHandlerMethodArgumentResolver lightningUserPrincipalPropertyHandlerMethodArgumentResolver = new UserPrincipalPropertyHandlerMethodArgumentResolver();
             MockHttpServletRequest get = new MockHttpServletRequest("get", "/api/get/current/user");
 
             get.setParameter("password","123456");

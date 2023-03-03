@@ -4,7 +4,6 @@ import com.generatera.security.authorization.server.specification.LightningUserC
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -15,6 +14,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelAttributeMethodProcessor;
 
 import java.lang.reflect.Field;
+import java.util.function.Predicate;
 
 /**
  * @author FLJ
@@ -24,22 +24,21 @@ import java.lang.reflect.Field;
  *
  * 不支持一个类对象的内嵌复杂对象类型中的 {@link UserPrincipalProperty} 属性解析 !!!!
  */
-public class LightningUserPrincipalPropertyHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor {
-    @Nullable
-    private ConversionService conversionService;
+public class UserPrincipalPropertyHandlerMethodArgumentResolver extends ModelAttributeMethodProcessor {
 
-    public LightningUserPrincipalPropertyHandlerMethodArgumentResolver() {
+    public static final Predicate<MethodParameter> predicate =  parameter -> parameter.getParameterAnnotation(UserPrincipalInject.class) != null ||
+            AnnotationUtils.getAnnotation(parameter.getParameterType(), UserPrincipalInject.class) != null;
+
+    public static final UserPrincipalPropertyHandlerMethodArgumentResolver INSTANCE = new UserPrincipalPropertyHandlerMethodArgumentResolver();
+
+    private UserPrincipalPropertyHandlerMethodArgumentResolver() {
         super(true);
     }
 
-    public void setConversionService(@Nullable ConversionService conversionService) {
-        this.conversionService = conversionService;
-    }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.getParameterAnnotation(UserPrincipalInject.class) != null ||
-                AnnotationUtils.getAnnotation(parameter.getParameterType(), UserPrincipalInject.class) != null;
+       return predicate.test(parameter);
     }
 
     @Override
@@ -48,14 +47,14 @@ public class LightningUserPrincipalPropertyHandlerMethodArgumentResolver extends
         MutablePropertyValues propertyValues = new MutablePropertyValues();
         Object target = binder.getTarget();
         if (target != null) {
-            getPropertyValues(propertyValues, target);
+            getPropertyValues(propertyValues, target,binder.getConversionService());
 
             // 绑定属性值 ...
             binder.bind(propertyValues);
         }
     }
 
-    private void getPropertyValues(MutablePropertyValues propertyValues, Object target) {
+    private void getPropertyValues(MutablePropertyValues propertyValues, Object target,ConversionService conversionService) {
 
         ReflectionUtils.doWithFields(target.getClass(),
                 new ReflectionUtils.FieldCallback() {
@@ -71,13 +70,13 @@ public class LightningUserPrincipalPropertyHandlerMethodArgumentResolver extends
                                             .of(conversionService)
                                             .consume(val -> {
                                                 Object property = ele.getProperty(ElvisUtil.stringElvis(annotation.value(), name), Object.class);
-                                                addPropertyValue(field, property, propertyValues);
+                                                addPropertyValue(field, property, propertyValues,conversionService);
                                             })
                                             // 否则无参消费
                                             .orElse(
                                                     () -> {
                                                         Object property = ele.getProperty(ElvisUtil.stringElvis(annotation.value(), name), field.getType());
-                                                        addPropertyValue(field, property, propertyValues);
+                                                        addPropertyValue(field, property, propertyValues,conversionService);
                                                     }
                                             );
                                 });
@@ -91,7 +90,7 @@ public class LightningUserPrincipalPropertyHandlerMethodArgumentResolver extends
                 });
     }
 
-    private void addPropertyValue(Field field, Object property, MutablePropertyValues propertyValues) {
+    private void addPropertyValue(Field field, Object property, MutablePropertyValues propertyValues,ConversionService conversionService) {
         String fieldName = field.getName();
         if (property != null) {
             if (!field.getType().isInstance(property)) {
