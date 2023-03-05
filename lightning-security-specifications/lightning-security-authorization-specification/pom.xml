@@ -59,6 +59,12 @@
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.jianyue</groupId>
+            <artifactId>lightning-boot-starter-web</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

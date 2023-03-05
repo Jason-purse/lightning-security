@@ -4,12 +4,16 @@ import com.generatera.security.authorization.server.specification.DefaultLightni
 import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalInject;
 import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalProperty;
 import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalPropertyHandlerMethodArgumentEnhancer;
+import com.jianyue.lightning.boot.autoconfigure.web.WebConfigAutoConfiguration;
 import com.jianyue.lightning.framework.web.method.argument.context.MethodArgumentContext;
 import lombok.Data;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.MethodParameter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -19,7 +23,15 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.DefaultDataBinderFactory;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
@@ -134,6 +146,7 @@ public class LightningUserPrincipalTests {
             get.setParameter("password","123456");
             get.setParameter("value","8090");
 
+
             MethodParameter parameter = new MethodParameter(
                     SpringContainerForMethodResolveTests.class.getMethod("registerTest", MyData.class), 0
             );
@@ -154,6 +167,64 @@ public class LightningUserPrincipalTests {
         public void registerTest(MyData myData) {
 
         }
+    }
+
+
+    @SpringJUnitWebConfig
+    public static class SpringMvcForMethodResolveTests {
+        @Import({WebConfigAutoConfiguration.class,WebMvcAutoConfiguration.class})
+        @Configuration
+        public static class Config {
+
+            @Bean
+            public UserPrincipalPropertyHandlerMethodArgumentEnhancer userPrincipalPropertyHandlerMethodArgumentEnhancer() {
+                return new UserPrincipalPropertyHandlerMethodArgumentEnhancer();
+            }
+
+            @Bean
+            public MyController myController() {
+                return new MyController();
+            }
+        }
+
+        @RestController
+        @RequestMapping("/api")
+        public static class MyController {
+            @GetMapping
+            public void registerTest(MyData myData) {
+                System.out.println(myData);
+            }
+        }
+
+        private MockMvc mockMvc;
+        @BeforeEach
+        public void each(WebApplicationContext context) {
+            mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        }
+
+
+        @Test
+        public void test() throws Exception {
+            SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
+            emptyContext.setAuthentication(new UsernamePasswordAuthenticationToken(
+                    new MyLightningUserPrincipal("张三","123456",null,true),
+                    null,null
+            ));
+
+            SecurityContextHolder.setContext(emptyContext);
+
+            MockHttpServletRequest get = new MockHttpServletRequest("get", "/api");
+
+            get.setParameter("password","123456");
+            get.setParameter("value","8090");
+
+                mockMvc.perform(MockMvcRequestBuilders.get("/api"))
+                        .andReturn();
+
+        }
+
+
+
     }
 
 
