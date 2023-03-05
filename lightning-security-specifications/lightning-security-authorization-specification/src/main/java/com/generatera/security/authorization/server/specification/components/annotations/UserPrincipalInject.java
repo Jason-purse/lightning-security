@@ -17,7 +17,7 @@ import java.lang.annotation.*;
  * 是一个标记接口,只有注释了这样的类才会被考虑进行 LightningUserPrincipal 属性 注入 ..
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE,ElementType.PARAMETER})
+@Target({ElementType.TYPE,ElementType.PARAMETER,ElementType.FIELD})
 @Inherited
 @Documented
 public @interface UserPrincipalInject {

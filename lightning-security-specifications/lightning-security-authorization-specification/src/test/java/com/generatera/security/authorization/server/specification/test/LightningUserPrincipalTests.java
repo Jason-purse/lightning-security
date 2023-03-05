@@ -1,9 +1,10 @@
 package com.generatera.security.authorization.server.specification.test;
 
 import com.generatera.security.authorization.server.specification.DefaultLightningUserPrincipal;
-import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalPropertyHandlerMethodArgumentResolver;
 import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalInject;
 import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalProperty;
+import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalPropertyHandlerMethodArgumentEnhancer;
+import com.jianyue.lightning.framework.web.method.argument.context.MethodArgumentContext;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ import java.util.Collections;
  * 以及 {@link com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalProperty}
  * 注解的使用 ...
  *
- * 2. {@link UserPrincipalPropertyHandlerMethodArgumentResolver}
+ * 2. {@link UserPrincipalPropertyHandlerMethodArgumentEnhancer}
  * 绑定 {@link com.generatera.security.authorization.server.specification.LightningUserPrincipal} 的属性到 Param类对象上 ...
  */
 public class LightningUserPrincipalTests {
@@ -127,7 +128,7 @@ public class LightningUserPrincipalTests {
 
             SecurityContextHolder.setContext(emptyContext);
 
-            UserPrincipalPropertyHandlerMethodArgumentResolver lightningUserPrincipalPropertyHandlerMethodArgumentResolver = new UserPrincipalPropertyHandlerMethodArgumentResolver();
+            UserPrincipalPropertyHandlerMethodArgumentEnhancer lightningUserPrincipalPropertyHandlerMethodArgumentResolver = new UserPrincipalPropertyHandlerMethodArgumentEnhancer();
             MockHttpServletRequest get = new MockHttpServletRequest("get", "/api/get/current/user");
 
             get.setParameter("password","123456");
@@ -137,10 +138,16 @@ public class LightningUserPrincipalTests {
                     SpringContainerForMethodResolveTests.class.getMethod("registerTest", MyData.class), 0
             );
             if (lightningUserPrincipalPropertyHandlerMethodArgumentResolver.supportsParameter(parameter)) {
-                Object o = lightningUserPrincipalPropertyHandlerMethodArgumentResolver.resolveArgument(parameter, new ModelAndViewContainer(),
-                        new ServletWebRequest(get), new DefaultDataBinderFactory(null));
+                MethodArgumentContext methodArgumentContext = new MethodArgumentContext(
+                        parameter, new ModelAndViewContainer(),
+                        new ServletWebRequest(get), new DefaultDataBinderFactory(null),
+                        new MyData()
+                );
+                lightningUserPrincipalPropertyHandlerMethodArgumentResolver.enhanceArgument(
+                     methodArgumentContext
+                       );
 
-                System.out.println(o);
+                System.out.println(methodArgumentContext.getTarget());
             }
         }
 
@@ -163,9 +170,13 @@ public class LightningUserPrincipalTests {
         @UserPrincipalProperty
         private String value;
 
-        private MyData2 myData2;
+        @UserPrincipalInject
+        private MyData2 myData2 = new MyData2();
+
+
     }
 
+    @Data
     static class MyData2 {
 
         @UserPrincipalProperty

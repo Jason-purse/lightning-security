@@ -1,7 +1,9 @@
 package com.generatera.security.authorization.server.specification;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
@@ -34,6 +36,18 @@ public interface LightningUserContext {
     static LightningUserContext get() {
         return new DefaultLightningUserContext();
     }
+
+    static LightningUserContext set(LightningUserPrincipal userPrincipal) {
+        SecurityContext context = SecurityContextHolder.getContext();
+        if (userPrincipal.isAuthenticated()) {
+            context.setAuthentication(new UsernamePasswordAuthenticationToken(userPrincipal,null,userPrincipal.getAuthorities()));
+        }
+        else {
+            context.setAuthentication(new AnonymousAuthenticationToken(userPrincipal.getName(), userPrincipal,userPrincipal.getAuthorities()));
+        }
+        SecurityContextHolder.setContext(context);
+        return new DefaultLightningUserContext(userPrincipal);
+    }
 }
 
 class DefaultLightningUserContext implements LightningUserContext {
@@ -50,6 +64,10 @@ class DefaultLightningUserContext implements LightningUserContext {
         } else {
             this.userPrincipal = null;
         }
+    }
+
+    public DefaultLightningUserContext(LightningUserPrincipal userPrincipal) {
+        this.userPrincipal = userPrincipal;
     }
 
     @Override

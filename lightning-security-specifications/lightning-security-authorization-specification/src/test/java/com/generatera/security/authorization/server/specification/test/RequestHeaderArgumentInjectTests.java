@@ -1,7 +1,9 @@
 package com.generatera.security.authorization.server.specification.test;
 
+import com.generatera.security.authorization.server.specification.LightningUserContext;
 import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderArgument;
 import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderHandlerMethodArgumentResolver;
+import com.jianyue.lightning.framework.web.method.argument.context.MethodArgumentContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.support.DefaultDataBinderFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
+
+import java.util.Collections;
 
 /**
  * @author FLJ
@@ -53,16 +57,22 @@ public class RequestHeaderArgumentInjectTests {
     @Test
     public void requestHeaderArgumentTest() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET","/api/v1/test");
-        //request.addHeader("clientId","invalid clientId");
+        request.addHeader("clientId","invalid clientId");
         request.addParameter("string","1020");
 
-        Object test = requestHeaderHandlerMethodArgumentResolver.resolveArgument(
+        LightningUserContext.set(new LightningUserPrincipalTests.MyLightningUserPrincipal("zs","123456", Collections.emptyList(),true));
+
+        MethodArgumentContext test = new MethodArgumentContext(
                 MethodParameter.forExecutable(this.getClass().getMethod("test", String.class), 0),
                 new ModelAndViewContainer(),
                 new ServletWebRequest(request),
-                new DefaultDataBinderFactory(null)
+                new DefaultDataBinderFactory(null),
+                null
+        );
+        requestHeaderHandlerMethodArgumentResolver.enhanceArgument(
+               test
         );
 
-        System.out.println(test);
+        System.out.println(test.getTarget());
     }
 }
