@@ -2,7 +2,7 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
-import com.jianyue.lightning.boot.starter.generic.crud.service.support.ThreadLocalSupport;
+import com.jianyue.lightning.boot.starter.util.ThreadLocalSupport;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -3,7 +3,9 @@ package com.generatera.security.authorization.server.specification.test;
 import com.generatera.security.authorization.server.specification.LightningUserContext;
 import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderArgument;
 import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderHandlerMethodArgumentResolver;
+import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderInject;
 import com.jianyue.lightning.framework.web.method.argument.context.MethodArgumentContext;
+import lombok.Data;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -54,6 +56,10 @@ public class RequestHeaderArgumentInjectTests {
 
     }
 
+    public void test2(MyData myData) {
+
+    }
+
     @Test
     public void requestHeaderArgumentTest() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET","/api/v1/test");
@@ -74,5 +80,21 @@ public class RequestHeaderArgumentInjectTests {
         );
 
         System.out.println(test.getTarget());
+
+        test.setMethodParameter(
+                MethodParameter.forExecutable(this.getClass().getMethod("test2", MyData.class),0)
+        );
+        test.setTarget(new MyData());
+
+        requestHeaderHandlerMethodArgumentResolver.enhanceArgument(test);
+
+        System.out.println(test.getTarget());
+    }
+    @Data
+    @RequestHeaderInject
+    public static class MyData {
+
+        @RequestHeaderArgument("clientId")
+        private String clientId;
     }
 }

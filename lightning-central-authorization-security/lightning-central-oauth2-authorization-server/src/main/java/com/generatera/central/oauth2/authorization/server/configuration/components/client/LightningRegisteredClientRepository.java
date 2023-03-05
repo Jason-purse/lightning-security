@@ -3,15 +3,12 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.client.OAuth2ClientEntity;
 import com.generatera.central.oauth2.authorization.server.configuration.model.param.client.AppParam;
+import com.jianyue.lightning.boot.starter.generic.crud.service.support.converters.strategy.StrategyGroupSupport;
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.result.CrudResult;
-import com.jianyue.lightning.boot.starter.generic.crud.service.support.validates.SELECT_BY_ID;
-import com.jianyue.lightning.boot.starter.generic.crud.service.support.validates.SELECT_LIST;
-import com.jianyue.lightning.boot.starter.generic.crud.service.support.validates.Validation;
-import com.jianyue.lightning.boot.starter.generic.crud.service.support.validates.ValidationSupport;
+import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import com.jianyue.lightning.boot.starter.util.dataflow.impl.InputContext;
 import com.jianyue.lightning.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -254,12 +251,14 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
     public RegisteredClient findById(String id) {
         AppParam appParam = new AppParam();
         appParam.setId(Long.parseLong(id));
-        Class<? extends Validation> oldValidationGroup = ValidationSupport.Companion.setValidationGroupAndReturnOld(SELECT_BY_ID.class);
-        CrudResult crudResult = oAuth2ClientRepository.selectOperationById(InputContext.of(appParam));
-        ValidationSupport.Companion.setValidationGroupAndReturnOld(oldValidationGroup);
-        if(crudResult.hasResult()) {
+        CrudResult crudResult = OptionalFlux
+                .of(StrategyGroupSupport.Companion.invokeForSelectById(() ->
+                        oAuth2ClientRepository.selectOperationById(InputContext.of(appParam))))
+                .cast(CrudResult.class)
+                .getResult();
+        if (crudResult.hasResult()) {
             assert crudResult.getResult() != null;
-            return clientConverter.convert((OAuth2ClientEntity) crudResult.getResult());
+            return clientConverter.convert(crudResult.getResult());
         }
         return null;
     }
@@ -269,15 +268,17 @@ public class LightningRegisteredClientRepository implements RegisteredClientRepo
         AppParam appParam = new AppParam();
         appParam.setClientId(clientId);
 
-        val oldValidationGroup = ValidationSupport.Companion.setValidationGroupAndReturnOld(SELECT_LIST.class);
-        CrudResult crudResult = oAuth2ClientRepository.selectOperation(InputContext.of(appParam));
-        ValidationSupport.Companion.setValidationGroupAndReturnOld(oldValidationGroup);
+        CrudResult crudResult = OptionalFlux.of(StrategyGroupSupport.Companion.invokeForSelectList(
+                        () -> oAuth2ClientRepository.selectOperation(InputContext.of(appParam))
+                ))
+                .cast(CrudResult.class)
+                .getResult();
 
-        if(crudResult.hasResults()) {
+        if (crudResult.hasResults()) {
             assert crudResult.getResult() != null;
-            Collection<?> result = (Collection<?>) crudResult.getResult();
+            Collection<?> result = crudResult.getResult();
             OAuth2ClientEntity next = ((OAuth2ClientEntity) result.iterator().next());
-            return clientConverter.convert(next );
+            return clientConverter.convert(next);
         }
         return null;
     }

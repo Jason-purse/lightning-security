@@ -4,7 +4,7 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtClaimsSet;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JwtEncodingContext;
-import com.jianyue.lightning.boot.starter.generic.crud.service.support.ThreadLocalSupport;
+import com.jianyue.lightning.boot.starter.util.ThreadLocalSupport;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.util.Assert;
 
