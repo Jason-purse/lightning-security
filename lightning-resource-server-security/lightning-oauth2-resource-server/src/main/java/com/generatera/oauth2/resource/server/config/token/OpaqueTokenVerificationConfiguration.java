@@ -2,10 +2,10 @@ package com.generatera.oauth2.resource.server.config.token;
 
 import com.generatera.oauth2.resource.server.config.OAuth2ResourceServerProperties;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
-import com.generatera.resource.server.config.LogUtil;
 import com.generatera.security.authorization.server.specification.ClientAuthenticationMethod;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
 import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

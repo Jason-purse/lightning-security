@@ -10,9 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("api/user")
 public class OrderController {
-
+    /**
+     * 查看文档- 仅限fergin调用
+     * @return
+     */
     @GetMapping
-    @LightningPreAuthorize(roles = {"role1","role2"},authorities = {""})
+    @LightningPreAuthorize("物流模块-查询文件")
     public LightningUserPrincipal currentUser() {
         return LightningUserContext.get().getUserPrincipal().get();
     }

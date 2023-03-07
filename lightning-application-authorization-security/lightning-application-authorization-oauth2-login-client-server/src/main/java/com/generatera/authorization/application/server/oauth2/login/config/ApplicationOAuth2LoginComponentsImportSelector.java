@@ -3,7 +3,7 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import com.generatera.security.authorization.server.specification.PropertiesBindImportSelector;
-import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.env.Environment;

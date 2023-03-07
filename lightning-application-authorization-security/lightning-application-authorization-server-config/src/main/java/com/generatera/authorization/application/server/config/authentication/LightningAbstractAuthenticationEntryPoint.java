@@ -4,7 +4,7 @@ import com.generatera.authorization.application.server.config.ApplicationAuthExc
 import com.generatera.authorization.application.server.config.token.ApplicationLevelAuthorizationToken;
 import com.generatera.authorization.application.server.config.token.AuthAccessTokenAuthenticationToken;
 import com.generatera.authorization.application.server.config.token.DefaultAuthAppLevelAuthorizationTokenResponseMapConverter;
-import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
 import com.jianyue.lightning.result.Result;

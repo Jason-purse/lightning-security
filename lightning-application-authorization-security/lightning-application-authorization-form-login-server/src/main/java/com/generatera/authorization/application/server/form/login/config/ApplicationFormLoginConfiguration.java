@@ -9,7 +9,7 @@ import com.generatera.authorization.application.server.config.token.LightningUse
 import com.generatera.authorization.application.server.config.util.ApplicationAuthServerUtils;
 import com.generatera.authorization.application.server.form.login.config.components.*;
 import com.generatera.authorization.application.server.form.login.config.util.FormLoginUtils;
-import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;

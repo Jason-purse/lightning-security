@@ -76,6 +76,9 @@ public class ResourceMethodSecurityEntity implements Serializable {
     @Column(name = "description", columnDefinition = "text")
     private String description;
 
+    @Column(name = "type")
+    private String type;
+
 
     /**
      * 选择性更新

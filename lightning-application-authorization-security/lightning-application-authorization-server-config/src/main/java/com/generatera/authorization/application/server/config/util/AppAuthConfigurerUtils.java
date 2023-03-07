@@ -21,6 +21,7 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.apache.commons.lang3.ObjectUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.target.LazyInitTargetSource;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -232,18 +233,7 @@ public final class AppAuthConfigurerUtils {
     public static <B extends HttpSecurityBuilder<B>> LightningTokenGenerator<? extends LightningToken> getTokenGenerator(B builder) {
         return getBean(builder, LightningTokenGenerator.class, () -> {
             LightningJwtGenerator jwtGenerator = getJwtGenerator(builder);
-            DefaultLightningAccessTokenGenerator accessTokenGenerator = new DefaultLightningAccessTokenGenerator();
-            LightningTokenCustomizer<LightningTokenClaimsContext> accessTokenCustomizer = getAccessTokenCustomizer(builder);
-            if (accessTokenCustomizer != null) {
-                TokenSettingsProvider settingsProvider = builder.getSharedObject(TokenSettingsProvider.class);
-                accessTokenGenerator.setAccessTokenCustomizer(
-                        new DelegateLightningTokenCustomizer<>(
-                                accessTokenCustomizer,
-                                new DefaultTokenDetailAwareTokenCustomizer(settingsProvider)::customize,
-                                new DefaultOpaqueAwareTokenCustomizer()::customize
-                        ));
-            }
-
+            DefaultLightningAccessTokenGenerator accessTokenGenerator = getAccessTokenGenerator(builder);
             DefaultLightningRefreshTokenGenerator refreshTokenGenerator = new DefaultLightningRefreshTokenGenerator();
             if (jwtGenerator != null) {
                 return new DelegatingLightningTokenGenerator(jwtGenerator, accessTokenGenerator, refreshTokenGenerator);
@@ -251,6 +241,30 @@ public final class AppAuthConfigurerUtils {
                 return new DelegatingLightningTokenGenerator(accessTokenGenerator, refreshTokenGenerator);
             }
         });
+    }
+
+    @NotNull
+    private static <B extends HttpSecurityBuilder<B>> DefaultLightningAccessTokenGenerator getAccessTokenGenerator(B builder) {
+        DefaultLightningAccessTokenGenerator accessTokenGenerator = new DefaultLightningAccessTokenGenerator();
+        LightningTokenCustomizer<LightningTokenClaimsContext> accessTokenCustomizer = getAccessTokenCustomizer(builder);
+        TokenSettingsProvider settingsProvider = builder.getSharedObject(TokenSettingsProvider.class);
+        if (accessTokenCustomizer != null) {
+            accessTokenGenerator.setAccessTokenCustomizer(
+                    new DelegateLightningTokenCustomizer<>(
+                            accessTokenCustomizer,
+                            new DefaultTokenDetailAwareTokenCustomizer(settingsProvider)::customize,
+                            new DefaultOpaqueAwareTokenCustomizer()::customize
+                    ));
+        }
+        else {
+            accessTokenGenerator.setAccessTokenCustomizer(
+                    new DelegateLightningTokenCustomizer<>(
+                            new DefaultTokenDetailAwareTokenCustomizer(settingsProvider)::customize,
+                            new DefaultOpaqueAwareTokenCustomizer()::customize
+                    )
+            );
+        }
+        return accessTokenGenerator;
     }
 
     private static <B extends HttpSecurityBuilder<B>> LightningJwtGenerator getJwtGenerator(B builder) {
@@ -265,6 +279,14 @@ public final class AppAuthConfigurerUtils {
                     defaultLightningJwtGenerator.setJwtCustomizer(
                             new DelegateLightningTokenCustomizer<>(
                                     jwtCustomizer,
+                                    new DefaultTokenDetailAwareTokenCustomizer(getTokenSettingProvider(builder))::customize,
+                                    new DefaultOpaqueAwareTokenCustomizer()::customize
+                            )
+                    );
+                }
+                else {
+                    defaultLightningJwtGenerator.setJwtCustomizer(
+                            new DelegateLightningTokenCustomizer<>(
                                     new DefaultTokenDetailAwareTokenCustomizer(getTokenSettingProvider(builder))::customize,
                                     new DefaultOpaqueAwareTokenCustomizer()::customize
                             )

@@ -1,6 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.ext.configuration;
 
-import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.generatera.central.oauth2.authorization.server.configuration.LightningOAuth2CentralAuthorizationServerBootstrapConfigurer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;

@@ -58,6 +58,7 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
         this.userDetailsService = userDetailsService;
     }
 
+    @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         AuthRefreshTokenAuthenticationToken refreshTokenAuthentication = (AuthRefreshTokenAuthenticationToken) authentication;
         DefaultLightningAuthorization authorization = this.authorizationService.findByToken(refreshTokenAuthentication.getRefreshToken(), LightningTokenType.LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE);

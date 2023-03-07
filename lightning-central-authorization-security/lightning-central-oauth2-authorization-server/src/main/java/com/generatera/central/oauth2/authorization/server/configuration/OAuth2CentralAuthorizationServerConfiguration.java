@@ -5,7 +5,7 @@ import com.generatera.authorization.server.common.configuration.AuthConfigConsta
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
-import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authentication.DefaultOAuth2CentralServerAuthenticationSuccessHandler;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authentication.LightningOAuth2CentralServerAuthenticationSuccessHandler;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authorization.OptimizedForOAuth2AuthorizationEndpointFilter;
@@ -38,7 +38,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenClaimsContext;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenContext;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.util.CollectionUtils;

@@ -38,7 +38,7 @@ lightning:
             backend-separation:
               login-success-message: "登陆成功了,亲!!!"
               login-failure-message: "登陆失败了,亲!!!"
-            separation: false
+            separation: true
             # oauth 相关配置 ...
 #            oauth2:
 #              login:

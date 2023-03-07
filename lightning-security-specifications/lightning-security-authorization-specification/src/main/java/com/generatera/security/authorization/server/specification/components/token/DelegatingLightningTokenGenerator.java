@@ -21,6 +21,7 @@ public final class DelegatingLightningTokenGenerator implements LightningTokenGe
         this.tokenGenerators = Collections.unmodifiableList(asList(tokenGenerators));
     }
 
+    @Override
     @Nullable
     public LightningToken generate(LightningTokenContext context) {
         Iterator<LightningTokenGenerator<LightningToken>> var2 = this.tokenGenerators.iterator();

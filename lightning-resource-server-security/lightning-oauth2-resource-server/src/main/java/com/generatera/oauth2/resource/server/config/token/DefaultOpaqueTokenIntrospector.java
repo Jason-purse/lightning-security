@@ -125,6 +125,7 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
         return body;
     }
 
+    @Override
     public LightningUserPrincipal introspect(String token) {
         RequestEntity<?> requestEntity = this.requestEntityConverter.convert(token);
         if (requestEntity == null) {
@@ -212,7 +213,7 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
 
 
         if(jwtClaimsToUserPrincipalMapper != null) {
-           return jwtClaimsToUserPrincipalMapper.convert(claims);
+            return jwtClaimsToUserPrincipalMapper.convert(claims);
         }
 
         for (String authorityName : authoritiesName) {

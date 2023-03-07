@@ -1,7 +1,7 @@
 package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
-import com.generatera.authorization.server.common.configuration.util.LogUtil;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.generatera.security.authorization.server.specification.BootstrapContext;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
 import com.generatera.security.authorization.server.specification.TokenSettingsProperties;

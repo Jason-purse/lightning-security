@@ -1,9 +1,9 @@
 package com.generatera.resource.server.config.method.security;
 
-import com.generatera.resource.server.config.LogUtil;
 import com.generatera.resource.server.config.ResourceServerProperties;
 import com.generatera.resource.server.config.method.security.repository.JpaResourceMethodSecurityRepository;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.DisposableBean;

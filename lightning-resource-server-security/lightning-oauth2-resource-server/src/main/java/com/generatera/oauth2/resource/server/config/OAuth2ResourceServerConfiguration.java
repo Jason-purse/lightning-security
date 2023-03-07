@@ -5,8 +5,8 @@ import com.generatera.oauth2.resource.server.config.authentication.OAuth2Resourc
 import com.generatera.oauth2.resource.server.config.token.LightningAuthenticationTokenResolver;
 import com.generatera.resource.server.config.LightningResourceServerConfig;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
-import com.generatera.resource.server.config.LogUtil;
 import com.generatera.resource.server.config.ResourceServerProperties;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;

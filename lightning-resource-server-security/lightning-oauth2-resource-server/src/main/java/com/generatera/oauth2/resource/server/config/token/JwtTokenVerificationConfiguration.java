@@ -2,8 +2,8 @@ package com.generatera.oauth2.resource.server.config.token;
 
 import com.generatera.oauth2.resource.server.config.OAuth2ResourceServerUtils;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
-import com.generatera.resource.server.config.LogUtil;
 import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
