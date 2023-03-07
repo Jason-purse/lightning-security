@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.OAuth2TokenFormat;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 
+import javax.persistence.Column;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,12 @@ public class AppParam implements AuthServerParam, IdSupport<Long> {
      * token 端点签名算法
      */
     private SignatureAlgorithm tokenEndpointAuthenticationSigningAlgorithm;
+
+
+    /**
+     * 客户端授权服务地址
+     */
+    private String clientAccessUrl;
 
     /**
      * 客户端其他配置

@@ -28,6 +28,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
@@ -187,6 +189,7 @@ public class OAuth2CentralAuthorizationServerConfiguration {
      *                       详情查看 模块 lightning-central-oauth2-authorization-password-grant-support-server ..
      */
     @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     @SuppressWarnings("unchecked")
     public LightningAuthServerConfigurer configurer(
             LightningCentralOAuth2TokenCustomizer<OAuth2TokenClaimsContext> accessTokenCustomizer,

@@ -150,6 +150,12 @@ public class OAuth2ClientEntity extends JpaBaseEntity<Long> {
     @Column(name = "token_endpoint_authentication_signing_algorithm")
     private String tokenEndpointAuthenticationSigningAlgorithm;
 
+
+    /**
+     * 客户端授权服务地址
+     */
+    @Column(name = "client_access_url",length = 2000)
+    private String clientAccessUrl;
     /**
      * 客户端其他配置
      */

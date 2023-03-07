@@ -43,7 +43,7 @@ public class PasswordGrantTypeSupportConfiguration {
                                             // 刷新token
                                             new OAuth2RefreshTokenAuthenticationConverter(),
                                             // password
-                                            new OAuth2ResourceOwnerPasswordAuthenticationConverter()
+                                            PasswordGrantSupportUtils.getResourceOwnerPasswordAuthenticationConverter(configurer.and())
                                     )
                             )
                     );
@@ -67,12 +67,7 @@ public class PasswordGrantTypeSupportConfiguration {
         http.apply(new SecurityConfigurerAdapter<>() {
             @Override
             public void configure(HttpSecurity builder) {
-                AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-                OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
-                OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator = http.getSharedObject(OAuth2TokenGenerator.class);
-                // oauth2.0 resourceOwnerPassword authentication support
-                AuthenticationProvider authenticationProvider = new OAuth2ResourceOwnerPasswordAuthenticationProvider(authenticationManager, authorizationService, tokenGenerator);
-                http.authenticationProvider(authenticationProvider);
+                builder.authenticationProvider(PasswordGrantSupportUtils.getResourceOwnerPasswordAuthenticationProvider(builder));
             }
         });
     }

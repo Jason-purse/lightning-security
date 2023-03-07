@@ -45,13 +45,13 @@ import java.util.stream.Collectors;
  *
  * <a href="https://www.rfc-editor.org/rfc/rfc6749#section-1.3.3">Resource Owner Password Credentials</a>
  */
-public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements AuthenticationProvider {
+public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements ResourceOwnerPasswordAuthenticationProvider {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
     private static final OAuth2TokenType ID_TOKEN_TOKEN_TYPE = new OAuth2TokenType(OidcParameterNames.ID_TOKEN);
-    private final AuthenticationManager authenticationManager;
+    protected final AuthenticationManager authenticationManager;
     private final OAuth2AuthorizationService authorizationService;
     private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
 
@@ -235,7 +235,7 @@ public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements Authen
         return supports;
     }
 
-    private Authentication getUsernamePasswordAuthentication(OAuth2ResourceOwnerPasswordAuthenticationToken resouceOwnerPasswordAuthentication) {
+    protected Authentication getUsernamePasswordAuthentication(OAuth2ResourceOwnerPasswordAuthenticationToken resouceOwnerPasswordAuthentication) {
 
         Map<String, Object> additionalParameters = resouceOwnerPasswordAuthentication.getAdditionalParameters();
 

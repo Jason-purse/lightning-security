@@ -1,5 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.ext.configuration;
 
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -17,7 +18,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 // 用来支持 oauth2-client  resource-owner 模式 ..
-public class OAuth2ResourceOwnerPasswordAuthenticationConverter implements AuthenticationConverter {
+public class OAuth2ResourceOwnerPasswordAuthenticationConverter implements ResourceOwnerPasswordAuthenticationConverter {
 
 	@Override
 	public Authentication convert(HttpServletRequest request) {
@@ -74,6 +75,7 @@ public class OAuth2ResourceOwnerPasswordAuthenticationConverter implements Authe
 				OAuth2EndpointUtils.ACCESS_TOKEN_REQUEST_ERROR_URI);
 		}
 
+
 		// 额外的参数
 		Map<String, Object> additionalParameters = parameters
 				.entrySet()
@@ -81,9 +83,18 @@ public class OAuth2ResourceOwnerPasswordAuthenticationConverter implements Authe
 				.filter(e -> !e.getKey().equals(OAuth2ParameterNames.GRANT_TYPE) &&
 						!e.getKey().equals(OAuth2ParameterNames.SCOPE))
 				.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get(0)));
-		
+
+		Authentication authentication = doCustomParamAssert(request, AuthorizationGrantType.PASSWORD, clientPrincipal, requestedScopes, additionalParameters);
+		if(authentication != null) {
+			return authentication;
+		}
 		return new OAuth2ResourceOwnerPasswordAuthenticationToken(AuthorizationGrantType.PASSWORD, clientPrincipal, requestedScopes, additionalParameters);
 
+	}
+
+	protected Authentication doCustomParamAssert(HttpServletRequest request, AuthorizationGrantType authorizationGrantType,
+												 Authentication clientPrincipal, @Nullable Set<String> scopes, @Nullable Map<String, Object> additionalParameters) {
+		return null;
 	}
 	
 }
