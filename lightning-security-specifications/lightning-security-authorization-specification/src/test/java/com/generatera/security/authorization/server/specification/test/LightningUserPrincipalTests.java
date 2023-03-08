@@ -7,6 +7,7 @@ import com.generatera.security.authorization.server.specification.components.ann
 import com.jianyue.lightning.boot.autoconfigure.web.WebConfigAutoConfiguration;
 import com.jianyue.lightning.framework.web.method.argument.context.MethodArgumentContext;
 import lombok.Data;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,8 +37,10 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * 测试LightningUserPrincipal {@link com.generatera.security.authorization.server.specification.LightningUserPrincipal}
@@ -228,6 +232,24 @@ public class LightningUserPrincipalTests {
     }
 
 
+    @Test
+    public void argumentConvertWithConversionService() {
+        DefaultConversionService defaultConversionService = new DefaultConversionService();
+        List<String> values = Arrays.asList("1","2");
+
+        Object convert = defaultConversionService.convert(values, TypeDescriptor.valueOf(List.class));
+
+        Assertions.assertNotNull(convert);
+
+        String valuee = "123";
+
+        List convert1 = defaultConversionService.convert(valuee, List.class);
+        System.out.println(convert1);
+
+        System.out.println(convert);
+    }
+
+
 
     @Data
     @UserPrincipalInject
@@ -257,5 +279,13 @@ public class LightningUserPrincipalTests {
 
         @UserPrincipalProperty
         private String value;
+
+
+        @UserPrincipalProperty("username")
+        private List<String> listUsername;
     }
+
+
+
+
 }

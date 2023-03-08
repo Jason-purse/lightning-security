@@ -19,6 +19,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.annotation.ModelFactory;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 
 /**
  * @author FLJ
@@ -143,7 +144,7 @@ public class RequestHeaderHandlerMethodArgumentResolver implements HandlerMethod
     }
 
     private boolean isCommonTypes(Class<?> type) {
-        return ClassUtils.isPrimitiveOrWrapper(type) || type.isAssignableFrom(String.class);
+        return ClassUtils.isPrimitiveOrWrapper(type) || type.isAssignableFrom(String.class) || Collection.class.isAssignableFrom(type);
     }
 
     private boolean isNotNull(Field field,Object target) {
