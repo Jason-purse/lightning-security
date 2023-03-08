@@ -1,6 +1,5 @@
 package com.generatera.resource.server.config;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.resource.server.config.method.security.LightningPostAuthorize;
 import com.generatera.resource.server.config.method.security.LightningPreAuthorize;
 import com.generatera.security.authorization.server.specification.components.token.MacAlgorithm;
@@ -10,8 +9,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import java.util.List;
 
 import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfig.CacheConfig.MongoCacheConfigPrefix;
 
@@ -240,11 +237,6 @@ public class ResourceServerProperties {
 
     private final TokenVerificationConfig tokenVerificationConfig = new TokenVerificationConfig();
 
-    /**
-     * resource url 白名单(如果连同 auth server,那么可以使用authorization server对应的白名单列表控制)
-     * {@link AuthorizationServerComponentProperties#getPermission()}
-     */
-    private final Permission permission = new Permission();
 
     private final AuthorityConfig authorityConfig = new AuthorityConfig();
 
@@ -308,12 +300,7 @@ public class ResourceServerProperties {
         }
     }
 
-    @Data
-    public static class Permission {
 
-        private List<String> urlWhiteList;
-
-    }
 
     public enum StoreKind {
         REDIS,
