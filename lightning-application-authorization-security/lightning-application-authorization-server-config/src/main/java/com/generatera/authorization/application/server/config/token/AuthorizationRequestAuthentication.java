@@ -14,12 +14,19 @@ import java.util.Collection;
  * @Description 授权请求token(需要浏览器跳转的) ...
  */
 public interface AuthorizationRequestAuthentication extends Authentication {
+
+
+    default boolean needRedirect() {
+        return false;
+    }
     /**
      * 发送重定向
      * @param request request
      * @param response response
      */
-    void sendRedirect(HttpServletRequest request, HttpServletResponse response) throws Exception;
+    default void sendRedirect(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        // 不做任何事情 ..
+    }
 
     // 以下属性 仅作填充 ...
     @Override

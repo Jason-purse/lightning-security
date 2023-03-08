@@ -64,7 +64,6 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
 
         });
         // 开始组装authAccess...Token
-
         // 不存在默认就是授权码
         if(!StringUtils.hasText(oauth2_grant_type) || org.springframework.security.oauth2.core.AuthorizationGrantType.AUTHORIZATION_CODE.getValue().equalsIgnoreCase(oauth2_grant_type)) {
 
@@ -76,10 +75,16 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
                 public void sendRedirect(HttpServletRequest request, HttpServletResponse response) throws IOException {
                     response.sendRedirect(redirectBaseUri + "/" +provider);
                 }
+
+                @Override
+                public boolean needRedirect() {
+                    return true;
+                }
             };
         }
 
-        return getOtherAuthentication(oauth2_grant_type,client_id,client_secret,additionalParameters);
+
+        return getOtherAuthentication(oauth2_grant_type,client_id,client_secret,additionalParameters,request);
     }
 
     /**
@@ -87,7 +92,8 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
      */
     protected  Authentication getOtherAuthentication(String oauth2_grant_type,
                                                     String clientId,String clientSecret,
-                                                    Map<String, Object> additionalParameters) {
+                                                    Map<String, Object> additionalParameters,
+                                                     HttpServletRequest request) {
         return null;
     }
 }

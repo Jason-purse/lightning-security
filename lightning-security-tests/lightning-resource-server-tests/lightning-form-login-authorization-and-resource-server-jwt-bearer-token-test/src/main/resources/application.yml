@@ -6,6 +6,12 @@ lightning:
           login:
             config:
               is-separation: true
+  security:
+    resource:
+      server:
+        permission:
+          url-white-list:
+            - /**
 
 spring:
   security:

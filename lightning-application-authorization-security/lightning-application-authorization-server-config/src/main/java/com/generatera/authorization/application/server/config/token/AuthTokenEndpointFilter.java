@@ -92,13 +92,17 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
                 }
 
                 // 处理重定向 ....
+                // oauth2 grant login
                 if (authorizationGrantAuthentication instanceof AuthorizationRequestAuthentication requestAuthentication) {
-                    try {
-                        requestAuthentication.sendRedirect(request,response);
-                    }catch (Exception e) {
-                        // pass
-                        // 不做任何提示 ...
-                        throw new LightningAuthenticationException(new LightningAuthError("invalid_redirect_uri"));
+                    // 直接登录的,不需要重定向 !!!
+                    if(requestAuthentication.needRedirect()) {
+                        try {
+                            requestAuthentication.sendRedirect(request,response);
+                        }catch (Exception e) {
+                            // pass
+                            // 不做任何提示 ...
+                            throw new LightningAuthenticationException(new LightningAuthError("invalid_redirect_uri"));
+                        }
                     }
                 }
                 else {

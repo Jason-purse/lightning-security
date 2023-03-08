@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
 import org.springframework.core.ResolvableType;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter;
@@ -360,6 +361,7 @@ public final class AppAuthConfigurerUtils {
         LightningDaoAuthenticationProvider sharedObject = builder.getSharedObject(LightningDaoAuthenticationProvider.class);
         if (sharedObject == null) {
             Collection<LightningDaoAuthenticationProvider> list = getBeansForType(builder, LightningDaoAuthenticationProvider.class);
+            list = list.stream().sorted(AnnotationAwareOrderComparator.INSTANCE).toList();
             DelegateLightningDaoAuthenticationProvider daoAuthenticationProvider = new DelegateLightningDaoAuthenticationProvider(list);
             builder.setSharedObject(LightningDaoAuthenticationProvider.class, daoAuthenticationProvider);
             sharedObject = daoAuthenticationProvider;
