@@ -2,11 +2,10 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 
 import com.generatera.central.oauth2.authorization.server.configuration.exception.InternalOAuth2AuthenticationException;
 import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.jianyue.lightning.util.JsonUtil;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
 import javax.servlet.ServletException;
@@ -29,7 +28,7 @@ public interface LightningOAuth2CentralServerAuthenticationFailureHandler extend
 
             AuthHttpResponseUtil.commence(response, JsonUtil.getDefaultJsonUtil().asJSON(
                     Map.of("error",e.getError().getErrorCode(),
-                            "error_description",e.getError().getDescription())
+                            "error_description", ElvisUtil.stringElvis(e.getError().getDescription(),""))
             ));
         }
         else {
@@ -37,7 +36,7 @@ public interface LightningOAuth2CentralServerAuthenticationFailureHandler extend
             AuthHttpResponseUtil.commence(response,
                     JsonUtil.getDefaultJsonUtil().asJSON(
                             Map.of("error","invalid request",
-                                    "error_description",exception.getMessage())
+                                    "error_description",ElvisUtil.stringElvis(exception.getMessage(),""))
                     ));
         }
     }
