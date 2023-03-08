@@ -32,7 +32,7 @@ import java.sql.SQLException;
  *
  */
 @Deprecated(since = "暂未使用")
-@Component
+//@Component
 @Builder
 public class DataBaseUtils {
 
