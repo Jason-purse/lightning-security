@@ -10,7 +10,7 @@ import java.util.Map;
  * @author FLJ
  * @date 2023/3/7
  * @time 12:57
- * @Description 支持
+ * @Description 支持使用客户端凭证的方式来 实现oauth2 access token 获取
  */
 public class ClientSecretGrantForOauth2LoginAccessTokenAuthenticationConverter extends OAuth2LoginAccessTokenAuthenticationConverter {
 

@@ -24,6 +24,8 @@ import java.util.Map;
  *
  *  重定向到{@link OAuth2AuthorizationRequestRedirectFilter} 进行客户端等信息的处理 ...
  *  然后开启授权码流程 ...
+ *
+ *  子类可以扩展,例如{@link ClientSecretGrantForOauth2LoginAccessTokenAuthenticationConverter} 进行
  */
 public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2ClientLoginAccessTokenAuthenticationConverter {
 

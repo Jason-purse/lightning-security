@@ -9,7 +9,6 @@ public class DefaultOAuth2AccessTokenResponseClient implements LightningOAuth2Ac
     private final OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> tokenResponseClient = new DefaultAuthorizationCodeTokenResponseClient();
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(OAuth2AuthorizationCodeGrantRequest authorizationGrantRequest) {
-        OAuth2AccessTokenResponse tokenResponse = tokenResponseClient.getTokenResponse(authorizationGrantRequest);
-        return tokenResponse;
+        return tokenResponseClient.getTokenResponse(authorizationGrantRequest);
     }
 }
