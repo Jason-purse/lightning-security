@@ -4,8 +4,10 @@ import com.generatera.authorization.application.server.config.LoginGrantType;
 import com.generatera.authorization.application.server.config.token.AuthorizationRequestAuthentication;
 import com.generatera.authorization.application.server.config.token.HttpRequestUtil;
 import com.generatera.authorization.application.server.config.util.AuthEndPointUtils;
+import com.generatera.authorization.application.server.oauth2.login.config.client.register.LightningOAuth2ClientRegistrationRepository;
 import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
@@ -25,13 +27,20 @@ import java.util.Map;
  *  重定向到{@link OAuth2AuthorizationRequestRedirectFilter} 进行客户端等信息的处理 ...
  *  然后开启授权码流程 ...
  *
- *  子类可以扩展,例如{@link ClientSecretGrantForOauth2LoginAccessTokenAuthenticationConverter} 进行
+ *  子类可以扩展,例如支持{@link AuthorizationGrantType#PASSWORD} 授权形式 ...
  */
 public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2ClientLoginAccessTokenAuthenticationConverter {
 
     public static final String DEFAULT_REDIRECT_BASE_URI = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
 
     private String redirectBaseUri = DEFAULT_REDIRECT_BASE_URI;
+
+    protected final LightningOAuth2ClientRegistrationRepository clientRegistrationRepository;
+
+    public OAuth2LoginAccessTokenAuthenticationConverter(LightningOAuth2ClientRegistrationRepository clientRegistrationRepository) {
+        Assert.notNull(clientRegistrationRepository,"client registration repository must not be null !!!");
+        this.clientRegistrationRepository = clientRegistrationRepository;
+    }
 
     public void setRedirectBaseUri(String redirectBaseUri) {
         Assert.hasText(redirectBaseUri,"redirectBaseUri must not be null !!!");
@@ -49,12 +58,6 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
         if (!LoginGrantType.OAUTH2_CLIENT_LOGIN.value().equalsIgnoreCase(login_grant_type)) {
             return null;
         }
-        String client_id = parameters.getFirst("client_id");
-        String client_secret = parameters.getFirst("client_secret");
-        if (!StringUtils.hasText(client_id) || !StringUtils.hasText(client_secret)) {
-            AuthEndPointUtils.throwError("invalid_request", "oauth2 authorization_request_param client_id or client_secret must not be null !!!", "");
-        }
-
 
         String oauth2_grant_type = parameters.getFirst("oauth2_grant_type");
 
@@ -63,14 +66,22 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
             if (!key.equals("grant_type") && !key.equals("refresh_token") && !key.equals("scope")) {
                 additionalParameters.put(key, value.get(0));
             }
-
         });
+
+        String provider = parameters.getFirst("provider");
+        if (!StringUtils.hasText(provider) ) {
+            AuthEndPointUtils.throwError("invalid_request", "oauth2 provider must not be null !!!", "");
+        }
+
+        assert provider != null;
+        ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(provider.trim());
+        if(clientRegistration == null) {
+            AuthEndPointUtils.throwError("invalid_request", "oauth2 provider is  invalid !!!", "");
+        }
+
         // 开始组装authAccess...Token
         // 不存在默认就是授权码
         if(!StringUtils.hasText(oauth2_grant_type) || org.springframework.security.oauth2.core.AuthorizationGrantType.AUTHORIZATION_CODE.getValue().equalsIgnoreCase(oauth2_grant_type)) {
-
-            String provider = parameters.getFirst("provider");
-
             // 进行重定向到,我们自身的端点上 ...
             return new AuthorizationRequestAuthentication() {
                 @Override
@@ -85,15 +96,16 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
             };
         }
 
+        // 否则是其他的 ...
 
-        return getOtherAuthentication(oauth2_grant_type,client_id,client_secret,additionalParameters,request);
+        return getOtherAuthentication(oauth2_grant_type,clientRegistration,additionalParameters,request);
     }
 
     /**
      * 子类扩展点
      */
     protected  Authentication getOtherAuthentication(String oauth2_grant_type,
-                                                    String clientId,String clientSecret,
+                                                    ClientRegistration clientRegistration,
                                                     Map<String, Object> additionalParameters,
                                                      HttpServletRequest request) {
         return null;

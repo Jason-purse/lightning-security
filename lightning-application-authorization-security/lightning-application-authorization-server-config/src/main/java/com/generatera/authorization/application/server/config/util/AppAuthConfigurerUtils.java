@@ -357,6 +357,10 @@ public final class AppAuthConfigurerUtils {
         return sharedObject;
     }
 
+    /**
+     * 最好不要覆盖 共享对象 LightningDaoAuthenticationProvider
+     * 否则,你可能需要自己 写入这下面的一段逻辑,来保证 dao 认证提供器代理 ...
+     */
     public static <B extends HttpSecurityBuilder<B>> LightningDaoAuthenticationProvider getDaoAuthenticationProvider(B builder) {
         LightningDaoAuthenticationProvider sharedObject = builder.getSharedObject(LightningDaoAuthenticationProvider.class);
         if (sharedObject == null) {

@@ -1,6 +1,8 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
+import com.generatera.authorization.application.server.config.ApplicationAuthServerConfigurer;
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.application.server.config.LightningAppAuthServerConfigurer;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.DefaultLightningOidcUserService;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2GrantedAuthoritiesMapper;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOidcUserService;
@@ -131,10 +133,6 @@ public class ApplicationOAuth2LoginConfiguration {
                     if (accessTokenResponseClient != null) {
                         tokenEndpointConfig.accessTokenResponseClient(accessTokenResponseClient);
                     }
-
-                    //tokenEndpointConfig.accessTokenResponseClient(
-                    //        OAuth2LoginUtils.getOAuth2AccessTokenResponseClient(oAuth2LoginConfigurer.and())
-                    //);
                 }
 
                 private static void redirectConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, OAuth2LoginProperties properties) {
@@ -187,7 +185,6 @@ public class ApplicationOAuth2LoginConfiguration {
                             properties.getAuthorizationRequestEndpoint();
 
                     // 授权请求处理 ..
-
                     if (StringUtils.hasText(oAuthorizationRequestEndpoint.getAuthorizationRequestBaseUri())) {
                         authorizationEndpointConfig.baseUri(oAuthorizationRequestEndpoint.getAuthorizationRequestBaseUri());
                         OAuth2ClientLoginAccessTokenAuthenticationConverter accessTokenAuthenticationConverter = OAuth2LoginUtils.getOAuth2LoginAccessTokenAuthenticationConverter(oAuth2LoginConfigurer.and());
@@ -195,6 +192,7 @@ public class ApplicationOAuth2LoginConfiguration {
                             converter.setRedirectBaseUri(oAuthorizationRequestEndpoint.getAuthorizationRequestBaseUri());
                         }
                     }
+
                     // 为空  使用默认的
                     if (repository != null) {
                         authorizationEndpointConfig.authorizationRequestRepository(repository);
@@ -236,6 +234,21 @@ public class ApplicationOAuth2LoginConfiguration {
                 }
             };
         }
+    }
+
+    /**
+     * 增加到 oauth2 request converter ,让token filter 支持 ..
+     */
+    @Bean
+    public LightningAppAuthServerConfigurer appAuthServerConfigurer() {
+        return new LightningAppAuthServerConfigurer() {
+            @Override
+            public void configure(ApplicationAuthServerConfigurer<HttpSecurity> applicationAuthServerConfigurer) throws Exception {
+                applicationAuthServerConfigurer.tokenEndpoint(token -> {
+                    token.addAccessTokenRequestConverter(OAuth2LoginUtils.getOAuth2LoginAccessTokenAuthenticationConverter(applicationAuthServerConfigurer.and()));
+                });
+            }
+        };
     }
 
 

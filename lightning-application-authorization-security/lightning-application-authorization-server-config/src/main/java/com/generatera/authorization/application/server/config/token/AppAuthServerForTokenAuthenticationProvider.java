@@ -6,7 +6,7 @@ import org.springframework.security.core.AuthenticationException;
 
 /**
  * 认证提供器
- * 生成token,它将 产生 token
+ * 生成token,子类负责token 生成 ..
  */
 public interface AppAuthServerForTokenAuthenticationProvider extends AuthenticationProvider {
     @Override

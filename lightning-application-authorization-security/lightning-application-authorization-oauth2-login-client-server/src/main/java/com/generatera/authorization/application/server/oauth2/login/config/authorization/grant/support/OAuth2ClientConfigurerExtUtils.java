@@ -14,7 +14,10 @@ import org.springframework.util.StringUtils;
 
 import java.util.Map;
 
-
+/**
+ * 不建议使用,工具类存在混淆 ..
+ */
+@Deprecated
 public class OAuth2ClientConfigurerExtUtils {
         private OAuth2ClientConfigurerExtUtils() {
         }

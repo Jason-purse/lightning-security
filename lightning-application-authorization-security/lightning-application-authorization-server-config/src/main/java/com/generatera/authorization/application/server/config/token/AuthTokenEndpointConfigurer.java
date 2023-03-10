@@ -58,16 +58,27 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         super(objectPostProcessor);
     }
 
+    /**
+     * 直接覆盖 acccessTokenRequestConverter ..
+     * 相比于覆盖整体逻辑,强烈建议 使用{@link #addAccessTokenRequestConverter}方法
+     */
     public AuthTokenEndpointConfigurer accessTokenRequestConverter(AuthenticationConverter accessTokenRequestConverter) {
         this.accessTokenRequestConverter = accessTokenRequestConverter;
         return this;
     }
 
+    /**
+     * 增加访问token 请求转换器,和系统默认提供的融合
+     */
     public AuthTokenEndpointConfigurer addAccessTokenRequestConverter(AuthenticationConverter... authenticationConverters) {
         this.authenticationConverters.addAll(List.of(authenticationConverters));
         return this;
     }
 
+    /**
+     * 增加认证提供器,将会覆盖默认的认证提供器配置 ..
+     * 查看{@link #createDefaultAuthenticationProviders(HttpSecurityBuilder)}
+     */
     public AuthTokenEndpointConfigurer authenticationProvider(AuthenticationProvider authenticationProvider) {
         Assert.notNull(authenticationProvider, "authenticationProvider cannot be null");
         this.authenticationProviders.add(authenticationProvider);
@@ -99,9 +110,11 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         AuthTokenEndpointFilter tokenEndpointFilter = new AuthTokenEndpointFilter(authenticationManager, providerSettings.getTokenEndpoint());
 
         ApplicationAuthServerProperties authServerProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
+        // 本质上它将
         LightningAppAuthServerDaoLoginAuthenticationProvider authenticationProvider = new LightningAppAuthServerDaoLoginAuthenticationProvider(
                                     // 将会获取一个 生成 token的 provider ...
                 AppAuthConfigurerUtils.getAppAuthServerForTokenAuthenticationProvider(builder),
+                // 获取dao 认证提供器 ..
                 AppAuthConfigurerUtils.getDaoAuthenticationProvider(builder),
                 authServerProperties.isSeparation());
 
@@ -158,6 +171,9 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         return this.requestMatcher;
     }
 
+    /**
+     * 创建默认的 认证提供器 ...
+     */
     private <B extends HttpSecurityBuilder<B>> List<AuthenticationProvider> createDefaultAuthenticationProviders(B builder) {
         List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
 

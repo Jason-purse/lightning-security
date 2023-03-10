@@ -92,14 +92,21 @@ public class OAuth2LoginUtils {
         return oAuth2UserService;
     }
 
-
+/**
+ * @author FLJ
+ * @date 2023/3/10
+ * @time 10:41
+ * @Description oauth2 login access token 认证转换器 ...
+ */
     public static <B extends HttpSecurityBuilder<B>>  OAuth2ClientLoginAccessTokenAuthenticationConverter getOAuth2LoginAccessTokenAuthenticationConverter(B builder) {
         OAuth2ClientLoginAccessTokenAuthenticationConverter oAuth2ClientLoginAccessTokenAuthenticationConverter = builder.getSharedObject(OAuth2ClientLoginAccessTokenAuthenticationConverter.class);
         if(oAuth2ClientLoginAccessTokenAuthenticationConverter == null) {
             oAuth2ClientLoginAccessTokenAuthenticationConverter = getOptionalBean(builder, OAuth2ClientLoginAccessTokenAuthenticationConverter.class);
+
             if(oAuth2ClientLoginAccessTokenAuthenticationConverter == null) {
-                oAuth2ClientLoginAccessTokenAuthenticationConverter = new OAuth2LoginAccessTokenAuthenticationConverter();
+                oAuth2ClientLoginAccessTokenAuthenticationConverter = new OAuth2LoginAccessTokenAuthenticationConverter(getClientRegistrationRepository(builder));
             }
+            // 设置转换器 ...
             builder.setSharedObject(OAuth2ClientLoginAccessTokenAuthenticationConverter.class,oAuth2ClientLoginAccessTokenAuthenticationConverter);
         }
         return oAuth2ClientLoginAccessTokenAuthenticationConverter;
@@ -119,8 +126,7 @@ public class OAuth2LoginUtils {
         return sharedObject;
     }
 
-
-    public static LightningOAuth2ClientRegistrationRepository getClientRegistrationRepository(HttpSecurity securityBuilder) {
+    public static <B extends HttpSecurityBuilder<B>>  LightningOAuth2ClientRegistrationRepository getClientRegistrationRepository(B securityBuilder) {
         return getSharedOrCtxBean(securityBuilder, LightningOAuth2ClientRegistrationRepository.class);
     }
 
