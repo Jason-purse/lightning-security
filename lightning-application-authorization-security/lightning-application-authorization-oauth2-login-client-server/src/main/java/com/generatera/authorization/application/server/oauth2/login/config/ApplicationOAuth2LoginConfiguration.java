@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
@@ -85,7 +86,7 @@ public class ApplicationOAuth2LoginConfiguration {
                 @Autowired(required = false)
                         LightningAnonymousOAuthorizedClientRepository anonymousOAuthorizedClientRepository,
                 @Autowired(required = false)
-                        LightningOAuth2AccessTokenResponseClient accessTokenResponseClient) {
+                        LightningOAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient) {
             return new LightningAuthServerConfigurer() {
                 @Override
                 public void configure(HttpSecurity securityBuilder) throws Exception {
@@ -127,7 +128,7 @@ public class ApplicationOAuth2LoginConfiguration {
                 }
 
 
-                private static void tokenAccessConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, LightningOAuth2AccessTokenResponseClient accessTokenResponseClient) {
+                private static void tokenAccessConfig(OAuth2LoginConfigurer<HttpSecurity> oAuth2LoginConfigurer, LightningOAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient) {
                     // token endpoint com.generatera.oauth2.resource.server.config
                     OAuth2LoginConfigurer<HttpSecurity>.TokenEndpointConfig tokenEndpointConfig = oAuth2LoginConfigurer.tokenEndpoint();
                     if (accessTokenResponseClient != null) {
@@ -250,6 +251,5 @@ public class ApplicationOAuth2LoginConfiguration {
             }
         };
     }
-
 
 }

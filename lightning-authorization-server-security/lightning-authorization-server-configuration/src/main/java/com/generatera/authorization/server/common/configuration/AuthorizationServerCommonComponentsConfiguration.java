@@ -1,12 +1,12 @@
 package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
-import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.generatera.security.authorization.server.specification.BootstrapContext;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
 import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
+import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.jianyue.lightning.util.JsonUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import lombok.RequiredArgsConstructor;
@@ -67,17 +67,6 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
 
     private final AuthorizationServerComponentProperties properties;
 
-    /**
-     * bootstrap Context
-     */
-    @Bean
-    public BootstrapContext bootstrapContext() {
-        return BootstrapContext.of();
-    }
-
-
-
-
 
     /**
      * jwk set(rsa source)
@@ -85,7 +74,7 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
     @Bean
     @ConditionalOnMissingBean(JWKSource.class)
     public JWKSourceProvider jwkSource() {
-        JwkHandler handler = ((JwkHandler)HandlerFactory.getRequiredHandler(JWKSourceProvider.class, properties.getProviderConfig().getJwkSettings().getCategory()).getHandler());
+        JwkHandler handler = ((JwkHandler) HandlerFactory.getRequiredHandler(JWKSourceProvider.class, properties.getProviderConfig().getJwkSettings().getCategory()).getHandler());
         return handler.getJwkSourceProvider(properties);
     }
 
@@ -124,16 +113,20 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityFilterChain httpSecurity(HttpSecurity httpSecurity,
-                                               @Autowired(required = false)
-                                                       List<LightningAuthServerConfigurer> configurers,
-                                               @Autowired(required = false)
-                                               List<LightningResourcePermissionConfigurer> permissionConfigurers) throws Exception {
+    public SecurityFilterChain httpSecurity(BootstrapContext bootstrapContext,
+                                            @Autowired(required = false)
+                                                    List<LightningAuthServerConfigurer> configurers,
+                                            @Autowired(required = false)
+                                                    List<LightningResourcePermissionConfigurer> permissionConfigurers) throws Exception {
+
+        HttpSecurity httpSecurity = bootstrapContext.get(HttpSecurity.class);
+        // 必须不为空 ...
+        assert httpSecurity != null;
         HttpSecurity builder = httpSecurity
                 .apply(new AuthExtSecurityConfigurer(configurers))
                 .and();
 
-        if(permissionConfigurers != null && !permissionConfigurers.isEmpty()){
+        if (permissionConfigurers != null && !permissionConfigurers.isEmpty()) {
             for (LightningResourcePermissionConfigurer permissionConfigurer : permissionConfigurers) {
                 permissionConfigurer.configure(builder.authorizeHttpRequests());
             }
@@ -206,7 +199,6 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
     }
 
     static {
-
         // rsa 256
         HandlerFactory.registerHandler(
                 new JwkHandlerProvider() {
@@ -222,8 +214,8 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                             @Override
                             public JWKSourceProvider getJwkSourceProvider(AuthorizationServerComponentProperties properties) {
                                 AuthorizationServerComponentProperties.ProviderConfig.RsaJWK rsaJWK = properties.getProviderConfig().getJwkSettings().getRsajwk();
-                                Assert.hasText(rsaJWK.getRsaPrivateKey(),"rsa private key must not be null !!!");
-                                Assert.hasText(rsaJWK.getRsaPublicKey(),"rsa public key must not be null !!!");
+                                Assert.hasText(rsaJWK.getRsaPrivateKey(), "rsa private key must not be null !!!");
+                                Assert.hasText(rsaJWK.getRsaPublicKey(), "rsa public key must not be null !!!");
                                 AuthorizationServerComponentProperties.ProviderConfig.RsaJWK rsajwk = properties.getProviderConfig().getJwkSettings().getRsajwk();
                                 return JWKSourceProvider.customRsaJWKSourceProvider(
                                         rsajwk.getRsaPublicKey(),
@@ -250,9 +242,9 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                             public JWKSourceProvider getJwkSourceProvider(AuthorizationServerComponentProperties properties) {
                                 AuthorizationServerComponentProperties.ProviderConfig.SecretJWK secretJWK = properties.getProviderConfig().getJwkSettings().getSecretJWK();
                                 String key = secretJWK.getKey();
-                                Assert.hasText(key,"secret key must not be null !!!");
-                                Assert.hasText(secretJWK.getAlgorithm(),"algorithm must not be null !!!");
-                                return JWKSourceProvider.customSecretJwkSourceProvider(key,secretJWK.getAlgorithm());
+                                Assert.hasText(key, "secret key must not be null !!!");
+                                Assert.hasText(secretJWK.getAlgorithm(), "algorithm must not be null !!!");
+                                return JWKSourceProvider.customSecretJwkSourceProvider(key, secretJWK.getAlgorithm());
                             }
                         };
                     }

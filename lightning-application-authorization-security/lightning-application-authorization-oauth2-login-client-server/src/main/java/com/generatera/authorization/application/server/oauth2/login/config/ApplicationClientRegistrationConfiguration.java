@@ -2,7 +2,6 @@ package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.oauth2.login.config.client.register.*;
 import com.generatera.authorization.application.server.oauth2.login.config.repository.client.registration.JpaInternalClientRegistrationRepository;
-import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -14,7 +13,6 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 /**
@@ -57,23 +55,15 @@ public class ApplicationClientRegistrationConfiguration {
         @Bean
         @Conditional({ClientsConfiguredCondition.class})
         @Order(Ordered.HIGHEST_PRECEDENCE + 2)
-        public LightningAuthServerConfigurer registrationRepositoryHandle(ClientRegistrationRepository clientRegistrationRepository) {
-            LightningOAuth2ClientRegistrationRepository oAuth2ClientRegistrationRepository = new DelegateClientRegistrationRepository(clientRegistrationRepository);
-
-            return new LightningAuthServerConfigurer() {
-                @Override
-                public void configure(HttpSecurity securityBuilder) throws Exception {
-                    securityBuilder.setSharedObject(LightningOAuth2ClientRegistrationRepository.class, oAuth2ClientRegistrationRepository);
-                }
-            };
+        public LightningOAuth2ClientRegistrationRepository registrationRepositoryHandle(ClientRegistrationRepository clientRegistrationRepository) {
+            return new DelegateClientRegistrationRepository(clientRegistrationRepository);
         }
 
         @Bean
-        @ConditionalOnMissingBean(ClientRegistrationRepository.class)
+        @ConditionalOnMissingBean(LightningOAuth2ClientRegistrationRepository.class)
         public LightningOAuth2ClientRegistrationRepository fillRegistrationRepository() {
             return new DefaultClientRegistrationRepository();
         }
-
 
     }
 

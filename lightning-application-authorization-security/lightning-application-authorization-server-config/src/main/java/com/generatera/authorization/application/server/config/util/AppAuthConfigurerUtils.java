@@ -361,11 +361,12 @@ public final class AppAuthConfigurerUtils {
      * 最好不要覆盖 共享对象 LightningDaoAuthenticationProvider
      * 否则,你可能需要自己 写入这下面的一段逻辑,来保证 dao 认证提供器代理 ...
      */
-    public static <B extends HttpSecurityBuilder<B>> LightningDaoAuthenticationProvider getDaoAuthenticationProvider(B builder) {
+    public static <B extends HttpSecurityBuilder<B>> LightningDaoAuthenticationProvider getDaoAuthenticationProvider(B builder,List<LightningDaoAuthenticationProvider> providers) {
         LightningDaoAuthenticationProvider sharedObject = builder.getSharedObject(LightningDaoAuthenticationProvider.class);
         if (sharedObject == null) {
             Collection<LightningDaoAuthenticationProvider> list = getBeansForType(builder, LightningDaoAuthenticationProvider.class);
-            list = list.stream().sorted(AnnotationAwareOrderComparator.INSTANCE).toList();
+            providers.addAll(list);
+            list = providers.stream().sorted(AnnotationAwareOrderComparator.INSTANCE).toList();
             DelegateLightningDaoAuthenticationProvider daoAuthenticationProvider = new DelegateLightningDaoAuthenticationProvider(list);
             builder.setSharedObject(LightningDaoAuthenticationProvider.class, daoAuthenticationProvider);
             sharedObject = daoAuthenticationProvider;

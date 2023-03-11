@@ -1,12 +1,12 @@
 package com.generatera.authorization.application.server.oauth2.login.config.authorization;
 
 import com.generatera.authorization.application.server.config.util.AuthEndPointUtils;
+import com.generatera.authorization.application.server.oauth2.login.config.client.register.LightningOAuth2ClientRegistrationRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.token.DefaultAuthorizationRequestAuthentication;
 import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class PasswordGrantAccessTokenAuthenticationConverter extends OAuth2LoginAccessTokenAuthenticationConverter {
 
-    public PasswordGrantAccessTokenAuthenticationConverter(ClientRegistrationRepository clientRegistrationRepository) {
+    public PasswordGrantAccessTokenAuthenticationConverter(LightningOAuth2ClientRegistrationRepository clientRegistrationRepository) {
         super(clientRegistrationRepository);
     }
 

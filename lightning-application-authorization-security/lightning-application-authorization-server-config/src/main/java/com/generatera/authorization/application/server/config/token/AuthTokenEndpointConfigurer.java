@@ -34,14 +34,14 @@ import java.util.List;
  * @Description 负责刷新Token ...
  * <p>
  * oauth2 copy
- *
+ * <p>
  * 1. 支持 access_token 获取
  * 2. 支持token 刷新
- *
+ * <p>
  * 3. 默认使用{@link com.generatera.authorization.application.server.config.authentication.DefaultLightningAbstractAuthenticationEntryPoint}进行
  * 登录成功以及登录失败的后置处理,使用统一的响应模型 {@link com.jianyue.lightning.result.Result}
- *
- *
+ * <p>
+ * <p>
  * 将以下对象作为共享对象:
  * {@link TokenSettingsProvider}
  */
@@ -49,6 +49,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     private RequestMatcher requestMatcher;
     private AuthenticationConverter accessTokenRequestConverter;
     private final List<AuthenticationProvider> authenticationProviders = new LinkedList<>();
+    private final List<LightningDaoAuthenticationProvider> daoAuthenticationProviders = new LinkedList<>();
     private AuthenticationSuccessHandler accessTokenResponseHandler;
     private AuthenticationFailureHandler errorResponseHandler;
 
@@ -85,6 +86,12 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         return this;
     }
 
+    public AuthTokenEndpointConfigurer authenticationDaoProvider(LightningDaoAuthenticationProvider daoAuthenticationProvider) {
+        Assert.notNull(daoAuthenticationProvider, "daoAuthenticationProvider cannot be null");
+        this.daoAuthenticationProviders.add(daoAuthenticationProvider);
+        return this;
+    }
+
     public AuthTokenEndpointConfigurer accessTokenResponseHandler(AuthenticationSuccessHandler accessTokenResponseHandler) {
         this.accessTokenResponseHandler = accessTokenResponseHandler;
         return this;
@@ -112,17 +119,18 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         ApplicationAuthServerProperties authServerProperties = builder.getSharedObject(ApplicationAuthServerProperties.class);
         // 本质上它将
         LightningAppAuthServerDaoLoginAuthenticationProvider authenticationProvider = new LightningAppAuthServerDaoLoginAuthenticationProvider(
-                                    // 将会获取一个 生成 token的 provider ...
+                // 将会获取一个 生成 token的 provider ...
                 AppAuthConfigurerUtils.getAppAuthServerForTokenAuthenticationProvider(builder),
                 // 获取dao 认证提供器 ..
-                AppAuthConfigurerUtils.getDaoAuthenticationProvider(builder),
+                // 将两种注册方式的提供器进行融合 ...
+                AppAuthConfigurerUtils.getDaoAuthenticationProvider(builder, daoAuthenticationProviders),
                 authServerProperties.isSeparation());
 
         // 实现 用户登录 认证 ..
         builder.authenticationProvider(authenticationProvider);
 
         // 如果提供,则使用
-        if(!authenticationConverters.isEmpty()) {
+        if (!authenticationConverters.isEmpty()) {
             AnnotationAwareOrderComparator awareOrderComparator = new AnnotationAwareOrderComparator();
             authenticationConverters.sort(awareOrderComparator);
             tokenEndpointFilter.setAuthenticationConverter(
@@ -149,8 +157,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
          */
         if (this.accessTokenResponseHandler != null) {
             tokenEndpointFilter.setAuthenticationSuccessHandler(this.accessTokenResponseHandler);
-        }
-        else {
+        } else {
             tokenEndpointFilter.setAuthenticationSuccessHandler(entryPoint);
         }
 
@@ -159,8 +166,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
          */
         if (this.errorResponseHandler != null) {
             tokenEndpointFilter.setAuthenticationFailureHandler(this.errorResponseHandler);
-        }
-        else {
+        } else {
             tokenEndpointFilter.setAuthenticationFailureHandler(entryPoint);
         }
 
