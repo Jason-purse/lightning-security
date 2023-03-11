@@ -40,6 +40,12 @@ import java.util.Map;
  * @Description 进行 token 端点拦截,实现 刷新token获取新token ....
  * <p>
  * 后续修改,普通认证服务器使用token 端点进行token派发 ...
+ *
+ * 这个过滤器 能够与{@link  org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter} 等其他
+ * spring内置的认证过滤器兼容 ..
+ * 也就是自动考虑到了默认的 表单等直接发起请求的url 的兼容 ..
+ *
+ * 此token endpoint  也就是暴露一个统一的方式能够进行认证授权的入口 ..
  */
 public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
     private static final String DEFAULT_TOKEN_ENDPOINT_URI = ProviderSettingProperties.TOKEN_ENDPOINT;
@@ -49,6 +55,12 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
     private final HttpMessageConverter<ApplicationLevelAuthorizationToken> accessTokenHttpResponseConverter;
     private final HttpMessageConverter<LightningAuthError> errorHttpResponseConverter;
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
+
+    /**
+     * 进行参数认证转换 ...
+     * 主要能力就是 可以适配多种应用授权服务器的 authentication token ,然后便于底层的{@link LightningDaoAuthenticationProvider}
+     * 进行 最终用户信息的授权 ...
+     */
     private LightningAuthenticationConverter authenticationConverter;
     private AuthenticationSuccessHandler authenticationSuccessHandler;
     private AuthenticationFailureHandler authenticationFailureHandler;
