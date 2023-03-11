@@ -4,17 +4,18 @@ import com.generatera.authorization.application.server.config.LoginGrantType;
 import com.generatera.authorization.application.server.config.token.AuthParameterNames;
 import com.generatera.authorization.application.server.config.token.HttpRequestUtil;
 import com.generatera.authorization.application.server.config.util.AuthEndPointUtils;
-import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
+import com.generatera.authorization.server.common.configuration.LightningAuthorizationGrantType;
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthenticationConverter;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ import java.util.Map;
  * @Description 表单登录  请求转换器
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class FormLoginRequestConverter implements AuthenticationConverter {
+public class FormLoginRequestConverter implements LightningAuthenticationConverter {
 
     private String usernameParameter = AuthParameterNames.USERNAME;
 
@@ -43,14 +44,14 @@ public class FormLoginRequestConverter implements AuthenticationConverter {
     }
 
     @Override
-    public Authentication convert(HttpServletRequest request) {
+    public Authentication convert(HttpServletRequest request, HttpServletResponse response) {
 
 
         MultiValueMap<String, String> parameters = HttpRequestUtil.getParameters(request);
         String loginRequestType = parameters.getFirst(AuthParameterNames.LOGIN_GRANT_TYPE);
 
         String grant_type = parameters.getFirst("grant_type");
-        if (!AuthorizationGrantType.ACCESS_TOKEN.getValue().equalsIgnoreCase(grant_type)) {
+        if (!LightningAuthorizationGrantType.ACCESS_TOKEN.getValue().equalsIgnoreCase(grant_type)) {
             return null;
         }
 

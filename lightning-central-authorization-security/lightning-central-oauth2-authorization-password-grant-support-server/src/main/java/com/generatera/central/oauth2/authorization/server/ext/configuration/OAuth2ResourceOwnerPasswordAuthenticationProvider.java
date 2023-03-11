@@ -4,7 +4,6 @@ import com.generatera.security.authorization.server.specification.components.tok
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -29,18 +28,19 @@ import org.springframework.util.CollectionUtils;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
+
 /**
  * @author FLJ
  * @date 2022/12/27
  * @time 16:16
- * @Description 资源拥有者密码凭证形式(例如,username/password)能够直接作为一个授权授予去获取一个访问token .
+ * @Description 资源拥有者密码凭证形式(例如, username / password)能够直接作为一个授权授予去获取一个访问token .
  * 这个凭证应该能够在高度信任的场景下使用(当资源拥有者非常信任客户端,例如,客户端作为设备操作系统的一部分或者
  * 客户端是一个具有很高权限的应用),并且仅当其他授权方式不可用时(例如授权码授予) ..
- *
+ * <p>
  * 虽然此种方式直接使用资源拥有者的凭证进行访问，但是仅仅在单词请求中用于交换访问token,这种授予类型能够减少客户端对
  * 资源拥有者凭证的存储(例如为了保留后续使用),应该通过交换一个长期访问token 或者刷新token ..
- *
- *
+ * <p>
+ * <p>
  * 并且这会合理的产生 refresh token / access token / oidc token(scope中包含了openid)
  *
  * <a href="https://www.rfc-editor.org/rfc/rfc6749#section-1.3.3">Resource Owner Password Credentials</a>
@@ -245,8 +245,12 @@ public class OAuth2ResourceOwnerPasswordAuthenticationProvider implements Resour
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
         LOGGER.debug("got usernamePasswordAuthenticationToken=" + usernamePasswordAuthenticationToken);
 
-        Authentication usernamePasswordAuthentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-        return usernamePasswordAuthentication;
+        try {
+            return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+        } catch (AuthenticationException e) {
+            // 认证异常,进行重抛
+            throw new OAuth2AuthenticationException(new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST,e.getMessage(),""));
+        }
     }
 
     private OAuth2ClientAuthenticationToken getAuthenticatedClientElseThrowInvalidClient(Authentication authentication) {

@@ -1,14 +1,10 @@
 package com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.log.LogMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.ClientAuthorizationRequiredException;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.util.ThrowableAnalyzer;
@@ -21,10 +17,20 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * 我们同样采用 过滤器重定向,行为类似  {@link  org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter}
+ * 最后将响应 .. 重定向到{@link  org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter}上进行处理  ..
+ *
+ */
 public class OAuth2AuthorizationRequestAndExtRedirectFilter extends OncePerRequestFilter {
-
-
-    private OAuth2AuthorizationExtRequestResolver auth2AuthorizationExtRequestResolver;
+    /**
+     * 扩展支持 ...
+     */
+    public static final String DEFAULT_AUTHORIZATION_REQUEST_EXT_BASE_URL = "/oauth2/authorization/ext";
+    /**
+     * 进行 解析 转换为 OAuth2AuthorizationExtRequest
+     */
+    private LightningOAuth2AuthorizationExtRequestResolver auth2AuthorizationExtRequestResolver;
 
     private final RedirectStrategy authorizationRedirectStrategy;
 
@@ -48,17 +54,17 @@ public class OAuth2AuthorizationRequestAndExtRedirectFilter extends OncePerReque
     public OAuth2AuthorizationRequestAndExtRedirectFilter(
             ClientRegistrationRepository clientRegistrationRepository
     ) {
-        this(clientRegistrationRepository,"/oauth2/authorization");
+        this(clientRegistrationRepository,DEFAULT_AUTHORIZATION_REQUEST_EXT_BASE_URL);
     }
 
 
-    public void setAuth2AuthorizationExtRequestResolver(OAuth2AuthorizationExtRequestResolver requestResolver) {
+    public void setAuth2AuthorizationExtRequestResolver(LightningOAuth2AuthorizationExtRequestResolver requestResolver) {
         this.auth2AuthorizationExtRequestResolver = requestResolver;
     }
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull FilterChain filterChain) throws ServletException, IOException {
         try {
             OAuth2AuthorizationExtRequest authorizationRequest = this.auth2AuthorizationExtRequestResolver.resolve(request);
             if(authorizationRequest != null) {

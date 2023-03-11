@@ -61,12 +61,20 @@ public class LightningAppAuthServerDaoLoginAuthenticationProvider implements Aut
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         try {
-            AuthAccessTokenAuthenticationToken token;
+            AuthAccessTokenAuthenticationToken token = null;
             if(authentication instanceof AuthAccessTokenAuthenticationToken tokenAuthenticationToken) {
                 token = tokenAuthenticationToken;
             }
             else {
-                token = new AuthAccessTokenAuthenticationToken(authentication,null);
+                if(authentication instanceof UsernamePasswordAuthenticationToken authenticationToken) {
+                    // 包装过多的问题 ..
+                    if (authenticationToken.getPrincipal() instanceof Authentication internalAuthentication) {
+                        token = new AuthAccessTokenAuthenticationToken(internalAuthentication);
+                    }
+                }
+                if(token == null) {
+                    token = new AuthAccessTokenAuthenticationToken(authentication,null);
+                }
             }
             Authentication authenticate = authenticationManager.authenticate(token);
 

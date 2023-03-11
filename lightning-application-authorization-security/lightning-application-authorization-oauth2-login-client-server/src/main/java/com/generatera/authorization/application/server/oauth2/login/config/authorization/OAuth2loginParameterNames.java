@@ -8,5 +8,11 @@ package com.generatera.authorization.application.server.oauth2.login.config.auth
  * @see org.springframework.security.oauth2.core.AuthorizationGrantType 查看 spring oauth2的支持 ..
  */
 public interface OAuth2loginParameterNames {
-    public static final String GRANT_TYPE =  "oauth2_grant_type";
+
+    /**
+     * @see org.springframework.security.oauth2.core.AuthorizationGrantType
+     */
+    public static final String OAUTH2_GRANT_TYPE =  "oauth2_grant_type";
+
+    String PROVIDER = "provider";
 }

@@ -6,8 +6,8 @@ import com.generatera.authorization.application.server.config.LightningAppAuthSe
 import com.generatera.authorization.application.server.oauth2.login.config.authority.DefaultLightningOidcUserService;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOAuth2GrantedAuthoritiesMapper;
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOidcUserService;
+import com.generatera.authorization.application.server.oauth2.login.config.authorization.DefaultOAuth2LoginAccessTokenAuthenticationConverter;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2ClientLoginAccessTokenAuthenticationConverter;
-import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2LoginAccessTokenAuthenticationConverter;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningAuthorizationRequestRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.request.LightningOAuth2AuthorizationRequestResolver;
 import com.generatera.authorization.application.server.oauth2.login.config.client.authorized.LightningAnonymousOAuthorizedClientRepository;
@@ -23,6 +23,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
@@ -189,7 +191,7 @@ public class ApplicationOAuth2LoginConfiguration {
                     if (StringUtils.hasText(oAuthorizationRequestEndpoint.getAuthorizationRequestBaseUri())) {
                         authorizationEndpointConfig.baseUri(oAuthorizationRequestEndpoint.getAuthorizationRequestBaseUri());
                         OAuth2ClientLoginAccessTokenAuthenticationConverter accessTokenAuthenticationConverter = OAuth2LoginUtils.getOAuth2LoginAccessTokenAuthenticationConverter(oAuth2LoginConfigurer.and());
-                        if (accessTokenAuthenticationConverter instanceof OAuth2LoginAccessTokenAuthenticationConverter converter) {
+                        if (accessTokenAuthenticationConverter instanceof DefaultOAuth2LoginAccessTokenAuthenticationConverter converter) {
                             converter.setRedirectBaseUri(oAuthorizationRequestEndpoint.getAuthorizationRequestBaseUri());
                         }
                     }
@@ -241,6 +243,7 @@ public class ApplicationOAuth2LoginConfiguration {
      * 增加到 oauth2 request converter ,让token filter 支持 ..
      */
     @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public LightningAppAuthServerConfigurer appAuthServerConfigurer() {
         return new LightningAppAuthServerConfigurer() {
             @Override

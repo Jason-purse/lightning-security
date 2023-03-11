@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
 import com.generatera.authorization.application.server.oauth2.login.config.OAuth2LoginProperties;
-import com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration.ClientRegistrationEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.model.entity.client.info.ClientRegistrationEntity;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;

@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
-import com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration.ClientRegistrationEntity;
-import com.generatera.authorization.application.server.oauth2.login.config.repository.client.registration.JpaInternalClientRegistrationRepository;
+import com.generatera.authorization.application.server.oauth2.login.config.model.entity.client.info.ClientRegistrationEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.client.info.JpaInternalClientRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Example;

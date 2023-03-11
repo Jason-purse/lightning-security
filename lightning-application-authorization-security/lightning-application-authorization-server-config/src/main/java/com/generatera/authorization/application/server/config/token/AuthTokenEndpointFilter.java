@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthenticationConverter;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthError;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthenticationException;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
@@ -12,10 +13,10 @@ import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -48,7 +49,7 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
     private final HttpMessageConverter<ApplicationLevelAuthorizationToken> accessTokenHttpResponseConverter;
     private final HttpMessageConverter<LightningAuthError> errorHttpResponseConverter;
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
-    private AuthenticationConverter authenticationConverter;
+    private LightningAuthenticationConverter authenticationConverter;
     private AuthenticationSuccessHandler authenticationSuccessHandler;
     private AuthenticationFailureHandler authenticationFailureHandler;
 
@@ -82,7 +83,7 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
                     throwError("invalid_request", "grant_type");
                 }
 
-                Authentication authorizationGrantAuthentication = this.authenticationConverter.convert(request);
+                Authentication authorizationGrantAuthentication = this.authenticationConverter.convert(request,response);
                 if (authorizationGrantAuthentication == null) {
                     throwError("unsupported_grant_type", "grant_type");
                 }
@@ -98,18 +99,28 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
                     if(requestAuthentication.needRedirect()) {
                         try {
                             requestAuthentication.sendRedirect(request,response);
+                            // 重定向 ...
+                            return ;
                         }catch (Exception e) {
                             // pass
                             // 不做任何提示 ...
                             throw new LightningAuthenticationException(new LightningAuthError("invalid_redirect_uri"));
                         }
                     }
+
+                    // 继续处理
                 }
-                else {
-                    AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken) this.authenticationManager.authenticate(authorizationGrantAuthentication);
-                    this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, accessTokenAuthentication);
-                }
-             } catch (AuthenticationException  var7) { // 只要是认证异常 都接收 ...
+
+                /**
+                 * 不能设置为 AuthAccessTokenAuthenticationToken
+                 * {@link AuthAccessTokenAuthenticationProvider} 会提前感知AuthAccessTokenAuthenticationToken
+                 * 它仅仅负责token生成,所以,应该设置为 UsernamePasswordAuthenticationToken 进行处理 ..
+                 * {@link  com.generatera.authorization.application.server.config.authentication.LightningAppAuthServerDaoLoginAuthenticationProvider} 通过它处理 ..
+                 */
+                AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken) this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authorizationGrantAuthentication,null));
+                this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, accessTokenAuthentication);
+
+            } catch (AuthenticationException  var7) { // 只要是认证异常 都接收 ...
                 SecurityContextHolder.clearContext();
                 this.authenticationFailureHandler.onAuthenticationFailure(request, response, var7);
             }
@@ -122,7 +133,7 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
         this.authenticationDetailsSource = authenticationDetailsSource;
     }
 
-    public void setAuthenticationConverter(AuthenticationConverter authenticationConverter) {
+    public void setAuthenticationConverter(LightningAuthenticationConverter authenticationConverter) {
         Assert.notNull(authenticationConverter, "authenticationConverter cannot be null");
         this.authenticationConverter = authenticationConverter;
     }

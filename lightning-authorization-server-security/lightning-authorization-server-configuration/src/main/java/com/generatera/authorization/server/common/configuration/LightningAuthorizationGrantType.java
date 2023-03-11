@@ -4,20 +4,18 @@ import org.springframework.util.Assert;
 
 import java.io.Serializable;
 
-public final class AuthorizationGrantType implements Serializable {
+public final class LightningAuthorizationGrantType implements Serializable {
 
-    public static final AuthorizationGrantType REFRESH_TOKEN = new AuthorizationGrantType("refresh_token");
+    public static final LightningAuthorizationGrantType REFRESH_TOKEN = new LightningAuthorizationGrantType("refresh_token");
 
     /**
      * 自定义
      */
-    public static final AuthorizationGrantType ACCESS_TOKEN = new AuthorizationGrantType("access_token");
+    public static final LightningAuthorizationGrantType ACCESS_TOKEN = new LightningAuthorizationGrantType("access_token");
 
-    public static final AuthorizationGrantType PASSWORD = new AuthorizationGrantType("password");
-    public static final AuthorizationGrantType JWT_BEARER = new AuthorizationGrantType("urn:ietf:params:oauth:grant-type:jwt-bearer");
     private final String value;
 
-    public AuthorizationGrantType(String value) {
+    public LightningAuthorizationGrantType(String value) {
         Assert.hasText(value, "value cannot be empty");
         this.value = value;
     }
@@ -30,7 +28,7 @@ public final class AuthorizationGrantType implements Serializable {
         if (this == obj) {
             return true;
         } else if (obj != null && this.getClass() == obj.getClass()) {
-            AuthorizationGrantType that = (AuthorizationGrantType)obj;
+            LightningAuthorizationGrantType that = (LightningAuthorizationGrantType)obj;
             return this.getValue().equals(that.getValue());
         } else {
             return false;

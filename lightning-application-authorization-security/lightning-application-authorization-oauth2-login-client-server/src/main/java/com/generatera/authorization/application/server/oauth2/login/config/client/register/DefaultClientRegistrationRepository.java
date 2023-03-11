@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
-import com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration.ClientRegistrationEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.model.entity.client.info.ClientRegistrationEntity;
 
 import java.util.Collections;
 import java.util.List;

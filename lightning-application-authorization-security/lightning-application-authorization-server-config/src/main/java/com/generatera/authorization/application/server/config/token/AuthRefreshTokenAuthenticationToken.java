@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.application.server.config.LoginGrantType;
-import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
+import com.generatera.authorization.server.common.configuration.LightningAuthorizationGrantType;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
@@ -23,7 +23,7 @@ public class AuthRefreshTokenAuthenticationToken extends AuthAuthorizationGrantA
     }
 
     public AuthRefreshTokenAuthenticationToken(LoginGrantType loginGrantType,String refreshToken, Authentication authentication, @Nullable Map<String, Object> additionalParameters) {
-        super(AuthorizationGrantType.REFRESH_TOKEN,authentication,additionalParameters);
+        super(LightningAuthorizationGrantType.REFRESH_TOKEN,authentication,additionalParameters);
         Assert.notNull(loginGrantType,"login grant type must not be null !!!");
         Assert.hasText(refreshToken, "refreshToken cannot be empty");
         this.refreshToken = refreshToken;

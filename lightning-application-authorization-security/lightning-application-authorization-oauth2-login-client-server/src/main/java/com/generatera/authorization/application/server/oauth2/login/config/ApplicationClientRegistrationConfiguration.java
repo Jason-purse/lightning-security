@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.oauth2.login.config.client.register.*;
-import com.generatera.authorization.application.server.oauth2.login.config.repository.client.registration.JpaInternalClientRegistrationRepository;
+import com.generatera.authorization.application.server.oauth2.login.config.repository.client.info.JpaInternalClientRegistrationRepository;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -31,7 +31,7 @@ public class ApplicationClientRegistrationConfiguration {
     }
 
     @EntityScan(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration")
-    @EnableJpaRepositories(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.repository.client.registration")
+    @EnableJpaRepositories(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.repository.client.info")
     public static class JPAClientRegistrationConfiguration {
 
         @Bean

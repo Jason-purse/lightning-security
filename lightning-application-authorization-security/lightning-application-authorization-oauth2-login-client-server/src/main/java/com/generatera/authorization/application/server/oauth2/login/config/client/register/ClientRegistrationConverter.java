@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config.client.register;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration.ClientRegistrationEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.model.entity.client.info.ClientRegistrationEntity;
 import com.jianyue.lightning.util.JsonUtil;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;

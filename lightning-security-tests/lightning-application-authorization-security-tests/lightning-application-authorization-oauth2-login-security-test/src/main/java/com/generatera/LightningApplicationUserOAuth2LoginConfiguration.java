@@ -27,8 +27,7 @@ public class LightningApplicationUserOAuth2LoginConfiguration {
             @Override
             public OidcUser loadUser(OidcUserRequest userRequest)  throws OAuth2AuthenticationException {
                 OidcUser oidcUser = oidcUserService.loadUser(userRequest);
-                Object openId = oidcUser.getAttributes().get("openid");
-                UserDetails userDetails = userDetailsService.loadUserByUsername(openId.toString());
+                UserDetails userDetails = userDetailsService.loadUserByUsername(oidcUser.getName());
                 return new LightningUserDetails(userDetails,oidcUser);
             }
         };

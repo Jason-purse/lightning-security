@@ -14,6 +14,17 @@ spring:
               - openid
 #              - message.read
             redirect-uri: "http://127.0.0.1:8080/{action}/oauth2/code/{registrationId}"
+          default_password_support:
+            provider: default
+            client-id: password-client-id
+            client-name: password-client-name
+            client-secret: secret3
+            client-authentication-method: client_secret_post
+            authorization-grant-type: password
+            scope:
+              - openid
+            #              - message.read
+            redirect-uri: "http://127.0.0.1:8080/{action}/oauth2/code/{registrationId}"
         provider:
           default:
             issuer-uri: http://127.0.0.1:9000
@@ -44,7 +55,11 @@ lightning:
 #              login:
 #                config:
                   # client registration store ..  need introduction  jpa dependencies
+            oauth2:
+              login:
+                config:
+                  authorization-request-endpoint:
+                    enable-request-ext: true
 #                  client-registration-store-kind: jpa
-
 server:
   port: 8080

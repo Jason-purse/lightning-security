@@ -1,14 +1,13 @@
 package com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support;
 
+import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2loginParameterNames;
 import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.keygen.Base64StringKeyGenerator;
 import org.springframework.security.crypto.keygen.StringKeyGenerator;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.util.UrlUtils;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.Assert;
@@ -30,7 +29,7 @@ import java.util.function.Consumer;
 /**
  * 支持resource owner authorization grant type request ..
  */
-public class DefaultOauth2AuthorizationExtRequestResolver implements OAuth2AuthorizationExtRequestResolver {
+public class DefaultOauth2AuthorizationExtRequestResolver implements LightningOAuth2AuthorizationExtRequestResolver {
 
     private final AntPathRequestMatcher authorizationRequestMatcher;
 
@@ -43,6 +42,11 @@ public class DefaultOauth2AuthorizationExtRequestResolver implements OAuth2Autho
 
     private static final Consumer<OAuth2AuthorizationExtRequest.Builder> DEFAULT_PKCE_APPLIER = OAuth2AuthorizationExtRequestCustomizers.withPkce();
 
+    public void setAuthorizationExtRequestCustomizer(Consumer<OAuth2AuthorizationExtRequest.Builder> authorizationExtRequestCustomizer) {
+        Assert.notNull(authorizationExtRequestCustomizer,"authorizationExtRequestCustomizer must not be null !!!");
+        this.authorizationExtRequestCustomizer = authorizationExtRequestCustomizer;
+    }
+
     public DefaultOauth2AuthorizationExtRequestResolver(ClientRegistrationRepository clientRegistrationRepository,
                                                         String authorizationRequestBaseUri) {
         Assert.notNull(clientRegistrationRepository, "clientRegistrationRepository cannot be null");
@@ -50,6 +54,7 @@ public class DefaultOauth2AuthorizationExtRequestResolver implements OAuth2Autho
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.authorizationRequestMatcher = new AntPathRequestMatcher(authorizationRequestBaseUri + "/{" + "registrationId" + "}");
     }
+
     @Override
     public OAuth2AuthorizationExtRequest resolve(HttpServletRequest request) {
         String registrationId = this.resolveRegistrationId(request);
@@ -111,10 +116,10 @@ public class DefaultOauth2AuthorizationExtRequestResolver implements OAuth2Autho
 
 
     private OAuth2AuthorizationExtRequest.Builder getBuilder(ClientRegistration clientRegistration) {
-        if (AuthorizationGrantType.PASSWORD.equals(clientRegistration.getAuthorizationGrantType())) {
+        if (AuthorizationGrantType.PASSWORD.getValue().equals(clientRegistration.getAuthorizationGrantType().getValue())) {
             OAuth2AuthorizationExtRequest.Builder builder = OAuth2AuthorizationExtRequest.password();
             // 标识它是 PASSWORD
-            builder.additionalParameters(parameters -> parameters.put("grantType",AuthorizationGrantType.PASSWORD.getValue()));
+            builder.additionalParameters(parameters -> parameters.put(OAuth2loginParameterNames.OAUTH2_GRANT_TYPE,AuthorizationGrantType.PASSWORD.getValue()));
             if (!CollectionUtils.isEmpty(clientRegistration.getScopes()) && clientRegistration.getScopes().contains("openid")) {
                 applyNonce(builder);
             }

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class AuthorizationRequestConverter implements Converter<AuthorizationRequestEntity, OAuth2AuthorizationRequest> {
+public class AuthorizationCodeRequestConverter implements Converter<AuthorizationRequestEntity, OAuth2AuthorizationRequest> {
     @Override
     public OAuth2AuthorizationRequest convert(AuthorizationRequestEntity source) {
         return OAuth2AuthorizationRequest.authorizationCode()

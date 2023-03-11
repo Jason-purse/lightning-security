@@ -1,4 +1,4 @@
-package com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration;
+package com.generatera.authorization.application.server.oauth2.login.config.model.entity.client.info;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

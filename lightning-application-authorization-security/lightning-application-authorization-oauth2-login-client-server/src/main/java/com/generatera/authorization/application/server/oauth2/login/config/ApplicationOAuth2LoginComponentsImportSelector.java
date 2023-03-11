@@ -36,7 +36,16 @@ public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBi
 
         isSeparationForEntryPoint(candidates);
 
+        commonConfig(candidates);
+
         return candidates.size() > 0 ? candidates.toArray(String[]::new) : new String[0];
+    }
+
+    private void commonConfig(LinkedList<String> candidates) {
+
+        if (getProperties().getAuthorizationRequestEndpoint().isEnableRequestExt()) {
+            candidates.add(ApplicationAuthorizationRequestConfiguration.AuthorizationRequestCommonConfiguration.class.getName());
+        }
     }
 
     private void isSeparationForEntryPoint(LinkedList<String> candidates) {
@@ -88,7 +97,7 @@ public class ApplicationOAuth2LoginComponentsImportSelector extends PropertiesBi
                 candidates.add(ApplicationAuthorizationRequestConfiguration.RedisAuthorizationRequestConfiguration.class.getName());
             }
             else if(storeKind == OAuth2LoginProperties.OAuthorizationRequestEndpoint.AuthorizationRequestStoreKind.JPA) {
-                candidates.add(ApplicationAuthorizedClientConfiguration.JpaAuthorizedClientConfiguration.class.getName());
+                candidates.add(ApplicationAuthorizationRequestConfiguration.JpaAuthorizationRequestConfiguration.class.getName());
             }
             else if(storeKind == OAuth2LoginProperties.OAuthorizationRequestEndpoint.AuthorizationRequestStoreKind.MONGO) {
                 candidates.add(ApplicationAuthorizationRequestConfiguration.MongoAuthorizationRequestConfiguration.class.getName());

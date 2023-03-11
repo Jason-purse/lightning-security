@@ -1,6 +1,6 @@
 package com.generatera.authorization.server.common.configuration.provider.metadata;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
+import com.generatera.authorization.server.common.configuration.LightningAuthorizationGrantType;
 import com.generatera.security.authorization.server.specification.ClientAuthenticationMethod;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
@@ -57,9 +57,8 @@ public final class AuthorizationServerMetadataEndpointFilter extends OncePerRequ
                             .jwkSetUrl(asUrl(issuer, this.providerSettings.getJwkSetEndpoint()))
                             .tokenEndpointAuthenticationMethods(clientAuthenticationMethods())
                             .tokenRevocationEndpoint(asUrl(issuer, this.providerSettings.getTokenRevocationEndpoint()))
-                            .grantType(AuthorizationGrantType.REFRESH_TOKEN.getValue())
-                            .grantType(AuthorizationGrantType.ACCESS_TOKEN.getValue())
-                            .grantType(AuthorizationGrantType.PASSWORD.getValue())
+                            .grantType(LightningAuthorizationGrantType.REFRESH_TOKEN.getValue())
+                            .grantType(LightningAuthorizationGrantType.ACCESS_TOKEN.getValue())
                             .tokenRevocationEndpointAuthenticationMethods(clientAuthenticationMethods())
                             .tokenIntrospectionEndpoint(asUrl(issuer, this.providerSettings.getTokenIntrospectionEndpoint()))
                             .tokenIntrospectionEndpointAuthenticationMethods(clientAuthenticationMethods())

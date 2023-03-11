@@ -1,14 +1,15 @@
 package com.generatera.authorization.application.server.config.token;
 
 import com.generatera.authorization.application.server.config.LoginGrantType;
-import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
+import com.generatera.authorization.server.common.configuration.LightningAuthorizationGrantType;
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthenticationConverter;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,14 +21,14 @@ import static com.generatera.authorization.application.server.config.util.AuthEn
  * @time 16:33
  * @Description oauth2 copy
  */
-public class AuthRefreshTokenAuthenticationConverter implements AuthenticationConverter {
+public class AuthRefreshTokenAuthenticationConverter implements LightningAuthenticationConverter {
     public AuthRefreshTokenAuthenticationConverter() {
     }
 
     @Nullable
-    public Authentication convert(HttpServletRequest request) {
+    public Authentication convert(HttpServletRequest request, HttpServletResponse response) {
         String grantType = request.getParameter("grant_type");
-        if (!AuthorizationGrantType.REFRESH_TOKEN.getValue().equals(grantType)) {
+        if (!LightningAuthorizationGrantType.REFRESH_TOKEN.getValue().equals(grantType)) {
             return null;
         } else {
 

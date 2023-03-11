@@ -5,7 +5,7 @@ import com.generatera.authorization.application.server.config.token.Authorizatio
 import com.generatera.authorization.application.server.config.token.HttpRequestUtil;
 import com.generatera.authorization.application.server.config.util.AuthEndPointUtils;
 import com.generatera.authorization.application.server.oauth2.login.config.client.register.LightningOAuth2ClientRegistrationRepository;
-import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
+import com.generatera.authorization.server.common.configuration.LightningAuthorizationGrantType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -27,9 +27,9 @@ import java.util.Map;
  *  重定向到{@link OAuth2AuthorizationRequestRedirectFilter} 进行客户端等信息的处理 ...
  *  然后开启授权码流程 ...
  *
- *  子类可以扩展,例如支持{@link AuthorizationGrantType#PASSWORD} 授权形式 ...
+ *  子类可以扩展,例如支持{@link org.springframework.security.oauth2.core.AuthorizationGrantType#PASSWORD} 授权形式 ...
  */
-public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2ClientLoginAccessTokenAuthenticationConverter {
+public class DefaultOAuth2LoginAccessTokenAuthenticationConverter implements OAuth2ClientLoginAccessTokenAuthenticationConverter {
 
     public static final String DEFAULT_REDIRECT_BASE_URI = OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
 
@@ -37,7 +37,7 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
 
     protected final LightningOAuth2ClientRegistrationRepository clientRegistrationRepository;
 
-    public OAuth2LoginAccessTokenAuthenticationConverter(LightningOAuth2ClientRegistrationRepository clientRegistrationRepository) {
+    public DefaultOAuth2LoginAccessTokenAuthenticationConverter(LightningOAuth2ClientRegistrationRepository clientRegistrationRepository) {
         Assert.notNull(clientRegistrationRepository,"client registration repository must not be null !!!");
         this.clientRegistrationRepository = clientRegistrationRepository;
     }
@@ -48,10 +48,10 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
     }
 
     @Override
-    public Authentication convert(HttpServletRequest request) {
+    public Authentication convert(HttpServletRequest request,HttpServletResponse response) {
         MultiValueMap<String, String> parameters = HttpRequestUtil.getParameters(request);
         String grant_type = parameters.getFirst("grant_type");
-        if (!AuthorizationGrantType.ACCESS_TOKEN.getValue().equalsIgnoreCase(grant_type)) {
+        if (!LightningAuthorizationGrantType.ACCESS_TOKEN.getValue().equalsIgnoreCase(grant_type)) {
             return null;
         }
         String login_grant_type = parameters.getFirst("login_grant_type");
@@ -61,17 +61,19 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
 
         String oauth2_grant_type = parameters.getFirst("oauth2_grant_type");
 
-        Map<String, Object> additionalParameters = new HashMap<>();
-        parameters.forEach((key, value) -> {
-            if (!key.equals("grant_type") && !key.equals("refresh_token") && !key.equals("scope")) {
-                additionalParameters.put(key, value.get(0));
-            }
-        });
-
         String provider = parameters.getFirst("provider");
         if (!StringUtils.hasText(provider) ) {
             AuthEndPointUtils.throwError("invalid_request", "oauth2 provider must not be null !!!", "");
         }
+
+        Map<String, Object> additionalParameters = new HashMap<>();
+        parameters.forEach((key, value) -> {
+            if (!key.equals("grant_type") && !key.equals("refresh_token") && !key.equals("scope") && !key.equals("oauth2_grant_type") &&
+            !key.equals("login_grant_type") && !key.equals("provider")) {
+                additionalParameters.put(key, value.get(0));
+            }
+        });
+
 
         assert provider != null;
         ClientRegistration clientRegistration = clientRegistrationRepository.findByRegistrationId(provider.trim());
@@ -86,7 +88,7 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
             return new AuthorizationRequestAuthentication() {
                 @Override
                 public void sendRedirect(HttpServletRequest request, HttpServletResponse response) throws IOException {
-                    response.sendRedirect(redirectBaseUri + "/" +provider);
+                    response.sendRedirect(redirectBaseUri + "/" + provider);
                 }
 
                 @Override
@@ -98,7 +100,7 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
 
         // 否则是其他的 ...
 
-        return getOtherAuthentication(oauth2_grant_type,clientRegistration,additionalParameters,request);
+        return getOtherAuthentication(oauth2_grant_type,clientRegistration,additionalParameters,request,response);
     }
 
     /**
@@ -107,7 +109,7 @@ public class OAuth2LoginAccessTokenAuthenticationConverter implements OAuth2Clie
     protected  Authentication getOtherAuthentication(String oauth2_grant_type,
                                                     ClientRegistration clientRegistration,
                                                     Map<String, Object> additionalParameters,
-                                                     HttpServletRequest request) {
+                                                     HttpServletRequest request,HttpServletResponse response) {
         return null;
     }
 }

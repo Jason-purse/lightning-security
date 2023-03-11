@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.OAuth2AuthorizationRequestAndExtRedirectFilter;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.StoreKind;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -56,6 +57,14 @@ public class OAuth2LoginProperties {
 
         private String authorizationRequestBaseUri;
 
+        /**
+         * 是否支持扩展
+         * @see com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.OAuth2AuthorizationRequestAndExtRedirectFilter
+         */
+        private boolean enableRequestExt = false;
+
+        private final RequestExtConfig requestExtConfig = new RequestExtConfig();
+
         private AuthorizationRequestStoreKind storeKind = AuthorizationRequestStoreKind.IN_MEMORY;
 
         private Long storeTimeOfMillis = DEFAULT_STORE_TIME_OF_MILLIS;
@@ -79,6 +88,11 @@ public class OAuth2LoginProperties {
             private final static String DEFAULT_KEY_PREFIX = "lightning-app-authorization-request-";
 
             private String keyPrefix = DEFAULT_KEY_PREFIX;
+        }
+
+        @Data
+        public static class RequestExtConfig {
+            private String extBaseUri = OAuth2AuthorizationRequestAndExtRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_EXT_BASE_URL;
         }
     }
 

@@ -1,6 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
-import com.generatera.authorization.server.common.configuration.AuthorizationGrantType;
+import com.generatera.authorization.server.common.configuration.LightningAuthorizationGrantType;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -12,11 +12,11 @@ import java.util.Map;
 
 public class AuthAuthorizationGrantAuthenticationToken extends AbstractAuthenticationToken {
 
-    private final AuthorizationGrantType authorizationGrantType;
+    private final LightningAuthorizationGrantType authorizationGrantType;
     private final Authentication principal;
     private final Map<String, Object> additionalParameters;
 
-    protected AuthAuthorizationGrantAuthenticationToken(AuthorizationGrantType authorizationGrantType, @Nullable Authentication principal, @Nullable Map<String, Object> additionalParameters) {
+    protected AuthAuthorizationGrantAuthenticationToken(LightningAuthorizationGrantType authorizationGrantType, @Nullable Authentication principal, @Nullable Map<String, Object> additionalParameters) {
         super(Collections.emptyList());
         Assert.notNull(authorizationGrantType, "authorizationGrantType cannot be null");
         this.authorizationGrantType = authorizationGrantType;
@@ -24,7 +24,7 @@ public class AuthAuthorizationGrantAuthenticationToken extends AbstractAuthentic
         this.additionalParameters = Collections.unmodifiableMap(additionalParameters != null ? new HashMap<>(additionalParameters) : Collections.emptyMap());
     }
 
-    public AuthorizationGrantType getGrantType() {
+    public LightningAuthorizationGrantType getGrantType() {
         return this.authorizationGrantType;
     }
 

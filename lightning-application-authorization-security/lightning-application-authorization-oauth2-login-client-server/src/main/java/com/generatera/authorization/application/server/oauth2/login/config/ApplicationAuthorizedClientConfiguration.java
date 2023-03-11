@@ -6,10 +6,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 
 public class ApplicationAuthorizedClientConfiguration {
 
-    @EnableJpaRepositories(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.repository.authorization.request")
+    @EnableJpaRepositories(basePackages = "com.generatera.authorization.application.server.oauth2.login.config.repository.client.authorized")
     public static class JpaAuthorizedClientConfiguration {
 
         @Bean
@@ -25,6 +26,13 @@ public class ApplicationAuthorizedClientConfiguration {
         @Bean
         public LightningOAuthorizedClientService lightningOAuthorizedClientService(MongoTemplate mongoTemplate) {
             return new MongoOAuthorizedClientService(mongoTemplate);
+        }
+    }
+
+    public static class DefaultAuthorizedClientConfiguration {
+        @Bean
+        public LightningOAuthorizedClientService memoryOAuthorizedClientService(OAuth2AuthorizedClientService oAuth2AuthorizedClientService) {
+            return new DelegateOAuthorizedClientService(oAuth2AuthorizedClientService);
         }
     }
 

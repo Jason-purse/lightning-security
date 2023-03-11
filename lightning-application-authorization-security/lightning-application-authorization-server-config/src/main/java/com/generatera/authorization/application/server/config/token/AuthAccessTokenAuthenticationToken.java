@@ -24,6 +24,9 @@ public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationTo
     @Nullable
     private final LightningRefreshToken refreshToken;
     private final Map<String, Object> additionalParameters;
+    public AuthAccessTokenAuthenticationToken(Authentication userPrincipal) {
+        this(userPrincipal,null);
+    }
 
     public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, LightningAccessToken accessToken) {
         this(userPrincipal, accessToken, null);

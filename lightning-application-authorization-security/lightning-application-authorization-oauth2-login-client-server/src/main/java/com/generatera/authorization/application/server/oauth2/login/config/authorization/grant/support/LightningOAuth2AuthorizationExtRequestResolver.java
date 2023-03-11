@@ -1,11 +1,13 @@
 package com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support;
 
 import org.springframework.lang.Nullable;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 
 import javax.servlet.http.HttpServletRequest;
 
-public interface OAuth2AuthorizationExtRequestResolver {
+/**
+ * oauth2 authorization request ext(目前不支持 authorization_code 之外的请求体构建)
+ */
+public interface LightningOAuth2AuthorizationExtRequestResolver {
     @Nullable
     OAuth2AuthorizationExtRequest resolve(HttpServletRequest request);
 

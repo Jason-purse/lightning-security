@@ -1,7 +1,7 @@
 package com.generatera.authorization.application.server.oauth2.login.config.client.authorized;
 
 import com.generatera.authorization.application.server.oauth2.login.config.client.register.ClientRegistrationConverter;
-import com.generatera.authorization.application.server.oauth2.login.config.model.entity.registration.ClientRegistrationEntity;
+import com.generatera.authorization.application.server.oauth2.login.config.model.entity.client.info.ClientRegistrationEntity;
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuth2AccessTokenEntity;
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuth2RefreshTokenEntity;
 import com.generatera.authorization.application.server.oauth2.login.config.model.entity.OAuthorizedClientEntity;

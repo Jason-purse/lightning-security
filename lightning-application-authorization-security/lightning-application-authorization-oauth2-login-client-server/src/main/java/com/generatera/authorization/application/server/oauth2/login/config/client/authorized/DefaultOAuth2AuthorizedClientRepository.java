@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.oauth2.login.config.client.authorized;
 
+import com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.OAuth2LoginExtUtils;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -14,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
  * @Description 默认实现,委派到 {@link OAuth2AuthorizedClientRepository} 上进行处理 ..
  * 这是适用于默认配置 ..
  *
- * @see com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.OAuth2ClientConfigurerExtUtils#getAuthorizedClientRepository(HttpSecurityBuilder)
+ * @see OAuth2LoginExtUtils#getAuthorizedClientRepository(HttpSecurityBuilder)
  */
 public class DefaultOAuth2AuthorizedClientRepository implements LightningOAuth2AuthorizedClientRepository {
 

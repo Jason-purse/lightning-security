@@ -8,8 +8,10 @@ import com.generatera.authorization.application.server.oauth2.login.config.autho
 import com.generatera.authorization.application.server.oauth2.login.config.authority.LightningOidcUserService;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.DefaultOAuth2ClientAuthenticationEntryPoint;
 import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2ClientLoginAccessTokenAuthenticationConverter;
-import com.generatera.authorization.application.server.oauth2.login.config.authorization.OAuth2LoginAccessTokenAuthenticationConverter;
-import com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.OAuth2ClientConfigurerExtUtils;
+import com.generatera.authorization.application.server.oauth2.login.config.authorization.DefaultOAuth2LoginAccessTokenAuthenticationConverter;
+import com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.DefaultOauth2AuthorizationExtRequestResolver;
+import com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.LightningOAuth2AuthorizationExtRequestResolver;
+import com.generatera.authorization.application.server.oauth2.login.config.authorization.grant.support.OAuth2LoginExtUtils;
 import com.generatera.authorization.application.server.oauth2.login.config.client.register.LightningOAuth2ClientRegistrationRepository;
 import com.generatera.authorization.application.server.oauth2.login.config.token.LightningOAuth2AuthenticationEntryPoint;
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.DefaultOAuth2AccessTokenForOAuthorizeCodeResponseClient;
@@ -28,15 +30,14 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
 import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 
-import static com.generatera.security.authorization.server.specification.util.HttpSecurityBuilderUtils.getOptionalBean;
-import static com.generatera.security.authorization.server.specification.util.HttpSecurityBuilderUtils.getSharedOrCtxBean;
+import static com.generatera.security.authorization.server.specification.util.HttpSecurityBuilderUtils.*;
 
 /**
  *  oauth2 login utils
  *
  *  oauth2 login application authorization server的 工具类
  * {@link com.generatera.authorization.application.server.oauth2.login.config.authentication.LightningOAuth2LoginAuthenticationEntryPoint}
- * @see OAuth2ClientConfigurerExtUtils
+ * @see OAuth2LoginExtUtils
  */
 public class OAuth2LoginUtils {
 
@@ -60,14 +61,14 @@ public class OAuth2LoginUtils {
     /**
      * 获取一个默认的   LightningOAuth2AccessTokenResponseClient
      */
-    public static LightningOAuth2AccessTokenResponseClient getOAuth2AccessTokenResponseClient(HttpSecurity security) {
-        LightningOAuth2AccessTokenResponseClient tokenResponseClient = security.getSharedObject(LightningOAuth2AccessTokenResponseClient.class);
+    public static <B extends HttpSecurityBuilder<B>> LightningOAuth2AccessTokenResponseClient getOAuth2AccessTokenResponseClient(B builder) {
+        LightningOAuth2AccessTokenResponseClient tokenResponseClient = builder.getSharedObject(LightningOAuth2AccessTokenResponseClient.class);
         if (tokenResponseClient == null) {
-            tokenResponseClient = getOptionalBean(security, LightningOAuth2AccessTokenResponseClient.class);
+            tokenResponseClient = getOptionalBean(builder, LightningOAuth2AccessTokenResponseClient.class);
             if (tokenResponseClient == null) {
                 tokenResponseClient = new DefaultOAuth2AccessTokenForOAuthorizeCodeResponseClient();
             }
-            security.setSharedObject(LightningOAuth2AccessTokenResponseClient.class, tokenResponseClient);
+            builder.setSharedObject(LightningOAuth2AccessTokenResponseClient.class, tokenResponseClient);
         }
         return tokenResponseClient;
     }
@@ -103,17 +104,9 @@ public class OAuth2LoginUtils {
      * @Description oauth2 login access token 认证转换器 ...
      */
     public static <B extends HttpSecurityBuilder<B>> OAuth2ClientLoginAccessTokenAuthenticationConverter getOAuth2LoginAccessTokenAuthenticationConverter(B builder) {
-        OAuth2ClientLoginAccessTokenAuthenticationConverter oAuth2ClientLoginAccessTokenAuthenticationConverter = builder.getSharedObject(OAuth2ClientLoginAccessTokenAuthenticationConverter.class);
-        if (oAuth2ClientLoginAccessTokenAuthenticationConverter == null) {
-            oAuth2ClientLoginAccessTokenAuthenticationConverter = getOptionalBean(builder, OAuth2ClientLoginAccessTokenAuthenticationConverter.class);
-
-            if (oAuth2ClientLoginAccessTokenAuthenticationConverter == null) {
-                oAuth2ClientLoginAccessTokenAuthenticationConverter = new OAuth2LoginAccessTokenAuthenticationConverter(getClientRegistrationRepository(builder));
-            }
-            // 设置转换器 ...
-            builder.setSharedObject(OAuth2ClientLoginAccessTokenAuthenticationConverter.class, oAuth2ClientLoginAccessTokenAuthenticationConverter);
-        }
-        return oAuth2ClientLoginAccessTokenAuthenticationConverter;
+        return HttpSecurityBuilderUtils.getBean(builder,OAuth2ClientLoginAccessTokenAuthenticationConverter.class,() -> {
+            return new DefaultOAuth2LoginAccessTokenAuthenticationConverter(getClientRegistrationRepository(builder));
+        });
     }
 
     public static LightningOAuth2AuthenticationEntryPoint getAuthenticationEntryPoint(HttpSecurity securityBuilder) {
@@ -134,6 +127,10 @@ public class OAuth2LoginUtils {
         return getSharedOrCtxBean(securityBuilder, LightningOAuth2ClientRegistrationRepository.class);
     }
 
+    public static <B extends HttpSecurityBuilder<B>> LightningOAuth2AuthorizationExtRequestResolver getAuthorizationExtRequestResolver(B builder, String baseUri) {
+        return getBean(builder, LightningOAuth2AuthorizationExtRequestResolver.class,() -> new DefaultOauth2AuthorizationExtRequestResolver(getClientRegistrationRepository(builder), baseUri));
+    }
+
     /**
      * 配置默认的 OAuth2AuthorizedClientManager
      */
@@ -147,11 +144,11 @@ public class OAuth2LoginUtils {
                 OAuth2AuthorizedClientProvider authorizedClientProvider = OAuth2AuthorizedClientProviderBuilder.builder().authorizationCode().refreshToken().clientCredentials((configurer) -> {
                     configurer.accessTokenResponseClient(accessTokenResponseClient);
                 }).password().build();
-                DefaultOAuth2AuthorizedClientManager defaultAuthorizedClientManager = new DefaultOAuth2AuthorizedClientManager(registrationRepository, OAuth2ClientConfigurerExtUtils.getAuthorizedClientRepository(securityBuilder));
+                DefaultOAuth2AuthorizedClientManager defaultAuthorizedClientManager = new DefaultOAuth2AuthorizedClientManager(registrationRepository, OAuth2LoginExtUtils.getAuthorizedClientRepository(securityBuilder));
                 defaultAuthorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
                 authorizedClientManager = defaultAuthorizedClientManager;
             } else {
-                authorizedClientManager = new DefaultOAuth2AuthorizedClientManager(registrationRepository, OAuth2ClientConfigurerExtUtils.getAuthorizedClientRepository(securityBuilder));
+                authorizedClientManager = new DefaultOAuth2AuthorizedClientManager(registrationRepository, OAuth2LoginExtUtils.getAuthorizedClientRepository(securityBuilder));
             }
             return authorizedClientManager;
         });

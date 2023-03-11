@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 public abstract class AbstractLightningAuthorizationRequestRepository implements LightningAuthorizationRequestRepository {
 
     private final Converter<AuthorizationRequestEntity, OAuth2AuthorizationRequest> converter =
-            new AuthorizationRequestConverter();
+            new AuthorizationCodeRequestConverter();
 
     private final Converter<OAuth2AuthorizationRequest, AuthorizationRequestEntity> infoConverter =
             new AuthorizationRequestEntityConverter();

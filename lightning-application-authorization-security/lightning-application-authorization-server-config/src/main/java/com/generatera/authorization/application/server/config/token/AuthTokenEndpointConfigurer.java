@@ -4,6 +4,7 @@ import com.generatera.authorization.application.server.config.ApplicationAuthSer
 import com.generatera.authorization.application.server.config.authentication.LightningAppAuthServerDaoLoginAuthenticationProvider;
 import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.authorization.application.server.config.util.AppAuthConfigurerUtils;
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthenticationConverter;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
@@ -16,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
-import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -47,13 +47,16 @@ import java.util.List;
  */
 public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     private RequestMatcher requestMatcher;
-    private AuthenticationConverter accessTokenRequestConverter;
+    /**
+     * 可以看作 authenticationConverters的替换 ..
+     */
+    private LightningAuthenticationConverter accessTokenRequestConverter;
     private final List<AuthenticationProvider> authenticationProviders = new LinkedList<>();
     private final List<LightningDaoAuthenticationProvider> daoAuthenticationProviders = new LinkedList<>();
     private AuthenticationSuccessHandler accessTokenResponseHandler;
     private AuthenticationFailureHandler errorResponseHandler;
 
-    private final List<AuthenticationConverter> authenticationConverters = new LinkedList<>();
+    private final List<LightningAuthenticationConverter> authenticationConverters = new LinkedList<>();
 
     public AuthTokenEndpointConfigurer(ObjectPostProcessor<Object> objectPostProcessor) {
         super(objectPostProcessor);
@@ -63,7 +66,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
      * 直接覆盖 acccessTokenRequestConverter ..
      * 相比于覆盖整体逻辑,强烈建议 使用{@link #addAccessTokenRequestConverter}方法
      */
-    public AuthTokenEndpointConfigurer accessTokenRequestConverter(AuthenticationConverter accessTokenRequestConverter) {
+    public AuthTokenEndpointConfigurer accessTokenRequestConverter(LightningAuthenticationConverter accessTokenRequestConverter) {
         this.accessTokenRequestConverter = accessTokenRequestConverter;
         return this;
     }
@@ -71,7 +74,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     /**
      * 增加访问token 请求转换器,和系统默认提供的融合
      */
-    public AuthTokenEndpointConfigurer addAccessTokenRequestConverter(AuthenticationConverter... authenticationConverters) {
+    public AuthTokenEndpointConfigurer addAccessTokenRequestConverter(LightningAuthenticationConverter... authenticationConverters) {
         this.authenticationConverters.addAll(List.of(authenticationConverters));
         return this;
     }
