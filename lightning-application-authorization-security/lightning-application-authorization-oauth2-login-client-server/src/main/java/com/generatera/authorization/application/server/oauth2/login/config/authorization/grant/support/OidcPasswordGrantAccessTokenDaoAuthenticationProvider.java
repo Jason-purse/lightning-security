@@ -7,6 +7,7 @@ import com.generatera.authorization.application.server.oauth2.login.config.token
 import com.generatera.authorization.application.server.oauth2.login.config.token.response.LightningOAuth2AccessTokenResponseClient;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthError;
 import com.generatera.security.authorization.server.specification.components.authorization.LightningAuthenticationException;
+import org.springframework.security.oauth2.client.endpoint.DefaultPasswordTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2PasswordGrantRequest;
 import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -29,6 +30,17 @@ import java.util.Map;
  * @see com.generatera.authorization.application.server.config.token.LightningDaoAuthenticationProvider
  */
 public class OidcPasswordGrantAccessTokenDaoAuthenticationProvider extends PasswordGrantAccessTokenDaoAuthenticationProvider {
+
+    public OidcPasswordGrantAccessTokenDaoAuthenticationProvider(
+            LightningOidcUserService oidcUserService,
+            LightningOAuth2AuthorizedClientRepository auth2AuthorizedClientRepository
+    ) {
+        this(
+                new DefaultPasswordTokenResponseClient()::getTokenResponse,
+                oidcUserService,
+                auth2AuthorizedClientRepository
+        );
+    }
 
     public OidcPasswordGrantAccessTokenDaoAuthenticationProvider(
             LightningOAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> auth2AccessTokenResponseClient,
@@ -56,7 +68,7 @@ public class OidcPasswordGrantAccessTokenDaoAuthenticationProvider extends Passw
             LightningOAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> auth2AccessTokenResponseClient,
             LightningOidcUserService oidcUserService,
             LightningOAuth2AuthorizedClientRepository auth2AuthorizedClientRepository) {
-        this(auth2AccessTokenResponseClient,oidcUserService,auth2AuthorizedClientRepository,new OidcIdTokenDecoderFactory());
+        this(auth2AccessTokenResponseClient, oidcUserService, auth2AuthorizedClientRepository, new OidcIdTokenDecoderFactory());
     }
 
     @Override

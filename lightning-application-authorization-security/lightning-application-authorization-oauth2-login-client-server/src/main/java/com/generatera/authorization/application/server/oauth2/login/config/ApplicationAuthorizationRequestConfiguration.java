@@ -68,7 +68,7 @@ public class ApplicationAuthorizationRequestConfiguration {
                         token.addAccessTokenRequestConverter(OAuth2LoginExtUtils.getPasswordGrantAuthenticationRequestConverter(applicationAuthServerConfigurer.and()));
                         // 设置 dao 提供器 ..
                         token.authenticationDaoProvider(
-                                OAuth2LoginExtUtils.getOAuth2ExtAuthenticationDaoProvider(applicationAuthServerConfigurer.and())
+                                OAuth2LoginExtUtils.getPasswordGrantAuthenticationDaoProvider(applicationAuthServerConfigurer.and())
                         );
                     });
 

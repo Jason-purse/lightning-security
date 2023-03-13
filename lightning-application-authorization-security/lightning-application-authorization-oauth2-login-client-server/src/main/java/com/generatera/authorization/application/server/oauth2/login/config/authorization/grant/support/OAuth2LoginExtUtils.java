@@ -77,7 +77,7 @@ public class OAuth2LoginExtUtils {
      * 提供password grant 支持的 dao authentication provider
      * 提供最基本的,没必要提供全部 ..
      */
-    public static <B extends HttpSecurityBuilder<B>> LightningOAuth2PasswordGrantDaoAuthenticationProvider getOAuth2ExtAuthenticationDaoProvider(B builder) {
+    public static <B extends HttpSecurityBuilder<B>> LightningOAuth2PasswordGrantDaoAuthenticationProvider getPasswordGrantAuthenticationDaoProvider(B builder) {
 
         return HttpSecurityBuilderUtils.getBean(builder, LightningOAuth2PasswordGrantDaoAuthenticationProvider.class, () -> {
             LightningOAuth2UserService bean = HttpSecurityBuilderUtils.getOptionalBean(builder, LightningOAuth2UserService.class);

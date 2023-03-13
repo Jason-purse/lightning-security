@@ -23,9 +23,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author FLJ
@@ -51,12 +49,12 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
      * 可以看作 authenticationConverters的替换 ..
      */
     private LightningAuthenticationConverter accessTokenRequestConverter;
-    private final List<AuthenticationProvider> authenticationProviders = new LinkedList<>();
-    private final List<LightningDaoAuthenticationProvider> daoAuthenticationProviders = new LinkedList<>();
+    private final Set<AuthenticationProvider> authenticationProviders = new LinkedHashSet<>();
+    private final Set<LightningDaoAuthenticationProvider> daoAuthenticationProviders = new LinkedHashSet<>();
     private AuthenticationSuccessHandler accessTokenResponseHandler;
     private AuthenticationFailureHandler errorResponseHandler;
 
-    private final List<LightningAuthenticationConverter> authenticationConverters = new LinkedList<>();
+    private final Set<LightningAuthenticationConverter> authenticationConverters = new LinkedHashSet<>();
 
     public AuthTokenEndpointConfigurer(ObjectPostProcessor<Object> objectPostProcessor) {
         super(objectPostProcessor);
@@ -108,7 +106,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     public <B extends HttpSecurityBuilder<B>> void init(B builder) {
         ProviderSettings providerSettings = AppAuthConfigurerUtils.getProviderSettings(builder).getProviderSettings();
         this.requestMatcher = new AntPathRequestMatcher(providerSettings.getTokenEndpoint(), HttpMethod.POST.name());
-        List<AuthenticationProvider> authenticationProviders = !this.authenticationProviders.isEmpty() ? this.authenticationProviders : this.createDefaultAuthenticationProviders(builder);
+        Collection<AuthenticationProvider> authenticationProviders = !this.authenticationProviders.isEmpty() ? this.authenticationProviders : this.createDefaultAuthenticationProviders(builder);
         authenticationProviders.forEach((authenticationProvider) -> {
             builder.authenticationProvider(this.postProcess(authenticationProvider));
         });
@@ -135,11 +133,12 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
         // 如果提供,则使用
         if (!authenticationConverters.isEmpty()) {
             AnnotationAwareOrderComparator awareOrderComparator = new AnnotationAwareOrderComparator();
-            authenticationConverters.sort(awareOrderComparator);
+            ArrayList<LightningAuthenticationConverter> converters = new ArrayList<>(authenticationConverters);
+            converters.sort(awareOrderComparator);
             tokenEndpointFilter.setAuthenticationConverter(
                     new DelegatingAuthenticationConverter(
                             List.of(
-                                    new AuthLoginRequestAuthenticationConverter(authenticationConverters),
+                                    new AuthLoginRequestAuthenticationConverter(converters),
                                     new AuthRefreshTokenAuthenticationConverter()
                             )
                     )
@@ -183,7 +182,7 @@ public final class AuthTokenEndpointConfigurer extends AbstractAuthConfigurer {
     /**
      * 创建默认的 认证提供器 ...
      */
-    private <B extends HttpSecurityBuilder<B>> List<AuthenticationProvider> createDefaultAuthenticationProviders(B builder) {
+    private <B extends HttpSecurityBuilder<B>> Collection<AuthenticationProvider> createDefaultAuthenticationProviders(B builder) {
         List<AuthenticationProvider> authenticationProviders = new ArrayList<>();
 
         LightningAuthenticationTokenService authorizationService = AppAuthConfigurerUtils.getAuthorizationService(builder);
