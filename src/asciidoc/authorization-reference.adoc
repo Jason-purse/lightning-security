@@ -1,0 +1,73 @@
+[[lightning-security]]
+= manual reference
+:toc: left
+:toclevels: 4
+:tabsize: 4
+:docinfo1:
+
+此参考文档的这一部分涵盖了此框架包含的所有基础设施的相关信息 ..
+
+
+== overview
+当前,lightning security 仅仅包含了一些基础设施组件,其中包含了认证服务器和资源服务器的概念,本质上基于oauth2 授权规范(spring security 实现)来抽象了lightning security本身的认证设施 ..
+
+其中模块(lightning-security-specifications)下的项目抽象了一些基础设备组件接口抽象,其中包含:
+- 引导上下文(BootstrapContext)
+
+.服务器类型
+
+* .授权服务器
+
+** 应用授权服务器
+** 中央授权服务器(oauth2)
+
+* 资源服务器
+** 包含oauth2 对应的资源服务器
+** 应用对应的资源服务器
+
+//-
+.服务器规范
+
+此项目的基础设施遵循spring对oauth2规范的实现而学习，进行抽象,所以代码中可能包含了大量与spring security oauth2相关类文件的类似代码 ...
+
+* 授权服务器
+
+.本质上,基于oauth2 规范, 由于使用jwt 作为授权令牌: 那么会有如下通用组件
+- token 生成器
+- token 授权端点(包含了用户登录端点)
+- jwk (jwt 令牌生成器的密钥来源)
+- providerSettings(提供者配置)
++
+提供者配置主要提供了授权服务器的公共配置,其中包含了token端点相关的配置,例如 token 生成端点,token 销端点,以及token省查端点,这其中token撤销端点和token省查端点依赖于token令牌生成类型来条件注入为Filter ..
+
+[source,java]
+.java code from lightning-security-authorization-specification project
+----
+include::{docdir}/../../lightning-security-specifications/lightning-security-authorization-specification/src/main/java/com/generatera/security/authorization/server/specification/components/provider/ProviderSettings.java[lines=15.. -1]
+----
+详情查看上述给定代码示例的对应java文件
+
+- token 配置属性列表
++
+token配置提供器(TokenSettingsProvider)提供了token 相关的配置,例如 token令牌生成的类型,token 令牌时常,其中包含访问token和刷新token
+
+[source,java]
+.java code from lightning-security-authorization-specification project
+----
+include::{docdir}/../../lightning-security-specifications/lightning-security-authorization-specification/src/main/java/com/generatera/security/authorization/server/specification/TokenSettingsProperties.java[lines=21 .. -1]
+----
+详情查看对应的java文件了解详情 ...
+
+- 引导上下文(BootstrapContext)
++
+它本质上就是为了避免需要一些在HttpSecurity中的默认配置的bean(或者说对象),但是由于我们的授权服务器(甚至是多种授权服务器合并都会只有一个HttpSecurity对象进行过滤链的构建),所以这就在基于@Bean方法提供bean的时候,可能会存在直接依赖于HttpSecurity会重新创建此原型bean(HttpSecurity)的尴尬境地... 所以基于引导上下文可以从中获取HttpSecurity(全局共享的)来进行特定的一些bean的默认配置获取,这其中包含通过HttpSecurityUtil获取bean ,或者OAuth2LoginUtils 或者OAuth2LoginExtUtils进行特定的bean 获取并扩展注入自己的特定方面的覆盖 ...
+
+- LightningAuthorizationService
++
+用于保存已经授权成功的用户相关的信息,例如生成的访问token / 刷新token / 以及基于oidc规范的 id token ...
+
+- 还定义了一些规范
+* 用户实体
++
+在此框架中,LightningUserContext 作为当前应用中已经授权的实体(用户信息)的持有者,那么它提供了相应的方法进行当前用户信息获取并进行指定类型的强转,由于此框架仅仅作为底层基础设施,真正的授权服务器,也就是应用授权服务器(或者可以称为用户中心/ 授权中心)都会紧跟业务关联,所以它必然会基于业务来定制自己的用户实体,所以此框架仅仅提供了大体的一个壳子,用于扩展并实现属于自己业务上的授权中心 .. +
+其次,我们定义了用户的实体必须被LightningUserPrincipal所包装,也就是一个Authentication对象的principal最终的主体对象就是此接口的具体实现,取决于LightningUserService 给我们返回的对应的LightningUserPrincipal 实现 ... 由于用户service 会参与认证或者说授权流程,所以一旦流程成功,那么返回的LightningUserPrincipal 将会被保存到 LightningAuthorizationService 中 ...
