@@ -45,8 +45,8 @@ public class LightningAuthorizationManagerAfterMethodInterceptor implements Orde
         this.authorizationManager = authorizationManager;
     }
 
-    public static LightningAuthorizationManagerAfterMethodInterceptor postAuthorize() {
-        return postAuthorize(new LightningPostAuthorizeAuthorizationManager());
+    public static LightningAuthorizationManagerAfterMethodInterceptor postAuthorize(LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource) {
+        return postAuthorize(new LightningPostAuthorizeAuthorizationManager(methodSecurityMetadataSource));
     }
 
     public static LightningAuthorizationManagerAfterMethodInterceptor postAuthorize(LightningPostAuthorizeAuthorizationManager authorizationManager) {

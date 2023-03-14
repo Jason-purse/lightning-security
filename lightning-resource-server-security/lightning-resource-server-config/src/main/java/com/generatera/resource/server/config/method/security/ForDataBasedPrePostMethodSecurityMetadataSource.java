@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.DefaultParameterNameDiscoverer;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.prepost.PostInvocationAttribute;
 import org.springframework.security.access.prepost.PreInvocationAttribute;
@@ -17,10 +17,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -32,10 +33,12 @@ import java.util.function.Supplier;
  * @Description 给与数据库缓存支持 ...
  * <p>
  * // TODO: 2023/2/9  性能缺失,pre/post 一体,如果其中一个修改,那么整体将会被移除 ...
+ *
+ * 检测行为{@link LightningPreAuthorize#behavior()} 只有在数据库等其他记录资源权限的方式中有效,因为粒度更细 ..
+ * 如果在代码中,那么直接与对应的资源行为进行耦合 ..{@link ResourceBehavior}
  */
 public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends LightningPrePostMethodSecurityMetadataSource {
 
-    private DefaultParameterNameDiscoverer nameDiscoverer = new DefaultParameterNameDiscoverer();
 
     /**
      * 能够在 内存压力上来的时候,丢弃一部分内存数据 ...
@@ -85,13 +88,9 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
     };
 
 
-    public void setNameDiscoverer(DefaultParameterNameDiscoverer nameDiscoverer) {
-        this.nameDiscoverer = nameDiscoverer;
-    }
-
     public ForDataBasedPrePostMethodSecurityMetadataSource(
-            PrePostInvocationAttributeFactory attributeFactory,String moduleName) {
-        super(attributeFactory,moduleName);
+            PrePostInvocationAttributeFactory attributeFactory, String moduleName) {
+        super(attributeFactory, moduleName);
     }
 
     @Override
@@ -175,8 +174,10 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             if (entity != null) {
                 StringBuilder builder = new StringBuilder();
                 LightningPrePostMethodSecurityMetadataSource.handleRolesAndAuthorities(
-                        entity.getRoles().split(","),
-                        entity.getAuthorities().split(","),
+                        ElvisUtil.isNotEmptyFunction(entity.getRoles(), this::splitToList),
+                        ElvisUtil.isNotEmptyFunction(entity.getAuthorities(), this::splitToList),
+                        AuthorizeMode.valueOf(entity.getAuthorizeMode()),
+                        resolveMethodSecurityIdentifier(method, targetClass),
                         builder
                 );
                 value = builder.toString();
@@ -202,7 +203,24 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                                 .orElse(ElvisUtil.stringElvis(preAuthorize.identifier(), LightningPreAuthorize.DEFAULT_IDENTIFIER)).getResult(),
                         OptionalFlux.of(entity)
                                 .map(ResourceMethodSecurityEntity::getDescription)
-                                .orElse(preAuthorize.description()).getResult()
+                                .orElse(preAuthorize.description()).getResult(),
+                        OptionalFlux.of(entity)
+                                .map(ResourceMethodSecurityEntity::getAuthorizeMode)
+                                .orElse(preAuthorize.authorizeMode().name()).getResult(),
+                        OptionalFlux.of(entity)
+                                .map(ResourceMethodSecurityEntity::getAuthorizeMode)
+                                .orElse(ElvisUtil.stringElvisOrNull(preAuthorize.behavior()))
+                                .switchMap(
+                                        behavior -> {
+                                            // 进行解析,是否可用 ..
+                                            if (!ResourceBehavior.getBehaviors().contains(behavior)) {
+                                                return determineResourceBehavior(method, targetClass);
+                                            }
+                                            return behavior;
+                                        },
+                                        () -> determineResourceBehavior(method, targetClass)
+                                )
+                                .getResult()
                 );
             } else if (phase == MethodSecurityInvokePhase.AFTER) {
                 LightningPostAuthorize postAuthorize = (LightningPostAuthorize) annotation;
@@ -225,7 +243,13 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                                 .orElse(ElvisUtil.stringElvis(postAuthorize.identifier(), LightningPostAuthorize.DEFAULT_IDENTIFIER)).getResult(),
                         OptionalFlux.of(entity)
                                 .map(ResourceMethodSecurityEntity::getDescription)
-                                .orElse(postAuthorize.description()).getResult()
+                                .orElse(postAuthorize.description()).getResult(),
+                        OptionalFlux.of(entity)
+                                .map(ResourceMethodSecurityEntity::getAuthorizeMode)
+                                .orElse(postAuthorize.authorizeMode().name()).getResult(),
+                        OptionalFlux.of(entity)
+                                .map(ResourceMethodSecurityEntity::getAuthorizeMode)
+                                .orElse(postAuthorize.behavior()).getResult()
                 );
             }
 
@@ -233,11 +257,64 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
         };
     }
 
+    /**
+     * 检测行为 ...
+     */
+    private String determineResourceBehavior(Method method, Class<?> target) {
+
+        RequestMapping annotation = AnnotationUtils.findAnnotation(method, RequestMapping.class);
+        if (annotation == null) {
+            annotation = AnnotationUtils.findAnnotation(target, RequestMapping.class);
+        }
+        Assert.notNull(annotation, "request mapping for method security must not be null");
+        RequestMethod[] requestMethods = annotation.method();
+        Set<String> behavior = new LinkedHashSet<>();
+        for (RequestMethod requestMethod : requestMethods) {
+            if (requestMethod.equals(RequestMethod.GET) || requestMethod.equals(RequestMethod.HEAD)) {
+                behavior.add(ResourceBehavior.READ);
+            } else {
+                behavior.add(ResourceBehavior.WRITE);
+            }
+        }
+
+        // 大于1个的时候,其实是没法处理的 ...
+        // 也就是这里报错 ...
+        if (behavior.size() > 1) {
+            boolean existsRead = false;
+            boolean existsWrite = false;
+            for (String s : behavior) {
+                if (ResourceBehavior.READ.equals(s)) {
+                    existsRead = true;
+                    break;
+                }
+                if (ResourceBehavior.WRITE.equals(s)) {
+                    existsWrite = true;
+                }
+            }
+
+            if (existsRead && existsWrite) {
+                behavior.remove(ResourceBehavior.READ);
+                behavior.remove(ResourceBehavior.WRITE);
+
+                // 又读又写
+                behavior.add(ResourceBehavior.WRITE_AND_READ);
+            }
+        }
+
+        Assert.isTrue(behavior.size() == 1, "The current resource behavior exceeds one ,resource behavior must be unique !!!");
+
+        return behavior.iterator().next();
+    }
+
     private List<String> resolveToList(String value) {
         if (StringUtils.hasText(value)) {
             return List.of(value.split(","));
         }
         return null;
+    }
+
+    private String[] splitToList(String value) {
+        return ElvisUtil.isNotEmptyFunction(value, ele -> ele.split(","));
     }
 
     private List<String> resolveToList(String[] values) {
@@ -262,47 +339,6 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
     );
 
 
-    private String resolveMethodSecurityIdentifier(Method method, Class<?> targetClass) {
-        Parameter[] parameters = method.getParameters();
-        return this.resolveMethodSecurityIdentifier(method.getName(), targetClass.getName(),
-                OptionalFlux.of(nameDiscoverer.getParameterNames(method)).orElse(resolveParameterNames(method)).getResult(),
-                Arrays.stream(parameters).map(ele -> ele.getType().getSimpleName()).toArray(String[]::new));
-    }
-
-    private String[] resolveParameterNames(Method method) {
-        Parameter[] parameters = method.getParameters();
-        String[] values = new String[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            values[i] = parameters[i].getName();
-        }
-        return values;
-    }
-
-    private String resolveMethodSecurityIdentifier(String methodName, String className, @Nullable String[] parameterNames, @Nullable String[] parameterTypes) {
-
-        // 同时为null,则不判断 ..
-        if (parameterNames != null || parameterTypes != null) {
-            Assert.isTrue(parameterNames != null && parameterTypes != null && parameterNames.length == parameterTypes.length, "parameter names length must be equals to types !!!");
-        }
-
-        StringBuilder builder = new StringBuilder();
-        builder.append(className)
-                .append("-")
-                .append(methodName)
-                .append("-");
-        if (parameterNames != null && parameterNames.length > 0) {
-            for (int i = 0; i < parameterNames.length; i++) {
-                builder.append(parameterTypes[i])
-                        .append("-")
-                        .append(parameterNames[i])
-                        .append("-");
-            }
-        }
-
-        return builder.toString();
-    }
-
-
     @Override
     public void onApplicationEvent(@NotNull ApplicationEvent event) {
         // invoke once
@@ -321,7 +357,7 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             synchronized (attributeCache) {
                 for (ResourceMethodSecurityEntity resourceMethodSecurityEntity : methodSecurityInfo) {
 
-                    // TODO: 2023/2/9  将前后放在一起 如果其中一个修改,则引起另一个修改,性能损失 ...
+                    // TODO: 2023/2/9  将前后放在一起(pre/post 属性) 如果其中一个修改,则引起另一个修改,性能损失 ...
 
                     OptimizedCacheKey key = attributeKeyCache.remove(resourceMethodSecurityEntity.getMethodSecurityIdentifier());
                     if (key != null) {
@@ -355,6 +391,9 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             String postIdentifier = null;
             String preDescription = null;
             String postDescription = null;
+            String type = ResourceType.BACKEND_TYPE;
+            String behavior = null;
+            String authorizeMode = null;
 
             // 本质上只有两个 ..
             // 可以优化代码 ..
@@ -373,6 +412,13 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                     if (postIdentifier == null) {
                         postIdentifier = info.identifier;
                     }
+                    if (behavior == null) {
+                        behavior = info.behavior;
+                    }
+
+                    if (authorizeMode == null) {
+                        authorizeMode = info.authorizeMode;
+                    }
 
                 } else {
                     AnnotationInfoWithPreConfigAttribute info = (AnnotationInfoWithPreConfigAttribute) configAttribute;
@@ -387,6 +433,13 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                     }
                     if (preIdentifier == null) {
                         preIdentifier = info.identifier;
+                    }
+                    if (behavior == null) {
+                        behavior = info.behavior;
+                    }
+
+                    if (authorizeMode == null) {
+                        authorizeMode = info.authorizeMode;
                     }
                 }
 
@@ -403,6 +456,9 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                                 .roles(toString(preRoles))
                                 .identifier(preIdentifier)
                                 .moduleName(moduleName)
+                                .type(type)
+                                .behavior(behavior)
+                                .authorizeMode(authorizeMode)
                                 .build()
                 );
             }
@@ -421,6 +477,9 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                                 .description(postDescription)
                                 .identifier(postIdentifier)
                                 .moduleName(moduleName)
+                                .type(type)
+                                .behavior(behavior)
+                                .authorizeMode(authorizeMode)
                                 .build()
                 );
             }
@@ -456,13 +515,18 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
 
         public String description;
 
+        private String authorizeMode;
+
+        private String behavior;
 
         public AnnotationInfoWithPreConfigAttribute(ConfigAttribute delegate,
                                                     Method method, Class<?> targetClass,
                                                     List<String> roles,
                                                     List<String> authorities,
                                                     String identifier,
-                                                    String description) {
+                                                    String description,
+                                                    String authorizeMode,
+                                                    String behavior) {
             this.delegate = delegate;
             this.method = method;
             this.targetClass = targetClass;
@@ -470,6 +534,8 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             this.authorities = authorities;
             this.identifier = identifier;
             this.description = description;
+            this.authorizeMode = authorizeMode;
+            this.behavior = behavior;
         }
 
         @Override
@@ -496,12 +562,19 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
 
         public String description;
 
+        private String authorizeMode;
+
+        private String behavior;
+
+
         public AnnotationInfoWithPostConfigAttribute(ConfigAttribute delegate,
                                                      Method method, Class<?> targetClass,
                                                      List<String> roles,
                                                      List<String> authorities,
                                                      String identifier,
-                                                     String description) {
+                                                     String description,
+                                                     String authorizeMode,
+                                                     String behavior) {
             this.delegate = delegate;
             this.method = method;
             this.targetClass = targetClass;
@@ -509,6 +582,8 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             this.authorities = authorities;
             this.identifier = identifier;
             this.description = description;
+            this.authorizeMode = authorizeMode;
+            this.behavior = behavior;
         }
 
         @Override

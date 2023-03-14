@@ -52,8 +52,8 @@ public class LightningAuthorizationManagerBeforeMethodInterceptor implements Ord
         this.authorizationManager = authorizationManager;
     }
 
-    public static LightningAuthorizationManagerBeforeMethodInterceptor preAuthorize() {
-        return preAuthorize(new LightningPreAuthorizeAuthorizationManager());
+    public static LightningAuthorizationManagerBeforeMethodInterceptor preAuthorize(LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource) {
+        return preAuthorize(new LightningPreAuthorizeAuthorizationManager(methodSecurityMetadataSource));
     }
 
     public static LightningAuthorizationManagerBeforeMethodInterceptor preAuthorize(LightningPreAuthorizeAuthorizationManager authorizationManager) {

@@ -1,16 +1,18 @@
 package com.generatera.resource.server.config.method.security.entity;
 
+import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+
+import static com.jianyue.lightning.boot.starter.util.PredicateUtil.nullSafeEquals;
 
 /**
  * @author FLJ
@@ -35,7 +37,7 @@ public class ResourceMethodSecurityEntity implements Serializable {
     /**
      * 模块名称 ..
      */
-    @Column(name = "module_name",length = 255)
+    @Column(name = "module_name", length = 255)
     private String moduleName;
 
     @Column(name = "method_name", length = 255)
@@ -44,13 +46,14 @@ public class ResourceMethodSecurityEntity implements Serializable {
     /**
      * 方法安全identifier ..
      * 默认通过 类名 + 方法名 + 参数名
-     * 来保证唯一性 ...
+     * 来保证唯一性 ...(也就是作为 权限点 唯一标识) ...
      */
     @Column(name = "method_security_identifier", length = 255)
     private String methodSecurityIdentifier;
 
     /**
      * 标识符(简短标识符) ...
+     * 前端可展示的 (用于运营平台 进行权限绑定) ...
      */
     @Column(name = "identifier", length = 255)
     private String identifier;
@@ -63,9 +66,17 @@ public class ResourceMethodSecurityEntity implements Serializable {
     @Column(name = "invoke_phase", length = 255)
     private String invokePhase;
 
+    /**
+     * 应该是让权限点和角色绑定 ... 而不是角色绑定到权限点 ..
+     */
+    @Deprecated
     @Column(columnDefinition = "text")
     private String roles;
 
+    /**
+     * 应该是让权限点和角色绑定 ... 而不是角色绑定到权限点 ..
+     */
+    @Deprecated
     @Column(columnDefinition = "text")
     private String authorities;
 
@@ -76,37 +87,82 @@ public class ResourceMethodSecurityEntity implements Serializable {
     @Column(name = "description", columnDefinition = "text")
     private String description;
 
+    /**
+     * 资源类型 ...
+     *
+     * @see com.generatera.resource.server.config.method.security.ResourceType
+     */
     @Column(name = "type")
     private String type;
 
+
+    /**
+     * 资源行为
+     *
+     * @see com.generatera.resource.server.config.method.security.ResourceBehavior
+     * <p>
+     * 读或者写 / 或者读写
+     */
+    @Column(name = "behavior")
+    private String behavior;
+
+
+    @Column(name = "authorize_mode")
+    private String authorizeMode;
 
     /**
      * 选择性更新
      * true,表示更新了,false 表示没有 ...
      */
     public static boolean updateByOptional(ResourceMethodSecurityEntity one, ResourceMethodSecurityEntity two) {
-        boolean status = false;
-        if(!StringUtils.hasText(one.identifier)) {
-            one.identifier = two.identifier;
-            status = true;
-        }
 
-        if(!StringUtils.hasText(one.description)) {
-            one.description = two.description;
-            status = true;
-        }
+        return OptionalFlux
+                .stringOrNull(two.identifier)
+                .ifTrueForSwitchMap(nullSafeEquals(one.identifier), identifier -> {
+                    one.identifier = identifier;
+                    return Boolean.TRUE;
+                })
+                .orElse(
+                        OptionalFlux.stringOrNull(two.description)
+                                .ifTrueForSwitchMap(nullSafeEquals(one.description), description -> {
+                                    one.description = description;
+                                    return Boolean.TRUE;
+                                })
+                )
 
-        if(!StringUtils.hasText(one.roles)) {
-            one.roles = two.roles;
-            status = true;
-        }
+                .orElse(
+                        OptionalFlux.stringOrNull(two.roles)
+                                .ifTrueForSwitchMap(nullSafeEquals(one.roles), roles -> {
+                                    one.roles = roles;
+                                    return Boolean.TRUE;
+                                })
+                )
 
-        if(!StringUtils.hasText(one.authorities)) {
-            one.authorities = two.authorities;
-            status = true;
-        }
+                .orElse(
+                        OptionalFlux.stringOrNull(two.authorities)
+                                .ifTrueForSwitchMap(nullSafeEquals(one.authorities), authorities -> {
+                                    one.authorities = authorities;
+                                    return Boolean.TRUE;
+                                })
+                )
 
-        return false;
+                .orElse(
+                        OptionalFlux.stringOrNull(two.behavior)
+                                .ifTrueForSwitchMap(nullSafeEquals(one.behavior), behavior -> {
+                                    one.behavior = behavior;
+                                    return Boolean.TRUE;
+                                })
+                )
+
+                .orElse(
+                        OptionalFlux.stringOrNull(two.type)
+                                .ifTrueForSwitchMap(nullSafeEquals(one.type), type -> {
+                                    one.type = type;
+                                    return Boolean.TRUE;
+                                })
+                )
+                .orElse(Boolean.FALSE)
+                .getResult();
     }
 
 

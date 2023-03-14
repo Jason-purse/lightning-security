@@ -19,7 +19,10 @@ public class LightningPostAuthorizeAuthorizationManager implements Authorization
     private final LightningPostAuthorizeAuthorizationManager.PostAuthorizeExpressionAttributeRegistry registry = new LightningPostAuthorizeAuthorizationManager.PostAuthorizeExpressionAttributeRegistry();
     private MethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
 
-    public LightningPostAuthorizeAuthorizationManager() {
+    private final LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource;
+    public LightningPostAuthorizeAuthorizationManager(LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource) {
+        Assert.notNull(methodSecurityMetadataSource,"methodSecurityMetadataSource must not be null !!!");
+        this.methodSecurityMetadataSource = methodSecurityMetadataSource;
     }
 
     public void setExpressionHandler(MethodSecurityExpressionHandler expressionHandler) {
@@ -50,10 +53,12 @@ public class LightningPostAuthorizeAuthorizationManager implements Authorization
             StringBuilder builder = new StringBuilder();
             LightningPrePostMethodSecurityMetadataSource.handleRolesAndAuthorities(
                     postAuthorize.roles(), postAuthorize.authorities(),
+                    postAuthorize.authorizeMode(),
+                    methodSecurityMetadataSource.resolveMethodSecurityIdentifier(method, targetClass),
                     builder
             );
             String expressionString = builder.toString();
-            return expressionString.length() > 0 ?  new ExpressionAttribute(expressionHandler.getExpressionParser().parseExpression(
+            return expressionString.length() > 0 ? new ExpressionAttribute(expressionHandler.getExpressionParser().parseExpression(
                     expressionString)) : ExpressionAttribute.NULL_ATTRIBUTE;
         }
 

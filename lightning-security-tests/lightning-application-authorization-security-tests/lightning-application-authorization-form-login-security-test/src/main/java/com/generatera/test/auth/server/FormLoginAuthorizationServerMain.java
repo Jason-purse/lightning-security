@@ -35,7 +35,7 @@ public class FormLoginAuthorizationServerMain {
                 Map<String, Object> valueMap = ((Map<String,Object>) value);
 
                 Object authorities = valueMap.get("authorities");
-                Collection<GrantedAuthority> grantedAuthorities = Collections.emptyList();
+                Collection<GrantedAuthority> grantedAuthorities;
                 if(authorities instanceof String) {
                     String[] values = ((String) authorities).split("");
                     grantedAuthorities = Arrays.stream(values).map(SimpleGrantedAuthority::new).collect(Collectors.toList());

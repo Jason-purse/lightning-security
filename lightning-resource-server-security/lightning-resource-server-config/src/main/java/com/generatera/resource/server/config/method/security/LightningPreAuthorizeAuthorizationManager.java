@@ -19,8 +19,11 @@ import java.util.function.Supplier;
 public class LightningPreAuthorizeAuthorizationManager implements AuthorizationManager<MethodInvocation> {
     private final LightningPreAuthorizeAuthorizationManager.PreAuthorizeExpressionAttributeRegistry registry = new LightningPreAuthorizeAuthorizationManager.PreAuthorizeExpressionAttributeRegistry();
     private MethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+    private final LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource;
 
-    public LightningPreAuthorizeAuthorizationManager() {
+    public LightningPreAuthorizeAuthorizationManager(LightningPrePostMethodSecurityMetadataSource methodSecurityMetadataSource) {
+        Assert.notNull(methodSecurityMetadataSource, "methodSecurityMetadataSource must not be null !!!");
+        this.methodSecurityMetadataSource = methodSecurityMetadataSource;
     }
 
     public void setExpressionHandler(MethodSecurityExpressionHandler expressionHandler) {
@@ -49,7 +52,10 @@ public class LightningPreAuthorizeAuthorizationManager implements AuthorizationM
             LightningPreAuthorize preAuthorize = this.findPreAuthorizeAnnotation(specificMethod);
             StringBuilder builder = new StringBuilder();
             LightningPrePostMethodSecurityMetadataSource.handleRolesAndAuthorities(
-                    preAuthorize.roles(), preAuthorize.authorities(),builder
+                    preAuthorize.roles(), preAuthorize.authorities(),
+                    preAuthorize.authorizeMode(),
+                    methodSecurityMetadataSource.resolveMethodSecurityIdentifier(method, targetClass),
+                    builder
             );
             String expressionString = builder.toString();
 
@@ -59,7 +65,7 @@ public class LightningPreAuthorizeAuthorizationManager implements AuthorizationM
 
         private LightningPreAuthorize findPreAuthorizeAnnotation(Method method) {
             LightningPreAuthorize preAuthorize = AuthorizationAnnotationUtils.findUniqueAnnotation(method, LightningPreAuthorize.class);
-            return preAuthorize != null ? preAuthorize : (LightningPreAuthorize)AuthorizationAnnotationUtils.findUniqueAnnotation(method.getDeclaringClass(), PreAuthorize.class);
+            return preAuthorize != null ? preAuthorize : (LightningPreAuthorize) AuthorizationAnnotationUtils.findUniqueAnnotation(method.getDeclaringClass(), PreAuthorize.class);
         }
     }
 

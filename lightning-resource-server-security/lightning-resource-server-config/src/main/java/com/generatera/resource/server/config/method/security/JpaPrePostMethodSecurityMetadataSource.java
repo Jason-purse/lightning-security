@@ -55,9 +55,12 @@ public class JpaPrePostMethodSecurityMetadataSource extends ForDataBasedPrePostM
 
         List<String> list = entities.stream().map(ResourceMethodSecurityEntity::getMethodSecurityIdentifier).toList();
 
+        // 仓库中已经存在的 ..
         List<ResourceMethodSecurityEntity> eles = resourceMethodSecurityRepository.findAllByMethodSecurityIdentifierIn(list);
         
         if(eles != null) {
+
+            // 根据执行阶段进行区分 ...
             Map<String, Map<String, ResourceMethodSecurityEntity>> mapMap = eles.stream().collect(Collectors.groupingBy(ResourceMethodSecurityEntity::getInvokePhase,
                     Collectors.toMap(ResourceMethodSecurityEntity::getMethodSecurityIdentifier, Function.identity())));
 
@@ -80,7 +83,7 @@ public class JpaPrePostMethodSecurityMetadataSource extends ForDataBasedPrePostM
 
                 // 需要更新的 ..
                 if (ResourceMethodSecurityEntity.updateByOptional(resourceMethodSecurityEntity,ele)) {
-                    needInserts.add(ele);
+                    needInserts.add(resourceMethodSecurityEntity);
                 }
             }
             // update and save ..
