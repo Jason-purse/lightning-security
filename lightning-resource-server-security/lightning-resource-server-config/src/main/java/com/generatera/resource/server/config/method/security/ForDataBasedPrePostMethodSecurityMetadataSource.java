@@ -395,6 +395,8 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             String behavior = null;
             String authorizeMode = null;
 
+            boolean existsPre = false;
+            boolean existsPost = false;
             // 本质上只有两个 ..
             // 可以优化代码 ..
             for (ConfigAttribute configAttribute : value) {
@@ -420,6 +422,8 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                         authorizeMode = info.authorizeMode;
                     }
 
+                    existsPost = true;
+
                 } else {
                     AnnotationInfoWithPreConfigAttribute info = (AnnotationInfoWithPreConfigAttribute) configAttribute;
                     if (!CollectionUtils.isEmpty(info.roles)) {
@@ -441,11 +445,13 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                     if (authorizeMode == null) {
                         authorizeMode = info.authorizeMode;
                     }
+
+                    existsPre = true;
                 }
 
             }
-
-            if (!preAuthorities.isEmpty() || !preRoles.isEmpty()) {
+            // 只要注解存在,则标识为一个资源
+            if (existsPre) {
                 values.add(
                         ResourceMethodSecurityEntity.builder()
                                 .invokePhase(MethodSecurityInvokePhase.BEFORE.name())
@@ -463,7 +469,9 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                 );
             }
 
-            if (!postAuthorities.isEmpty() || !postRoles.isEmpty()) {
+            //  if (!postAuthorities.isEmpty() || !postRoles.isEmpty()) {
+            // 只要注解存在,则标识为一个资源
+            if (existsPost) {
                 values.add(
                         ResourceMethodSecurityEntity.builder()
                                 .invokePhase(MethodSecurityInvokePhase.AFTER.name())

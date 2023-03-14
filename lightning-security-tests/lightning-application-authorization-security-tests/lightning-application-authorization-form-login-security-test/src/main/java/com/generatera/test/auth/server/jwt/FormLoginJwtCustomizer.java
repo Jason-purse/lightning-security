@@ -35,7 +35,7 @@ public class FormLoginJwtCustomizer  implements LightningJwtCustomizer {
         scope.add("789");
         scope.add("124");
         scope.add("127");
-        scope.add("");
+        scope.add("com.generatera.form.login.resource.test.controller.OrderController-currentUser-");
 
 
         claims.claim("authorities",scope);

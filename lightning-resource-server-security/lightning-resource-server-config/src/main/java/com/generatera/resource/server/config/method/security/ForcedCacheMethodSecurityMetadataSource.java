@@ -22,6 +22,8 @@ import java.util.stream.Stream;
  * @Description 强制性的缓存方法 元数据 source ..
  * <p>
  * 使用延迟队列进行 强制更新 ...
+ *
+ * 也就是支持更新 ..
  */
 public class ForcedCacheMethodSecurityMetadataSource extends AbstractMethodSecurityMetadataSource {
 
