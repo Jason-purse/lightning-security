@@ -166,7 +166,11 @@ link:../../lightning-security-specifications/lightning-security-authorization-sp
 +
 详情查看 LightningOAuth2OpaqueTokenIntrospector 了解更多 ..
 
-== 流程 === 授权流程 - 中央授权服务器流程
+== 流程
+
+=== 授权流程
+
+- 中央授权服务器流程
 +
 本质上,中央授权服务器它基于spring对oauth2规范的代码实现参考而直接扩展使用的,由于前面我们已经介绍了授权服务器共有的几大基础设施,例如token 生成器,token端点 / 审查 / 撤销端点,以及 jwk url / issuer url 以及 授权服务器提供者配置(暴露一些自己的信息,例如jwk 公钥信息 - 详情查看 link:../../lightning-authorization-server-security/lightning-authorization-server-configuration/src/main/java/com/generatera/authorization/server/common/configuration/provider/metadata/AuthorizationServerMetadataEndpointFilter.java[]),前者同包下也包含了Jwk端点的源文件 ... 这些本质上都是基于spring对oauth2 实现的参考复制,是因为资源服务器可以基于这些端点进行自身的进一步配置(例如生成jwt 解码器,校验) ...
 + 那么由于直接基于spring对oauth2 编写的扩展,所以流程等同于spring oauth2,点击查看:
@@ -178,7 +182,9 @@ link:images/lightning-application-authorization-server-process.pdf[应用授权�
 +
 同理,对于token信息的存储不再使用LightningAuthorizationService,而是过渡到LightningAuthenticationTokenService,避免过渡依赖 spring oauth2 .., 它们这些存储在于token生成完成之后的被对应的AuthenticationProvider 调用此服务进行存储.. 详情查看spring oauth2相关的代码或者 lightning security对应应用授权服务器的对应生成token的AuthenticationProvider 了解更多 ...
 
-== 配置参考 此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施,而不直接作为 授权服务器使用,所以提供了许多开放扩展的接口用于扩展并重构骨架代码 ... 其中包含了:
+== 配置参考
+
+此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施,而不直接作为 授权服务器使用,所以提供了许多开放扩展的接口用于扩展并重构骨架代码 ... 其中包含了:
 
 - 应用授权服务器
 * token 生成器
@@ -223,6 +229,7 @@ include::{docdir}/../../lightning-resource-server-security/lightning-resource-se
 
 
 == 用户手册
+
 - UserPrincipalPropertyHandlerMethodArgumentEnhancer
 +
 主要通过 在请求参数上设置UserPrincipalInject注解(如果请求参数是一个复杂对象),否则可以直接使用在简单属性上UserPrincipalProperty(简单属性,例如 list集合 / 基础以及基础包装类型), 否则复杂类型需要在dto中的字段上 实现UserPrincipalProperty的注解(其中包含了一些属性可以指定) 来将LightningUserPrincipal上的基于java bean方式的属性能够被注入到此dto对象上 ...,例如:

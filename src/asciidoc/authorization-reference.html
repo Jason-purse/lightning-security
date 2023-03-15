@@ -443,6 +443,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_overview">overview</a></li>
+<li><a href="#_流程_授权流程_中央授权服务器流程">流程 === 授权流程 - 中央授权服务器流程</a></li>
+<li><a href="#_配置参考_此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施而不直接作为_授权服务器使用所以提供了许多开放扩展的接口用于扩展并重构骨架代码_其中包含了">配置参考 此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施,而不直接作为 授权服务器使用,所以提供了许多开放扩展的接口用于扩展并重构骨架代码 &#8230;&#8203; 其中包含了:</a></li>
+<li><a href="#_用户手册">用户手册</a></li>
 </ul>
 </div>
 </div>
@@ -485,8 +488,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <p>用户属性注入的参数增强器 RequestHeaderHandlerMethodArgumentResolver,将LightningUserPrincipal的属性注入到处理器方法上的参数上(现根据spring默认的参数解析器处理之后,在进行默认增强)</p>
 </li>
 <li>
-<p>请求头解析器 RequestHeaderHandlerMethodArgumentEnhancer,和spring 提供的不同,此解析器是进行处理器方法上的
-请求参数的dto 构造之后的,可选请求头属性注入 &#8230;&#8203;</p>
+<p>请求头解析器 RequestHeaderHandlerMethodArgumentEnhancer,和spring 提供的不同,此解析器是进行处理器方法上的 请求参数的dto 构造之后的,可选请求头属性注入 &#8230;&#8203;</p>
 </li>
 </ul>
 </div>
@@ -566,10 +568,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <pre class="CodeRay highlight"><code data-lang="java"><span style="color:#088;font-weight:bold">public</span>  <span style="color:#339;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">ProviderSettings</span> <span style="color:#088;font-weight:bold">extends</span> AbstractSettings <span style="color:#088;font-weight:bold">implements</span> AuthServerProvider {</code></pre>
 </div>
 </div>
+</li>
+</ul>
+</div>
 <div class="paragraph">
 <p>详情查看上述给定代码示例的对应java文件</p>
 </div>
-</li>
+<div class="ulist">
+<ul>
 <li>
 <p>token 配置属性列表</p>
 <div class="paragraph">
@@ -581,11 +587,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <pre class="CodeRay highlight"><code data-lang="java"><span style="color:#088;font-weight:bold">public</span> <span style="color:#339;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">TokenSettingsProperties</span> <span style="color:#088;font-weight:bold">extends</span> AbstractSettings {</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>详情查看对应的java文件了解详情 &#8230;&#8203;</p>
-</div>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>详情查看对应的java文件了解详情 &#8230;&#8203;</p>
 </div>
 </div>
 </div>
@@ -744,8 +750,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </li>
 <li>
-<p>资源服务器
-目前资源服务器存在两种,但是由于我们的授权服务器是基于spring security对oauth2 的实现参考,所以其实 `lightning-oauth2-resource-server 本质上和 lightning-application-resource-server 没有什么不一样,仅仅是套了一个壳子,如果后续增加了不同的token生成策略,可能oauth2-resource-server和 application-resource-server就会分道扬镳 .. 所以用application-resource-server没有什么好处 &#8230;&#8203; 可以直接使用lightning-oauth2-resource-server,并且其实本没有完全封装spring-oauth2-resource-server的东西,也就是配置属性,例如配置资源服务器所需构造jwt 解码器的 jwk source,我们可能需要配置 issuer url(也就是授权服务器的地址), 或者通过Jwk url 进行远程jwk source 拉取并产生jwt 解码器,详情查看org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties</p>
+<p>资源服务器 目前资源服务器存在两种,但是由于我们的授权服务器是基于spring security对oauth2 的实现参考,所以其实 `lightning-oauth2-resource-server 本质上和 lightning-application-resource-server 没有什么不一样,仅仅是套了一个壳子,如果后续增加了不同的token生成策略,可能oauth2-resource-server和 application-resource-server就会分道扬镳 .. 所以用application-resource-server没有什么好处 &#8230;&#8203; 可以直接使用lightning-oauth2-resource-server,并且其实本没有完全封装spring-oauth2-resource-server的东西,也就是配置属性,例如配置资源服务器所需构造jwt 解码器的 jwk source,我们可能需要配置 issuer url(也就是授权服务器的地址), 或者通过Jwk url 进行远程jwk source 拉取并产生jwt 解码器,详情查看org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties</p>
 <div class="paragraph">
 <p>此外,资源服务器负责将jwt 转换为用户实体,对此lightning-security提供了
 <a href="../../lightning-security-specifications/lightning-security-authorization-specification/src/main/java/com/generatera/security/authorization/server/specification/components/token/JwtClaimsToUserPrincipalMapper.java">jwt claims to userPrincipal</a></p>
@@ -761,10 +766,243 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_流程_授权流程_中央授权服务器流程">流程 === 授权流程 - 中央授权服务器流程</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>+
+本质上,中央授权服务器它基于spring对oauth2规范的代码实现参考而直接扩展使用的,由于前面我们已经介绍了授权服务器共有的几大基础设施,例如token 生成器,token端点 / 审查 / 撤销端点,以及 jwk url / issuer url 以及 授权服务器提供者配置(暴露一些自己的信息,例如jwk 公钥信息 - 详情查看 <a href="../../lightning-authorization-server-security/lightning-authorization-server-configuration/src/main/java/com/generatera/authorization/server/common/configuration/provider/metadata/AuthorizationServerMetadataEndpointFilter.java" class="bare">../../lightning-authorization-server-security/lightning-authorization-server-configuration/src/main/java/com/generatera/authorization/server/common/configuration/provider/metadata/AuthorizationServerMetadataEndpointFilter.java</a>),前者同包下也包含了Jwk端点的源文件 &#8230;&#8203; 这些本质上都是基于spring对oauth2 实现的参考复制,是因为资源服务器可以基于这些端点进行自身的进一步配置(例如生成jwt 解码器,校验) &#8230;&#8203;
++ 那么由于直接基于spring对oauth2 编写的扩展,所以流程等同于spring oauth2,点击查看:
+<a href="images/spring-oauth2-authorization-server.pdf">spring oauth2 server的工作流程</a></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>应用授权服务器流程 同中央授权服务器基础设施,除了相同的配置之外,流程些许不同 .. 流程如下所示</p>
+<div class="paragraph">
+<p><a href="images/lightning-application-authorization-server-process.pdf">应用授权服务器流程</a></p>
+</div>
+<div class="paragraph">
+<p>同理,对于token信息的存储不再使用LightningAuthorizationService,而是过渡到LightningAuthenticationTokenService,避免过渡依赖 spring oauth2 .., 它们这些存储在于token生成完成之后的被对应的AuthenticationProvider 调用此服务进行存储.. 详情查看spring oauth2相关的代码或者 lightning security对应应用授权服务器的对应生成token的AuthenticationProvider 了解更多 &#8230;&#8203;</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_配置参考_此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施而不直接作为_授权服务器使用所以提供了许多开放扩展的接口用于扩展并重构骨架代码_其中包含了">配置参考 此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施,而不直接作为 授权服务器使用,所以提供了许多开放扩展的接口用于扩展并重构骨架代码 &#8230;&#8203; 其中包含了:</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>应用授权服务器</p>
+<div class="ulist">
+<ul>
+<li>
+<p>token 生成器</p>
+<div class="ulist">
+<ul>
+<li>
+<p>访问token 生成器</p>
+</li>
+<li>
+<p>jwt 生成器</p>
+<div class="ulist">
+<ul>
+<li>
+<p>LightningJwtGenerator 自定义实现</p>
+</li>
+<li>
+<p>LightningJwtEncoder 进行 jwt 生成实现自定义(例如替换 nimbus 依赖)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>刷新token 生成器</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>不透明token</p>
+<div class="ulist">
+<ul>
+<li>
+<p>JwtClaimsToUserPrincipalMapper 进行 jwt claims 信息到用户实体的一个映射 ..</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+对于授权服务器本身来说,并不需要JwtClaimsToUserPrincipalMapper,因为走完授权流程, 那么自然会形成一个 LightningUserPrincipal,所以仅仅对于资源服务器,从token中转换为需要存储在SecurityContextHolder中的Authentication中的LightningUserPrincipal 才需要 &#8230;&#8203;
+</td>
+</tr>
+</table>
+</div>
+</li>
+<li>
+<p>LightningOAuth2OpaqueTokenIntrospector 进行不透明的token省查自定义逻辑处理 ..</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>整个httpSecurity 完全自定义</p>
+</li>
+<li>
+<p>ApplicationAuthServerConfigurer 自定义(AuthTokenFilter)</p>
+</li>
+<li>
+<p>LightningAuthenticationEntryPoint 自定义(用于响应授权信息,或者错误提示信息)</p>
+</li>
+<li>
+<p>LightningAuthenticationTokenService 进行 token以及用户实体等信息的持久化</p>
+</li>
+<li>
+<p>LightningAppAuthServerDaoLoginAuthenticationProvider 骨架认证提供器(可以重写认证逻辑 或者完全自定义)</p>
+</li>
+<li>
+<p>LightningDaoAuthenticationProvider 作为最终交换用户实体信息的提供器</p>
+</li>
+<li>
+<p>AppAuthServerForTokenAuthenticationProvider 进行token生成的工作</p>
+</li>
+<li>
+<p>LightningUserDetailService 负责应用级别的用户信息的抓取</p>
+</li>
+<li>
+<p>LightningOAuth2UserServiceInvoker 进行 oauth2 客户端进行使用访问token 交换中央授权服务器信息的工作组件</p>
+</li>
+<li>
+<p>LightningUserDetailsProvider 应用级用户信息获取提供器,内部例如表单实现委派到 LightningUserDetailService &#8230;&#8203;</p>
+</li>
+<li>
+<p>token 定制</p>
+<div class="ulist">
+<ul>
+<li>
+<p>LightningJwtCustomizer 生成的应用token的claims 进行定制 ..</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>包含了一些各种Configurations, 以及对应的xxxproperties,这些都是可配置的 &#8230;&#8203; 只要简单引入对应的依赖并配置对应的属性即可使用 &#8230;&#8203; 也就是并没有定义一种强制要求的组件使用规范 .. 或者你还可以自己定制需要的组件行为 .. 例如指定使用的token 加密密钥类型和值,它们最终都会生成一个 JwkSource &#8230;&#8203;</p>
+</li>
+<li>
+<p>提供了 LightningUserContext,基于此框架构建的应用授权服务器可以复写一个更好用的LightningUserContext &#8230;&#8203;</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>应用资源服务器</p>
+</li>
+<li>
+<p>能够根据对应服务配置中的xxxxProperties 来启动或者切换某些组件的使用,同样也可以指定spring oauth2 resource server相关的一些配置信息 &#8230;&#8203; 以及bearer token 的校验形式(是否需要在header中加入 bearer前缀) &#8230;&#8203; 以及 LightningResourceServerAuthenticationEntryPoint 进行无效认证错误提示 &#8230;&#8203;</p>
+</li>
+<li>
+<p>权限资源</p>
+<div class="paragraph">
+<p>提供了LightningPreAuthorize / LightningPostAuthorize 注解来进行资源标识 .. 并且通过 AllowPartialCacheMethodSecurityMetadataSource 支持部分永久缓存,部分缓存刷新的权限资源(并且提供了两种资源定义形式),一种是角色主动绑定资源点,另一种是资源点绑定角色(第二种的形式 无法具体描述清楚,比较混乱,但是作为保留 &#8230;&#8203;),对于一次性token 令牌颁发,如果需要像自省token那样控制token最终有效性,可以通过JwtClaimsToUserPrincipalMapper 实现每一次token 解析并查询用户状态来实现实时的处理 &#8230;&#8203; 否则一次性token具备时间范围内的赋予的信息能力 &#8230;&#8203;</p>
+</div>
+<div class="paragraph">
+<p>其次 LightningPrePostMethodSecurityMetadataSource 支持权限资源的持久化保存 &#8230;&#8203;
+并且可以通过其他手段,例如 http 端点(例如已知的 Actuator) 并实现安全认证 例如和运营平台联合实现 - 权限资源的crud 维护或者动态处理 &#8230;&#8203;并且通过接收MetadataSourceRefreshEvent 事件来在支持资源刷新的前提下,更新jvm 中缓存的权限资源信息 &#8230;&#8203; 并且可以根据对应的属性设置进行关闭(例如)</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>private boolean enableMethodPrePostAuthorityScan = true;</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_用户手册">用户手册</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>UserPrincipalPropertyHandlerMethodArgumentEnhancer</p>
+<div class="paragraph">
+<p>主要通过 在请求参数上设置UserPrincipalInject注解(如果请求参数是一个复杂对象),否则可以直接使用在简单属性上UserPrincipalProperty(简单属性,例如 list集合 / 基础以及基础包装类型), 否则复杂类型需要在dto中的字段上 实现UserPrincipalProperty的注解(其中包含了一些属性可以指定) 来将LightningUserPrincipal上的基于java bean方式的属性能够被注入到此dto对象上 &#8230;&#8203;,例如:</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java">    <span style="color:#007">@Data</span>
+    <span style="color:#007">@UserPrincipalInject</span>
+    <span style="color:#088;font-weight:bold">public</span> <span style="color:#339;font-weight:bold">class</span> <span style="color:#B06;font-weight:bold">MyData</span> {
+        <span style="color:#007">@UserPrincipalProperty</span>
+        <span style="color:#088;font-weight:bold">private</span> <span style="color:#0a8;font-weight:bold">String</span> username;
+        <span style="color:#088;font-weight:bold">private</span> <span style="color:#0a8;font-weight:bold">String</span> password;
+        <span style="color:#007">@UserPrincipalProperty</span>
+        <span style="color:#088;font-weight:bold">private</span> <span style="color:#0a8;font-weight:bold">String</span> value;
+        <span style="color:#007">@UserPrincipalInject</span>
+        <span style="color:#088;font-weight:bold">private</span> MyData2 myData2 = <span style="color:#080;font-weight:bold">new</span> MyData2();
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>或者</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span style="color:#777">// ----</span>
+<span style="color:#007">@GetMapping</span>
+<span style="color:#088;font-weight:bold">public</span> <span style="color:#339;font-weight:bold">void</span> registerTest(<span style="color:#007">@UserPrincipalInject</span> MyData myData)
+{}
+<span style="color:#777">// ----</span></code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>RequestHeaderHandlerMethodArgumentEnhancer</p>
+<div class="paragraph">
+<p>同上,同样对相同的简单对象直接使用RequestHeaderArgument注解,或者在复杂对象上使用RequestHeaderArgument注解以及 RequestHeaderInject注解 ..</p>
+</div>
+</li>
+<li>
+<p>LightningSecurityContext</p>
+<div class="paragraph">
+<p>能够通过此接口获取LightningUserPrincipal 实例</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span style="color:#777">// ---</span>
+ <span style="color:#007">@GetMapping</span>(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">current/user</span><span style="color:#710">&quot;</span></span>)
+    <span style="color:#088;font-weight:bold">public</span> <span style="color:#0a8;font-weight:bold">Object</span> currentUser() {
+        <span style="color:#080;font-weight:bold">return</span> LightningUserContext.get()
+                .getUserPrincipal()
+                .map(<span style="color:#0a8;font-weight:bold">Object</span>::toString)
+                .orElse(<span style="background-color:hsla(0,100%,50%,0.05)"><span style="color:#710">&quot;</span><span style="color:#D20">no current user</span><span style="color:#710">&quot;</span></span>);
+    }
+<span style="color:#777">// ---</span></code></pre>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-03-15 11:39:31 +0800
+Last updated 2023-03-15 17:41:13 +0800
 </div>
 </div>
 </body>
