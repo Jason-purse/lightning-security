@@ -348,6 +348,11 @@ public class ResourceServerProperties {
          */
         private String methodSecurityAccessDeniedErrorMessage;
 
+        /**
+         * 默认在启动的时候 进行 pre / psot 扫描 ..
+         */
+        private boolean enableMethodPrePostAuthorityScan = true;
+
         @Data
         public static class CacheConfig {
 

@@ -2,7 +2,7 @@ package com.generatera.security.authorization.server.specification.test;
 
 import com.generatera.security.authorization.server.specification.LightningUserContext;
 import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderArgument;
-import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderHandlerMethodArgumentResolver;
+import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderHandlerMethodArgumentEnhancer;
 import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderInject;
 import com.jianyue.lightning.framework.web.method.argument.context.MethodArgumentContext;
 import lombok.Data;
@@ -39,8 +39,8 @@ public class RequestHeaderArgumentInjectTests {
     public static class Config {
 
         @Bean
-        public RequestHeaderHandlerMethodArgumentResolver requestHeaderHandlerMethodArgumentResolver() {
-            return new RequestHeaderHandlerMethodArgumentResolver();
+        public RequestHeaderHandlerMethodArgumentEnhancer requestHeaderHandlerMethodArgumentResolver() {
+            return new RequestHeaderHandlerMethodArgumentEnhancer();
         }
 
     }
@@ -50,7 +50,7 @@ public class RequestHeaderArgumentInjectTests {
     }
 
     @Autowired
-    public RequestHeaderHandlerMethodArgumentResolver requestHeaderHandlerMethodArgumentResolver;
+    public RequestHeaderHandlerMethodArgumentEnhancer requestHeaderHandlerMethodArgumentResolver;
 
     public void test(@RequestHeaderArgument("clientId") String value) {
 

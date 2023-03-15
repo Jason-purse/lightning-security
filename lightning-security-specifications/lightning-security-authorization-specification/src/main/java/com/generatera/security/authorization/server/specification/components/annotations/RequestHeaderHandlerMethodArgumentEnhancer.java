@@ -27,7 +27,7 @@ import java.util.Collection;
  * @time 16:03
  * @Description 支持对请求头进行解析并注入到  pojo 对象中,详情查看 {@link RequestHeaderArgument} and {@link RequestHeaderInject}
  */
-public class RequestHeaderHandlerMethodArgumentResolver implements HandlerMethodArgumentEnhancer {
+public class RequestHeaderHandlerMethodArgumentEnhancer implements HandlerMethodArgumentEnhancer {
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {

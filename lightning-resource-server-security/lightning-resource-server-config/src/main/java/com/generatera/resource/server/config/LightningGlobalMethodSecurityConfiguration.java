@@ -3,6 +3,7 @@ package com.generatera.resource.server.config;
 import com.generatera.resource.server.common.EnableLightningMethodSecurity;
 import com.generatera.resource.server.config.method.security.*;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import java.util.List;
 @Import(MethodSecurityMetadataRepositoryConfiguration.class)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableLightningMethodSecurity
+@Slf4j
 class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration implements ApplicationListener<ApplicationEvent>, DisposableBean {
 
 
@@ -43,6 +45,9 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
 
     private List<LightningExtMethodSecurityMetadataSource> sources;
 
+    /**
+     * application context
+     */
     private final ApplicationContext applicationContext;
 
     //private final LightningAuthorizationManagerBeforeMethodInterceptor preAuthorizeAuthorizationMethodInterceptor;
@@ -100,13 +105,18 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
      */
     @Override
     public void onApplicationEvent(@NotNull ApplicationEvent event) {
-        // 这个时候, 获取 methodSecurityMetadataSource中的 已经被处理过的数据信息
-        // 触发内部的逻辑 ... 也就是缓存丢弃 ..  开始真正的权限信息抓取 ..
-        // 例如从 数据库中获取 ...
-        if (methodSecurityMetadataSource == null) {
-            earlyApplicationEvents.add(event);
-        } else {
-            methodSecurityMetadataSource.onApplicationEvent(event);
+        if(properties.getAuthorityConfig().isEnableMethodPrePostAuthorityScan()) {
+            // 这个时候, 获取 methodSecurityMetadataSource中的 已经被处理过的数据信息
+            // 触发内部的逻辑 ... 也就是缓存丢弃 ..  开始真正的权限信息抓取 ..
+            // 例如从 数据库中获取 ...
+            if (methodSecurityMetadataSource == null) {
+                earlyApplicationEvents.add(event);
+            } else {
+                methodSecurityMetadataSource.onApplicationEvent(event);
+            }
+        }
+        else {
+
         }
     }
 

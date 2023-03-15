@@ -168,7 +168,8 @@ public class LightningUserPrincipalTests {
             }
         }
 
-        public void registerTest(MyData myData) {
+        @GetMapping
+        public void registerTest(@UserPrincipalInject MyData myData) {
 
         }
     }

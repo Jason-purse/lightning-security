@@ -1,6 +1,6 @@
 package com.generatera.security.authorization.server.specification;
 
-import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderHandlerMethodArgumentResolver;
+import com.generatera.security.authorization.server.specification.components.annotations.RequestHeaderHandlerMethodArgumentEnhancer;
 import com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalPropertyHandlerMethodArgumentEnhancer;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ import java.util.List;
  * @Description 包含了一些引导性的东西 ...
  * 例如 {@link UserPrincipalPropertyHandlerMethodArgumentEnhancer} 进行{@link  com.generatera.security.authorization.server.specification.components.annotations.UserPrincipalProperty} 的检测
  * 并实现 token中的数据进行自动注入 ..
- * 例如{@link RequestHeaderHandlerMethodArgumentResolver} 进行 自动注入 ...
+ * 例如{@link RequestHeaderHandlerMethodArgumentEnhancer} 进行 自动注入 ...
  *
  * 以及{@link  BootstrapContext} 包含了一些方便的类 ..能够解决注入bean的时候,需要一些特定的bean 来实现功能的尴尬问题 ..
  */
@@ -38,8 +38,8 @@ public class LightningSecurityAuthorizationSpecificationAutoConfiguration implem
     }
 
     @Bean
-    RequestHeaderHandlerMethodArgumentResolver requestHeaderHandlerMethodArgumentResolver() {
-        return new RequestHeaderHandlerMethodArgumentResolver();
+    RequestHeaderHandlerMethodArgumentEnhancer requestHeaderHandlerMethodArgumentResolver() {
+        return new RequestHeaderHandlerMethodArgumentEnhancer();
     }
 
     @Autowired(required = false)

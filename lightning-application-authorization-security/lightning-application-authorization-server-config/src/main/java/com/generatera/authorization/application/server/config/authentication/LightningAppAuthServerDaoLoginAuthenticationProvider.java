@@ -32,6 +32,8 @@ public class LightningAppAuthServerDaoLoginAuthenticationProvider implements Aut
     private final boolean isSeparation;
     private final LightningDaoAuthenticationProvider authenticationManager;
 
+    private AppAuthServerForTokenAuthenticationProvider authAccessAuthenticationProvider;
+
     public LightningAppAuthServerDaoLoginAuthenticationProvider(
             AppAuthServerForTokenAuthenticationProvider authenticationProvider,
             LightningDaoAuthenticationProvider authenticationManager,
@@ -51,7 +53,7 @@ public class LightningAppAuthServerDaoLoginAuthenticationProvider implements Aut
         this(authenticationProvider, authenticationManager, false);
     }
 
-    private AppAuthServerForTokenAuthenticationProvider authAccessAuthenticationProvider;
+
 
     public void setAuthAccessAuthenticationProvider(AppAuthServerForTokenAuthenticationProvider authAccessAuthenticationProvider) {
         Assert.notNull(authAccessAuthenticationProvider, "authentication provider must not be null !!!");

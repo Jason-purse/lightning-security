@@ -19,7 +19,7 @@ import java.io.IOException;
  * @date 2023/2/1
  * @time 16:58
  * @Description 实现 token 颁发 ...
- *
+ * <p>
  * 客户端的配置元数据 必须提供  tokenValueFormat ....
  */
 public class DefaultOAuth2ClientAuthenticationEntryPoint extends DefaultLightningAbstractAuthenticationEntryPoint implements LightningOAuth2AuthenticationEntryPoint {
@@ -27,20 +27,24 @@ public class DefaultOAuth2ClientAuthenticationEntryPoint extends DefaultLightnin
     private final AppAuthServerForTokenAuthenticationProvider authenticationProvider;
 
     public DefaultOAuth2ClientAuthenticationEntryPoint(AppAuthServerForTokenAuthenticationProvider authenticationProvider) {
-        Assert.notNull(authenticationProvider,"authentication provider must not be null !!!");
+        Assert.notNull(authenticationProvider, "authentication provider must not be null !!!");
         this.authenticationProvider = authenticationProvider;
     }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         // 构建认证 token
-        LightningUserPrincipal userPrincipal = (LightningUserPrincipal) authentication.getPrincipal();
+        if (!(authentication instanceof AuthAccessTokenAuthenticationToken)) {
+            LightningUserPrincipal userPrincipal = (LightningUserPrincipal) authentication.getPrincipal();
 
-        AuthAccessTokenAuthenticationToken accessTokenAuthenticationToken = new AuthAccessTokenAuthenticationToken(
-                new UsernamePasswordAuthenticationToken(userPrincipal, "", userPrincipal.getAuthorities()),
-                null);
-        AuthAccessTokenAuthenticationToken tokenAuthenticationToken = authenticationProvider.authenticate(accessTokenAuthenticationToken);
+            AuthAccessTokenAuthenticationToken accessTokenAuthenticationToken = new AuthAccessTokenAuthenticationToken(
+                    new UsernamePasswordAuthenticationToken(userPrincipal, "", userPrincipal.getAuthorities()),
+                    null);
+            AuthAccessTokenAuthenticationToken tokenAuthenticationToken = authenticationProvider.authenticate(accessTokenAuthenticationToken);
 
-        super.onAuthenticationSuccess(request, response, tokenAuthenticationToken);
+            super.onAuthenticationSuccess(request, response, tokenAuthenticationToken);
+        }
+
+        super.onAuthenticationSuccess(request, response, authentication);
     }
 }

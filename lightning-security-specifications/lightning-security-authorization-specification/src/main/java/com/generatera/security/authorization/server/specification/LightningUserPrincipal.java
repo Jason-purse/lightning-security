@@ -3,14 +3,12 @@ package com.generatera.security.authorization.server.specification;
 import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import com.jianyue.lightning.boot.starter.util.lambda.PropertyNamer;
 import org.springframework.security.core.CredentialsContainer;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.ReflectionUtils;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -37,7 +35,6 @@ import static com.generatera.security.authorization.server.specification.Constan
  * @see JwtClaimsToUserPrincipalMapper
  */
 public interface LightningUserPrincipal extends UserDetails, CredentialsContainer, Serializable {
-
 
     default String getName() {
         return getUsername();
