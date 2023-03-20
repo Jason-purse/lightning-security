@@ -12,10 +12,12 @@ import java.lang.annotation.*;
  * 如果无法转换,则是空 !!!!
  *
  * 只能对字段进行注入 !!!
+ *
+ * 能够基于普通参数进行属性注入 ...
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD,ElementType.METHOD})
+@Target({ElementType.FIELD,ElementType.METHOD,ElementType.PARAMETER})
 @Inherited
 public @interface UserPrincipalProperty {
     /**

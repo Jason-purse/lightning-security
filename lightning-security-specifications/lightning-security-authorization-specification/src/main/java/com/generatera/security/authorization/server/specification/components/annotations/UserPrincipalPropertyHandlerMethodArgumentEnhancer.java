@@ -45,7 +45,7 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
         this.conversionService = conversionService;
     }
 
-    private void getPropertyValues(MutablePropertyValues propertyValues, Object target, ConversionService conversionService,@Nullable String prefix) {
+    private void getPropertyValues(MutablePropertyValues propertyValues, Object target, ConversionService conversionService, @Nullable String prefix) {
         LightningUserContext.get()
                 .getUserPrincipal().ifPresent(ele -> {
                     ReflectionUtils.doWithFields(target.getClass(),
@@ -53,28 +53,27 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
                                 @Override
                                 public void doWith(@NotNull Field field) throws IllegalArgumentException, IllegalAccessException {
                                     ReflectionUtils.makeAccessible(field);
-                                    String name = ElvisUtil.stringElvis(ElvisUtil.isNotEmptyFunction(prefix,ele-> ele.concat(PropertyAccessor.NESTED_PROPERTY_SEPARATOR)),"").concat(field.getName());
+                                    String name = ElvisUtil.stringElvis(ElvisUtil.isNotEmptyFunction(prefix, ele -> ele.concat(PropertyAccessor.NESTED_PROPERTY_SEPARATOR)), "").concat(field.getName());
                                     UserPrincipalProperty annotation = AnnotationUtils.findAnnotation(field, UserPrincipalProperty.class);
-                                    if(annotation != null) {
+                                    if (annotation != null) {
                                         OptionalFlux
                                                 .of(conversionService)
                                                 .consume(val -> {
                                                     Object property = ele.getProperty(ElvisUtil.stringElvis(annotation.value(), field.getName()), Object.class);
-                                                    addPropertyValue(field, property, propertyValues, conversionService,name);
+                                                    addPropertyValue(field, property, propertyValues, conversionService, name);
                                                 })
                                                 // 否则无参消费
                                                 .orElse(
                                                         () -> {
                                                             Object property = ele.getProperty(ElvisUtil.stringElvis(annotation.value(), field.getName()), field.getType());
-                                                            addPropertyValue(field, property, propertyValues, conversionService,name);
+                                                            addPropertyValue(field, property, propertyValues, conversionService, name);
                                                         }
                                                 );
-                                    }
-                                    else {
-                                        String nestedPropertyName =  ElvisUtil.stringElvis(ElvisUtil.isNotEmptyFunction(prefix,ele -> ele.concat(PropertyAccessor.NESTED_PROPERTY_SEPARATOR)),"").concat(name);
+                                    } else {
+                                        String nestedPropertyName = ElvisUtil.stringElvis(ElvisUtil.isNotEmptyFunction(prefix, ele -> ele.concat(PropertyAccessor.NESTED_PROPERTY_SEPARATOR)), "").concat(name);
                                         Object nestedProperty = field.get(target);
                                         // 复杂对象, 递归操作 !!!
-                                        getPropertyValues(propertyValues,nestedProperty,conversionService,nestedPropertyName);
+                                        getPropertyValues(propertyValues, nestedProperty, conversionService, nestedPropertyName);
                                     }
 
                                 }
@@ -84,11 +83,10 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
                                 public boolean matches(@NotNull Field field) {
                                     if (isCommonTypes(field.getType())) {
                                         return AnnotationUtils.findAnnotation(field, UserPrincipalProperty.class) != null;
-                                    }
-                                    else {
+                                    } else {
                                         return (AnnotationUtils.findAnnotation(field, UserPrincipalInject.class) != null ||
                                                 AnnotationUtils.findAnnotation(field.getType(), UserPrincipalInject.class) != null)
-                                                && isNotNull(field,target);
+                                                && isNotNull(field, target);
                                     }
                                 }
                             });
@@ -100,7 +98,7 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
         return ClassUtils.isPrimitiveOrWrapper(type) || type.isAssignableFrom(String.class) || Collection.class.isAssignableFrom(type);
     }
 
-    private boolean isNotNull(Field field,Object target) {
+    private boolean isNotNull(Field field, Object target) {
         ReflectionUtils.makeAccessible(field);
         try {
             return field.get(target) != null;
@@ -109,7 +107,7 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
         }
     }
 
-    private void addPropertyValue(Field field, Object property, MutablePropertyValues propertyValues, ConversionService conversionService,String fieldName) {
+    private void addPropertyValue(Field field, Object property, MutablePropertyValues propertyValues, ConversionService conversionService, String fieldName) {
         if (property != null) {
             if (!field.getType().isInstance(property)) {
                 Object convert = conversionService != null ? conversionService.convert(property, field.getType()) : null;
@@ -125,20 +123,54 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
 
     @Override
     public void enhanceArgument(MethodArgumentContext methodArgumentContext) {
-        if (methodArgumentContext.getTarget() != null) {
-            // 才需要解析 !!!
-            MutablePropertyValues propertyValues = new MutablePropertyValues();
-            getPropertyValues(propertyValues, methodArgumentContext.getTarget(), conversionService,"");
 
-            BeanWrapperImpl beanWrapper = new BeanWrapperImpl(methodArgumentContext.getTarget());
-            beanWrapper.setPropertyValues(propertyValues);
+        // 基础类型 ..
+        if(isCommonTypes(methodArgumentContext.getMethodParameter().getParameterType())) {
+            UserPrincipalProperty parameterAnnotation = methodArgumentContext.getMethodParameter().getParameterAnnotation(UserPrincipalProperty.class);
+            assert parameterAnnotation != null;
+            String name = parameterAnnotation.name();
+            String paramName = ElvisUtil.stringElvis(name, methodArgumentContext.getMethodParameter().getParameterName());
+            LightningUserContext.get()
+                    .getUserPrincipal().ifPresent(ele -> {
+                        // conversion Service 处理 ..
+                        if(conversionService != null) {
+                            Object property = ele.getProperty(paramName);
+                            if(property != null) {
+                                if(!methodArgumentContext.getMethodParameter().getParameterType().isAssignableFrom(property.getClass())) {
+                                    methodArgumentContext.setTarget(conversionService.convert(property,methodArgumentContext.getMethodParameter().getParameterType()));
+                                }
+                                else {
+                                    // 直接设置
+                                    methodArgumentContext.setTarget(property);
+                                }
+                            }
+                        }
+                        // 否则直接获取
+                        else {
+                            methodArgumentContext.setTarget(ele.getProperty(paramName, methodArgumentContext.getMethodParameter().getParameterType()));
+                        }
+                    });
         }
+        else {
+            // 复杂类型
+            if (methodArgumentContext.getTarget() != null) {
+                // 才需要解析 !!!
+                MutablePropertyValues propertyValues = new MutablePropertyValues();
+                getPropertyValues(propertyValues, methodArgumentContext.getTarget(), conversionService, "");
+
+                BeanWrapperImpl beanWrapper = new BeanWrapperImpl(methodArgumentContext.getTarget());
+                beanWrapper.setPropertyValues(propertyValues);
+            }
+        }
+
     }
 
     @Override
     public boolean supportsParameter(@NotNull MethodParameter parameter) {
-       return !ClassUtils.isPrimitiveOrWrapper(parameter.getParameterType()) &&
-               (parameter.getParameterAnnotation(UserPrincipalInject.class) != null ||
-                       AnnotationUtils.getAnnotation(parameter.getParameterType(), UserPrincipalInject.class) != null);
+        return (ClassUtils.isPrimitiveOrWrapper(parameter.getParameterType()) && parameter.getParameterAnnotation(UserPrincipalProperty.class) != null) ||
+                ((parameter.getParameterAnnotation(UserPrincipalInject.class) != null ||
+                        AnnotationUtils.getAnnotation(parameter.getParameterType(), UserPrincipalInject.class) != null));
     }
+
+
 }
