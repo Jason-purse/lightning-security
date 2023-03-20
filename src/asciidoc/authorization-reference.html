@@ -443,8 +443,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_overview">overview</a></li>
-<li><a href="#_流程_授权流程_中央授权服务器流程">流程 === 授权流程 - 中央授权服务器流程</a></li>
-<li><a href="#_配置参考_此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施而不直接作为_授权服务器使用所以提供了许多开放扩展的接口用于扩展并重构骨架代码_其中包含了">配置参考 此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施,而不直接作为 授权服务器使用,所以提供了许多开放扩展的接口用于扩展并重构骨架代码 &#8230;&#8203; 其中包含了:</a></li>
+<li><a href="#_流程">流程</a>
+<ul class="sectlevel2">
+<li><a href="#_授权流程">授权流程</a></li>
+</ul>
+</li>
+<li><a href="#_配置参考">配置参考</a></li>
 <li><a href="#_用户手册">用户手册</a></li>
 </ul>
 </div>
@@ -767,16 +771,20 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 <div class="sect1">
-<h2 id="_流程_授权流程_中央授权服务器流程">流程 === 授权流程 - 中央授权服务器流程</h2>
+<h2 id="_流程">流程</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_授权流程">授权流程</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>中央授权服务器流程</p>
 <div class="paragraph">
-<p>+
-本质上,中央授权服务器它基于spring对oauth2规范的代码实现参考而直接扩展使用的,由于前面我们已经介绍了授权服务器共有的几大基础设施,例如token 生成器,token端点 / 审查 / 撤销端点,以及 jwk url / issuer url 以及 授权服务器提供者配置(暴露一些自己的信息,例如jwk 公钥信息 - 详情查看 <a href="../../lightning-authorization-server-security/lightning-authorization-server-configuration/src/main/java/com/generatera/authorization/server/common/configuration/provider/metadata/AuthorizationServerMetadataEndpointFilter.java" class="bare">../../lightning-authorization-server-security/lightning-authorization-server-configuration/src/main/java/com/generatera/authorization/server/common/configuration/provider/metadata/AuthorizationServerMetadataEndpointFilter.java</a>),前者同包下也包含了Jwk端点的源文件 &#8230;&#8203; 这些本质上都是基于spring对oauth2 实现的参考复制,是因为资源服务器可以基于这些端点进行自身的进一步配置(例如生成jwt 解码器,校验) &#8230;&#8203;
+<p>本质上,中央授权服务器它基于spring对oauth2规范的代码实现参考而直接扩展使用的,由于前面我们已经介绍了授权服务器共有的几大基础设施,例如token 生成器,token端点 / 审查 / 撤销端点,以及 jwk url / issuer url 以及 授权服务器提供者配置(暴露一些自己的信息,例如jwk 公钥信息 - 详情查看 <a href="../../lightning-authorization-server-security/lightning-authorization-server-configuration/src/main/java/com/generatera/authorization/server/common/configuration/provider/metadata/AuthorizationServerMetadataEndpointFilter.java" class="bare">../../lightning-authorization-server-security/lightning-authorization-server-configuration/src/main/java/com/generatera/authorization/server/common/configuration/provider/metadata/AuthorizationServerMetadataEndpointFilter.java</a>),前者同包下也包含了Jwk端点的源文件 &#8230;&#8203; 这些本质上都是基于spring对oauth2 实现的参考复制,是因为资源服务器可以基于这些端点进行自身的进一步配置(例如生成jwt 解码器,校验) &#8230;&#8203;
 + 那么由于直接基于spring对oauth2 编写的扩展,所以流程等同于spring oauth2,点击查看:
 <a href="images/spring-oauth2-authorization-server.pdf">spring oauth2 server的工作流程</a></p>
 </div>
-<div class="ulist">
-<ul>
+</li>
 <li>
 <p>应用授权服务器流程 同中央授权服务器基础设施,除了相同的配置之外,流程些许不同 .. 流程如下所示</p>
 <div class="paragraph">
@@ -790,9 +798,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 </div>
 </div>
+</div>
 <div class="sect1">
-<h2 id="_配置参考_此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施而不直接作为_授权服务器使用所以提供了许多开放扩展的接口用于扩展并重构骨架代码_其中包含了">配置参考 此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施,而不直接作为 授权服务器使用,所以提供了许多开放扩展的接口用于扩展并重构骨架代码 &#8230;&#8203; 其中包含了:</h2>
+<h2 id="_配置参考">配置参考</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>此框架仅仅作为配置一个自定义授权服务器或者资源服务器的底层设施,而不直接作为 授权服务器使用,所以提供了许多开放扩展的接口用于扩展并重构骨架代码 &#8230;&#8203; 其中包含了:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
@@ -1002,7 +1014,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2023-03-15 17:41:13 +0800
+Last updated 2023-03-15 18:15:23 +0800
 </div>
 </div>
 </body>
