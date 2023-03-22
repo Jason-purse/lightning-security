@@ -1,6 +1,7 @@
 package com.generatera.resource.server.config;
 
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
+import com.generatera.resource.server.config.util.TokenAwareRestTemplate;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -56,6 +57,12 @@ public class LightningResourceServerConfig {
                     .authenticated();
             return security.build();
         }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(TokenAwareRestTemplate.class)
+    public TokenAwareRestTemplate tokenAwareRestTemplate() {
+        return new TokenAwareRestTemplate();
     }
 
 }
