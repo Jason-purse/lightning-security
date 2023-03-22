@@ -154,8 +154,16 @@ public class TokenAwareRestTemplate {
         return postForResult(url, params, null, clazz);
     }
 
+    public <T> Result<T> postForResult(String url,Class<T> clazz) {
+        return postForResult(url,null,null,clazz);
+    }
+
     public <T> Result<T> postJsonForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Class<T> clazz) {
         return postForResult(url, params, headers, MediaType.APPLICATION_JSON, clazz);
+    }
+
+    public <T> Result<T> postJsonForResult(String url,Class<T> clazz) {
+        return postJsonForResult(url,null,null,clazz);
     }
 
     public <T> Result<T> postJsonForResult(String url, @NotNull Map<String, String> formData, Class<T> clazz) {
@@ -183,6 +191,8 @@ public class TokenAwareRestTemplate {
     }
 
 
+
+
     public <T> Result<T> putForResult(String url, Object json, @Nullable Map<String, String> headers, Class<T> clazz) {
         RequestEntity<String> body = RequestEntity.put(URI.create(url))
                 .headers(new HttpHeaders(of(headers)))
@@ -195,6 +205,8 @@ public class TokenAwareRestTemplate {
     public <T> Result<T> putForResult(String url, Object json, Class<T> clazz) {
         return putForResult(url, json, null, clazz);
     }
+
+
 
     public <T> Result<T> deleteForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Class<T> clazz) {
         RequestEntity<Void> entity = RequestEntity.delete(URI.create(url))

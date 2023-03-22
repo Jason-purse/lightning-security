@@ -98,6 +98,27 @@ public class TokenAwareRestTemplateTests {
 
     }
 
+
+    @Test
+    public void errorTest() {
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(new MockHttpServletRequest()));
+
+        TokenAwareRestTemplate tokenAwareRestTemplate = new TokenAwareRestTemplate();
+        RestTemplate restTemplate = tokenAwareRestTemplate.getRestTemplate();
+        // 需要支持 ..
+        restTemplate.getMessageConverters().add(
+                new MappingJackson2HttpMessageConverter()
+        );
+        MockRestServiceServer mockServer = MockRestServiceServer.bindTo(restTemplate)
+                .ignoreExpectOrder(true).build();
+
+        Result<String> stringResult = tokenAwareRestTemplate.postForResult("/api", null, String.class);
+        Assertions.assertNotNull(stringResult);
+        Assertions.assertNotNull(stringResult.getResult());
+        Assertions.assertEquals(200,stringResult.getResult());
+
+    }
+
     @Data
     @AllArgsConstructor
     @EqualsAndHashCode
