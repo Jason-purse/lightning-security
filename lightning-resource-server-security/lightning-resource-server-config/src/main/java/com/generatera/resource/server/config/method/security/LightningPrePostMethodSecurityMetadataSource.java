@@ -327,7 +327,7 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
 
         public LightningPreInvocationAttribute(@NotNull PreInvocationAttribute preInvocationAttribute, String methodIdentifier, String behavior) {
             this.preInvocationAttribute = preInvocationAttribute;
-            this.methodIdentifierWithInfo = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), ResourceInvokeEvaluatePhase.PRE_INVOKE.getPhase(), behavior);
+            this.methodIdentifierWithInfo = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), MethodSecurityInvokePhase.BEFORE.name(), behavior);
         }
 
         @Override
@@ -347,7 +347,7 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
 
         public LightningPostInvocationAttribute(@NotNull PostInvocationAttribute preInvocationAttribute, String methodIdentifier, String behavior) {
             this.preInvocationAttribute = preInvocationAttribute;
-            this.methodIdentifierWithInfo = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), ResourceInvokeEvaluatePhase.PRE_INVOKE.getPhase(), behavior);
+            this.methodIdentifierWithInfo = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), MethodSecurityInvokePhase.AFTER.name(), behavior);
         }
 
         @Override
