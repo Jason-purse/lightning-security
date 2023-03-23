@@ -1,6 +1,7 @@
 package com.generatera.resource.server.config.method.security;
 
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.security.access.prepost.PostAuthorize;
 
 import java.lang.annotation.*;
 

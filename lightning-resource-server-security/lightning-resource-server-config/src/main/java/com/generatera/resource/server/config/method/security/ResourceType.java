@@ -7,9 +7,20 @@ package com.generatera.resource.server.config.method.security;
  */
 public interface ResourceType {
 
-    public static final String BACKEND_TYPE = "backend";
+    public String getType();
+    public static final ResourceType BACKEND_TYPE = new ResourceType() {
+        @Override
+        public String getType() {
+            return "backend";
+        }
+    };
 
-    public static final String FRONT_TYPE = "frontend";
+    public static final ResourceType FRONT_TYPE = new ResourceType() {
+        @Override
+        public String getType() {
+            return "frontend";
+        }
+    };
 
     // 可以继续扩展
 }

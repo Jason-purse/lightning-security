@@ -4,6 +4,7 @@ import com.generatera.resource.server.common.EnableLightningMethodSecurity;
 import com.generatera.resource.server.config.method.security.*;
 import com.generatera.security.authorization.server.specification.HandlerFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.aopalliance.intercept.MethodInvocation;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,13 +13,21 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.access.*;
+import org.springframework.security.access.event.AuthorizedEvent;
 import org.springframework.security.access.expression.method.ExpressionBasedAnnotationAttributeFactory;
+import org.springframework.security.access.intercept.AfterInvocationManager;
+import org.springframework.security.access.intercept.AfterInvocationProviderManager;
 import org.springframework.security.access.method.DelegatingMethodSecurityMetadataSource;
 import org.springframework.security.access.method.MethodSecurityMetadataSource;
-import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
+import org.springframework.security.access.prepost.*;
+import org.springframework.security.access.vote.AbstractAccessDecisionManager;
+import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
+import org.springframework.security.core.Authentication;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -93,7 +102,7 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
         //this.postAuthorizeAuthorizationMethodInterceptor.setAuthorizationEventPublisher(publisher);
         this.properties = resourceServerProperties;
         this.applicationContext = context;
-        this.repositoryManager = new MethodSecurityMetadataRepositoryManager(applicationContext,properties);
+        this.repositoryManager = new MethodSecurityMetadataRepositoryManager(applicationContext, properties);
     }
 
 
@@ -105,7 +114,12 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
      */
     @Override
     public void onApplicationEvent(@NotNull ApplicationEvent event) {
-        if(properties.getAuthorityConfig().isEnableMethodPrePostAuthorityScan()) {
+
+        // 方法评估事件
+        if(event instanceof AuthorizedEvent) {
+            methodSecurityMetadataSource.onApplicationEvent(event);
+        }
+        else if (properties.getAuthorityConfig().isEnableMethodPrePostAuthorityScan()) {
             // 这个时候, 获取 methodSecurityMetadataSource中的 已经被处理过的数据信息
             // 触发内部的逻辑 ... 也就是缓存丢弃 ..  开始真正的权限信息抓取 ..
             // 例如从 数据库中获取 ...
@@ -115,9 +129,46 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
                 methodSecurityMetadataSource.onApplicationEvent(event);
             }
         }
-        else {
+    }
 
+    /**
+     * 对 {@link LightningResourceMethodSecurityHolder} 的支持 ..
+     */
+    @Override
+    protected AccessDecisionManager accessDecisionManager() {
+
+        AccessDecisionManager accessDecisionManager = super.accessDecisionManager();
+        List<AccessDecisionVoter<?>> decisionVoters = ((AbstractAccessDecisionManager) accessDecisionManager).getDecisionVoters();
+        for (int i = 0; i < decisionVoters.size(); i++) {
+            if (decisionVoters.get(i) instanceof PreInvocationAuthorizationAdviceVoter voter) {
+                LightningPreInvocationAuthorizationAdviceVoter preInvocationAuthorizationAdviceVoter = new LightningPreInvocationAuthorizationAdviceVoter(voter);
+                LinkedList<AccessDecisionVoter<?>> accessDecisionVoters = new LinkedList<>(decisionVoters);
+                accessDecisionVoters.add(preInvocationAuthorizationAdviceVoter);
+                return new AffirmativeBased(accessDecisionVoters);
+            }
         }
+        return accessDecisionManager;
+    }
+
+    @Override
+    protected AfterInvocationManager afterInvocationManager() {
+
+        AfterInvocationManager afterInvocationManager = super.afterInvocationManager();
+        if(afterInvocationManager != null) {
+            List<AfterInvocationProvider> providers = ((AfterInvocationProviderManager) afterInvocationManager).getProviders();
+            for (int i = 0; i < providers.size(); i++) {
+                if (providers.get(i) instanceof PostInvocationAdviceProvider provider) {
+                    LightningPostInvocationAuthorizationProvider preInvocationAuthorizationAdviceVoter = new LightningPostInvocationAuthorizationProvider(provider);
+                    LinkedList<AfterInvocationProvider> accessDecisionVoters = new LinkedList<>(providers);
+                    accessDecisionVoters.add(preInvocationAuthorizationAdviceVoter);
+                    AfterInvocationProviderManager afterInvocationProviderManager = new AfterInvocationProviderManager();
+                    afterInvocationProviderManager.setProviders(accessDecisionVoters);
+                    return afterInvocationProviderManager;
+                }
+            }
+        }
+
+        return afterInvocationManager;
     }
 
     @Override
@@ -139,7 +190,7 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
 
 
     interface MethodSecurityHandler extends HandlerFactory.Handler {
-        LightningPrePostMethodSecurityMetadataSource getMethodSecurityMetadataSource(PrePostInvocationAttributeFactory prePostInvocationAttributeFactory,ApplicationContext applicationContext);
+        LightningPrePostMethodSecurityMetadataSource getMethodSecurityMetadataSource(PrePostInvocationAttributeFactory prePostInvocationAttributeFactory, ApplicationContext applicationContext);
     }
 
     /**
@@ -162,8 +213,6 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
         ExpressionBasedAnnotationAttributeFactory attributeFactory = new ExpressionBasedAnnotationAttributeFactory(getExpressionHandler());
         return repositoryManager.getRepository(attributeFactory);
     }
-
-
 
 
     @Override
@@ -195,4 +244,79 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
     //Advisor postAuthorizeAuthorizationMethodInterceptor() {
     //    return this.postAuthorizeAuthorizationMethodInterceptor;
     //}
+}
+
+class LightningPreInvocationAuthorizationAdviceVoter implements AccessDecisionVoter<MethodInvocation> {
+    private final PreInvocationAuthorizationAdviceVoter voter;
+
+    public LightningPreInvocationAuthorizationAdviceVoter(PreInvocationAuthorizationAdviceVoter voter) {
+        this.voter = voter;
+    }
+
+    public PreInvocationAuthorizationAdviceVoter getVoter() {
+        return voter;
+    }
+
+    @Override
+    public boolean supports(ConfigAttribute attribute) {
+        return voter.supports(attribute);
+    }
+
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return voter.supports(clazz);
+    }
+
+    @Override
+    public int vote(Authentication authentication, MethodInvocation object, Collection<ConfigAttribute> attributes) {
+        int vote = voter.vote(authentication, object, attributes);
+        if (vote == 1) {
+            for (ConfigAttribute attribute : attributes) {
+                if (attribute instanceof LightningInvocationAttribute preInvocationAttribute) {
+                    if (preInvocationAttribute instanceof PreInvocationAttribute) {
+                        // 设置当前资源方法安全holder
+                        LightningResourceMethodSecurityHolder.setPreResourceMethodSecurity(preInvocationAttribute.getMethodIdentifierWithActionAndType());
+                    }
+                }
+            }
+        }
+        return vote;
+    }
+}
+
+class LightningPostInvocationAuthorizationProvider implements AfterInvocationProvider {
+    private final AfterInvocationProvider provider;
+
+    public LightningPostInvocationAuthorizationProvider(AfterInvocationProvider provider) {
+        this.provider = provider;
+    }
+
+    public AfterInvocationProvider getProvider() {
+        return provider;
+    }
+
+    @Override
+    public Object decide(Authentication authentication, Object object, Collection<ConfigAttribute> attributes, Object returnedObject) throws AccessDeniedException {
+        Object decide = provider.decide(authentication, object, attributes, returnedObject);
+        for (ConfigAttribute attribute : attributes) {
+            if (attribute instanceof LightningInvocationAttribute invocationAttribute) {
+                if (attribute instanceof PostInvocationAttribute) {
+                    LightningResourceMethodSecurityHolder.setPostResourceMethodSecurity(
+                            invocationAttribute.getMethodIdentifierWithActionAndType()
+                    );
+                }
+            }
+        }
+        return decide;
+    }
+
+    @Override
+    public boolean supports(ConfigAttribute attribute) {
+        return provider.supports(attribute);
+    }
+
+    @Override
+    public boolean supports(Class<?> clazz) {
+        return provider.supports(clazz);
+    }
 }

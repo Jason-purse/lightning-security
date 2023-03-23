@@ -1,18 +1,22 @@
 package com.generatera.resource.server.config.method.security;
 
 import com.jianyue.lightning.boot.starter.util.OptionalFlux;
+import com.jianyue.lightning.boot.starter.util.dataflow.Tuple4;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.security.access.ConfigAttribute;
+import org.springframework.security.access.event.AuthorizedEvent;
 import org.springframework.security.access.method.AbstractMethodSecurityMetadataSource;
 import org.springframework.security.access.prepost.PostInvocationAttribute;
 import org.springframework.security.access.prepost.PreInvocationAttribute;
 import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -62,7 +66,7 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
                 getLightningPostAuthorizeFromClassOrMethod(method, targetClass));
     }
 
-    protected String resolveMethodSecurityIdentifier(Method method, Class<?> targetClass) {
+    public String resolveMethodSecurityIdentifier(Method method, Class<?> targetClass) {
         Parameter[] parameters = method.getParameters();
         return this.resolveMethodSecurityIdentifier(method.getName(), targetClass.getName(),
                 OptionalFlux.of(nameDiscoverer.getParameterNames(method)).orElse(resolveParameterNames(method)).getResult(),
@@ -151,26 +155,108 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
 
     protected PostInvocationAttribute getPostInvocationAttribute(Method method, Class<?> targetClass, LightningPostAuthorize postAuthorize) {
         StringBuilder builder = new StringBuilder();
+        String methodSecurityIdentifier = resolveMethodSecurityIdentifier(method, targetClass);
         if (postAuthorize != null) {
             handleRolesAndAuthorities(postAuthorize.roles(), postAuthorize.authorities(),
                     postAuthorize.authorizeMode(),
-                    resolveMethodSecurityIdentifier(method, targetClass),
+                    methodSecurityIdentifier,
                     builder);
         }
         String postAuthorizeAttribute = builder.toString();
-        return this.attributeFactory.createPostInvocationAttribute(null, postAuthorizeAttribute.length() > 0 ? postAuthorizeAttribute : null);
+        PostInvocationAttribute postInvocationAttribute = this.attributeFactory.createPostInvocationAttribute(null, postAuthorizeAttribute.length() > 0 ? postAuthorizeAttribute : null);
+        if (postInvocationAttribute != null) {
+            if (postAuthorize != null) {
+                return new LightningPostInvocationAttribute(postInvocationAttribute, methodSecurityIdentifier,
+                        resolveResourceBehavior(postAuthorize.behavior(), method, targetClass));
+            }
+        }
+        return postInvocationAttribute;
     }
 
     protected PreInvocationAttribute getPreInvocationAttribute(Method method, Class<?> targetClass, LightningPreAuthorize preAuthorize) {
         StringBuilder builder = new StringBuilder();
+        String securityIdentifier = resolveMethodSecurityIdentifier(method, targetClass);
+
         if (preAuthorize != null) {
             handleRolesAndAuthorities(preAuthorize.roles(), preAuthorize.authorities(), preAuthorize.authorizeMode(),
-                    resolveMethodSecurityIdentifier(method, targetClass), builder);
+                    securityIdentifier, builder);
         }
 
         String preAuthorizeAttribute = builder.toString();
-        return this.attributeFactory.createPreInvocationAttribute(null, null, preAuthorizeAttribute.length() > 0 ? preAuthorizeAttribute : null);
+        PreInvocationAttribute preInvocationAttribute = this.attributeFactory.createPreInvocationAttribute(null, null, preAuthorizeAttribute.length() > 0 ? preAuthorizeAttribute : null);
+        if (preInvocationAttribute != null) {
+            if (preAuthorize != null) {
+                return new LightningPreInvocationAttribute(preInvocationAttribute, securityIdentifier,
+                        resolveResourceBehavior(preAuthorize.behavior(), method, targetClass));
+            }
+        }
+        return null;
     }
+
+    protected String resolveResourceBehavior(String behaviorStr, Method method, Class<?> targetClass) {
+        return OptionalFlux.string(behaviorStr)
+                .switchMap(
+                        behavior -> {
+                            // 进行解析,是否可用 ..
+                            if (!ResourceBehavior.getBehaviors().contains(behavior)) {
+                                return determineResourceBehavior(method, targetClass);
+                            }
+                            return behavior;
+                        },
+                        () -> determineResourceBehavior(method, targetClass)
+                )
+                .getResult();
+    }
+
+    /**
+     * 检测行为 ...
+     */
+    protected String determineResourceBehavior(Method method, Class<?> target) {
+
+        RequestMapping annotation = AnnotationUtils.findAnnotation(method, RequestMapping.class);
+        if (annotation == null) {
+            annotation = AnnotationUtils.findAnnotation(target, RequestMapping.class);
+        }
+        Assert.notNull(annotation, "request mapping for method security must not be null");
+        RequestMethod[] requestMethods = annotation.method();
+        Set<String> behavior = new LinkedHashSet<>();
+        for (RequestMethod requestMethod : requestMethods) {
+            if (requestMethod.equals(RequestMethod.GET) || requestMethod.equals(RequestMethod.HEAD)) {
+                behavior.add(ResourceBehavior.READ);
+            } else {
+                behavior.add(ResourceBehavior.WRITE);
+            }
+        }
+
+        // 大于1个的时候,其实是没法处理的 ...
+        // 也就是这里报错 ...
+        if (behavior.size() > 1) {
+            boolean existsRead = false;
+            boolean existsWrite = false;
+            for (String s : behavior) {
+                if (ResourceBehavior.READ.equals(s)) {
+                    existsRead = true;
+                    break;
+                }
+                if (ResourceBehavior.WRITE.equals(s)) {
+                    existsWrite = true;
+                }
+            }
+
+            if (existsRead && existsWrite) {
+                behavior.remove(ResourceBehavior.READ);
+                behavior.remove(ResourceBehavior.WRITE);
+
+                // 又读又写
+                behavior.add(ResourceBehavior.WRITE_AND_READ);
+            }
+        }
+
+        Assert.isTrue(behavior.size() == 1, "The current resource behavior exceeds one ,resource behavior must be unique !!!");
+
+        return behavior.iterator().next();
+    }
+
 
     static void handleRolesAndAuthorities(String[] roles, String[] authorities, AuthorizeMode authorizeMode, String methodIdentifier, StringBuilder builder) {
         if (authorizeMode == AuthorizeMode.AUTHORITIES_TO_ROLE) {
@@ -225,8 +311,55 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
     @Override
     public void onApplicationEvent(@NotNull ApplicationEvent event) {
         // 啥也不做 ...
+        if(event instanceof AuthorizedEvent authorizedEvent) {
+            // 尝试设置 ..
+            Collection<ConfigAttribute> configAttributes = authorizedEvent.getConfigAttributes();
+
+            for (ConfigAttribute configAttribute : configAttributes) {
+
+            }
+        }
     }
 
+    private static class LightningPreInvocationAttribute implements LightningInvocationAttribute, PreInvocationAttribute {
+        private final PreInvocationAttribute preInvocationAttribute;
+        private final Tuple4<String, String, String, String> methodIdentifierWithInfo;
+
+        public LightningPreInvocationAttribute(@NotNull PreInvocationAttribute preInvocationAttribute, String methodIdentifier, String behavior) {
+            this.preInvocationAttribute = preInvocationAttribute;
+            this.methodIdentifierWithInfo = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), ResourceInvokeEvaluatePhase.PRE_INVOKE.getPhase(), behavior);
+        }
+
+        @Override
+        public Tuple4<String, String, String, String> getMethodIdentifierWithActionAndType() {
+            return methodIdentifierWithInfo;
+        }
+
+        @Override
+        public String getAttribute() {
+            return preInvocationAttribute.getAttribute();
+        }
+    }
+
+    private static class LightningPostInvocationAttribute implements LightningInvocationAttribute, PostInvocationAttribute {
+        private final PostInvocationAttribute preInvocationAttribute;
+        private final Tuple4<String, String, String, String> methodIdentifierWithInfo;
+
+        public LightningPostInvocationAttribute(@NotNull PostInvocationAttribute preInvocationAttribute, String methodIdentifier, String behavior) {
+            this.preInvocationAttribute = preInvocationAttribute;
+            this.methodIdentifierWithInfo = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), ResourceInvokeEvaluatePhase.PRE_INVOKE.getPhase(), behavior);
+        }
+
+        @Override
+        public Tuple4<String, String, String, String> getMethodIdentifierWithActionAndType() {
+            return methodIdentifierWithInfo;
+        }
+
+        @Override
+        public String getAttribute() {
+            return preInvocationAttribute.getAttribute();
+        }
+    }
 
     protected static class DefaultCacheKey {
         private final Method method;

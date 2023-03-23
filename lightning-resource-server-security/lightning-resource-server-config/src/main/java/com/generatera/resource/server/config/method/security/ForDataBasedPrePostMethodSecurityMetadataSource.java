@@ -3,22 +3,19 @@ package com.generatera.resource.server.config.method.security;
 import com.generatera.resource.server.config.method.security.entity.ResourceMethodSecurityEntity;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.jianyue.lightning.boot.starter.util.OptionalFlux;
+import com.jianyue.lightning.boot.starter.util.dataflow.Tuple4;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.security.access.ConfigAttribute;
 import org.springframework.security.access.prepost.PostInvocationAttribute;
 import org.springframework.security.access.prepost.PreInvocationAttribute;
 import org.springframework.security.access.prepost.PrePostInvocationAttributeFactory;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ConcurrentReferenceHashMap;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -33,7 +30,7 @@ import java.util.function.Supplier;
  * @Description 给与数据库缓存支持 ...
  * <p>
  * // TODO: 2023/2/9  性能缺失,pre/post 一体,如果其中一个修改,那么整体将会被移除 ...
- *
+ * <p>
  * 检测行为{@link LightningPreAuthorize#behavior()} 只有在数据库等其他记录资源权限的方式中有效,因为粒度更细 ..
  * 如果在代码中,那么直接与对应的资源行为进行耦合 ..{@link ResourceBehavior}
  */
@@ -207,20 +204,10 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                         OptionalFlux.of(entity)
                                 .map(ResourceMethodSecurityEntity::getAuthorizeMode)
                                 .orElse(preAuthorize.authorizeMode().name()).getResult(),
-                        OptionalFlux.of(entity)
-                                .map(ResourceMethodSecurityEntity::getAuthorizeMode)
-                                .orElse(ElvisUtil.stringElvisOrNull(preAuthorize.behavior()))
-                                .switchMap(
-                                        behavior -> {
-                                            // 进行解析,是否可用 ..
-                                            if (!ResourceBehavior.getBehaviors().contains(behavior)) {
-                                                return determineResourceBehavior(method, targetClass);
-                                            }
-                                            return behavior;
-                                        },
-                                        () -> determineResourceBehavior(method, targetClass)
-                                )
-                                .getResult()
+                        resolveResourceBehavior(
+                                OptionalFlux.of(entity).map(ResourceMethodSecurityEntity::getBehavior).orElse(preAuthorize.behavior()).getResult(), method, targetClass)
+                        ,
+                        resolveMethodSecurityIdentifier(method, targetClass)
                 );
             } else if (phase == MethodSecurityInvokePhase.AFTER) {
                 LightningPostAuthorize postAuthorize = (LightningPostAuthorize) annotation;
@@ -247,9 +234,8 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                         OptionalFlux.of(entity)
                                 .map(ResourceMethodSecurityEntity::getAuthorizeMode)
                                 .orElse(postAuthorize.authorizeMode().name()).getResult(),
-                        OptionalFlux.of(entity)
-                                .map(ResourceMethodSecurityEntity::getAuthorizeMode)
-                                .orElse(postAuthorize.behavior()).getResult()
+                        resolveResourceBehavior(OptionalFlux.of(entity).map(ResourceMethodSecurityEntity::getBehavior).orElse(postAuthorize.behavior()).getResult(), method, targetClass),
+                        resolveMethodSecurityIdentifier(method, targetClass)
                 );
             }
 
@@ -257,54 +243,6 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
         };
     }
 
-    /**
-     * 检测行为 ...
-     */
-    private String determineResourceBehavior(Method method, Class<?> target) {
-
-        RequestMapping annotation = AnnotationUtils.findAnnotation(method, RequestMapping.class);
-        if (annotation == null) {
-            annotation = AnnotationUtils.findAnnotation(target, RequestMapping.class);
-        }
-        Assert.notNull(annotation, "request mapping for method security must not be null");
-        RequestMethod[] requestMethods = annotation.method();
-        Set<String> behavior = new LinkedHashSet<>();
-        for (RequestMethod requestMethod : requestMethods) {
-            if (requestMethod.equals(RequestMethod.GET) || requestMethod.equals(RequestMethod.HEAD)) {
-                behavior.add(ResourceBehavior.READ);
-            } else {
-                behavior.add(ResourceBehavior.WRITE);
-            }
-        }
-
-        // 大于1个的时候,其实是没法处理的 ...
-        // 也就是这里报错 ...
-        if (behavior.size() > 1) {
-            boolean existsRead = false;
-            boolean existsWrite = false;
-            for (String s : behavior) {
-                if (ResourceBehavior.READ.equals(s)) {
-                    existsRead = true;
-                    break;
-                }
-                if (ResourceBehavior.WRITE.equals(s)) {
-                    existsWrite = true;
-                }
-            }
-
-            if (existsRead && existsWrite) {
-                behavior.remove(ResourceBehavior.READ);
-                behavior.remove(ResourceBehavior.WRITE);
-
-                // 又读又写
-                behavior.add(ResourceBehavior.WRITE_AND_READ);
-            }
-        }
-
-        Assert.isTrue(behavior.size() == 1, "The current resource behavior exceeds one ,resource behavior must be unique !!!");
-
-        return behavior.iterator().next();
-    }
 
     private List<String> resolveToList(String value) {
         if (StringUtils.hasText(value)) {
@@ -391,7 +329,7 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             String postIdentifier = null;
             String preDescription = null;
             String postDescription = null;
-            String type = ResourceType.BACKEND_TYPE;
+            String type = ResourceType.BACKEND_TYPE.getType();
             String behavior = null;
             String authorizeMode = null;
 
@@ -523,9 +461,11 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
 
         public String description;
 
-        private String authorizeMode;
+        private final String authorizeMode;
 
-        private String behavior;
+        private final String behavior;
+
+        private final Tuple4<String, String, String, String> methodIdentifier;
 
         public AnnotationInfoWithPreConfigAttribute(ConfigAttribute delegate,
                                                     Method method, Class<?> targetClass,
@@ -534,7 +474,8 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                                                     String identifier,
                                                     String description,
                                                     String authorizeMode,
-                                                    String behavior) {
+                                                    String behavior,
+                                                    String methodIdentifier) {
             this.delegate = delegate;
             this.method = method;
             this.targetClass = targetClass;
@@ -544,6 +485,7 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             this.description = description;
             this.authorizeMode = authorizeMode;
             this.behavior = behavior;
+            this.methodIdentifier = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), ResourceInvokeEvaluatePhase.POST_INVOKE.getPhase(), behavior);
         }
 
         @Override
@@ -554,7 +496,7 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
 
     }
 
-    private static class AnnotationInfoWithPostConfigAttribute implements PostInvocationAttribute {
+    private static class AnnotationInfoWithPostConfigAttribute implements LightningInvocationAttribute, PostInvocationAttribute {
 
         private final ConfigAttribute delegate;
 
@@ -570,9 +512,11 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
 
         public String description;
 
-        private String authorizeMode;
+        private final String authorizeMode;
 
-        private String behavior;
+        private final String behavior;
+
+        private final Tuple4<String, String, String, String> methodIdentifier;
 
 
         public AnnotationInfoWithPostConfigAttribute(ConfigAttribute delegate,
@@ -582,7 +526,8 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
                                                      String identifier,
                                                      String description,
                                                      String authorizeMode,
-                                                     String behavior) {
+                                                     String behavior,
+                                                     String methodIdentifier) {
             this.delegate = delegate;
             this.method = method;
             this.targetClass = targetClass;
@@ -592,6 +537,7 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             this.description = description;
             this.authorizeMode = authorizeMode;
             this.behavior = behavior;
+            this.methodIdentifier = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), ResourceInvokeEvaluatePhase.POST_INVOKE.getPhase(), behavior);
         }
 
         @Override
@@ -599,6 +545,11 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             return delegate.getAttribute();
         }
 
+
+        @Override
+        public Tuple4<String, String, String, String> getMethodIdentifierWithActionAndType() {
+            return methodIdentifier;
+        }
     }
 
 
