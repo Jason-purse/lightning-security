@@ -10,7 +10,7 @@ import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfig.CacheConfig.MongoCacheConfigPrefix;
+import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfig.CacheConfig.*;
 
 /**
  * 授权架构:
@@ -311,7 +311,8 @@ public class ResourceServerProperties {
 
     @Data
     public static class AuthorityConfig {
-        public static final String JpaCacheConfigPrefix = "jpaCacheConfig";
+
+        public static final String CacheConfigPrefix = AuthorityConfigPrefix + ".cacheConfig";
 
         /**
          * 默认使用{@link JwtExtClaimNames#SCOPE_CLAIM}
@@ -356,9 +357,10 @@ public class ResourceServerProperties {
         @Data
         public static class CacheConfig {
 
-            public static final String CacheConfigPrefix = AuthorityConfigPrefix + ".cacheConfig";
 
-            public static final String MongoCacheConfigPrefix = AuthorityConfigPrefix + ".mongoCacheConfig";
+            public static final String MongoCacheConfigPrefix = CacheConfigPrefix + ".mongoCacheConfig";
+
+            public static final String JpaCacheConfigPrefix = CacheConfigPrefix + "jpaCacheConfig";
 
 
             public static final long DEFAULT_EXPIRED_DURATION = 5 * 60 * 1000;
