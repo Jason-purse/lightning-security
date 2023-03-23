@@ -220,11 +220,11 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
         MethodSecurityMetadataSource source = super.methodSecurityMetadataSource();
         DelegatingMethodSecurityMetadataSource delegatingMethodSecurityMetadataSource = (DelegatingMethodSecurityMetadataSource) source;
         // 让一部分的method security metadata Source 有能力 不受外部缓存控制,依靠自己进行缓存控制 ..
-        ResourceServerProperties.AuthorityConfig.CacheConfig cacheConfig = properties.getAuthorityConfig().getCacheConfig();
+        ResourceServerProperties.AuthorityConfiguration.CacheConfig cacheConfig = properties.getAuthorityConfig().getCacheConfig();
         return new ForcedCacheMethodSecurityMetadataSource(
                 new AllowPartialCacheMethodSecurityMetadataSource(delegatingMethodSecurityMetadataSource.getMethodSecurityMetadataSources()),
                 cacheConfig.isSupportForceSupport(),
-                cacheConfig.getExpiredDuration() > 0 ? cacheConfig.getExpiredDuration() : ResourceServerProperties.AuthorityConfig.CacheConfig.DEFAULT_EXPIRED_DURATION
+                cacheConfig.getExpiredDuration() > 0 ? cacheConfig.getExpiredDuration() : ResourceServerProperties.AuthorityConfiguration.CacheConfig.DEFAULT_EXPIRED_DURATION
         );
     }
 

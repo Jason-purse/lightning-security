@@ -20,7 +20,7 @@ import java.util.List;
  * 分为直接依赖资源服务器配置的数据库连接方式,还是 连接到对应的其他缓存资源权限的数据库 ..
  * {@link  ResourceServerProperties#getAuthorityConfig()} 根据它的存储分类进行决定
  *
- * 如果是jpa,没有额外通过{@link ResourceServerProperties.AuthorityConfig.CacheConfig#getJpaCacheConfig()}
+ * 如果是jpa,没有额外通过{@link ResourceServerProperties.AuthorityConfiguration.CacheConfig#getJpaCacheConfig()}
  * 的相关数据库配置 以及 启用标志设置,那么默认使用当前应用关联的 数据库配置 .
  * 否则,通过{@link  MethodSecurityMetadataRepositoryManager} 进行仓库的创建 ...
  *
@@ -44,7 +44,7 @@ public class MethodSecurityMetadataRepositoryConfiguration extends PropertiesBin
 
             // 有一个问题 ...
             // 是否提供了自定义的 数据库地址 ..
-            ResourceServerProperties.AuthorityConfig.JpaCacheConfig jpaCacheConfig = properties.getAuthorityConfig().getCacheConfig()
+            ResourceServerProperties.AuthorityConfiguration.JpaCacheConfig jpaCacheConfig = properties.getAuthorityConfig().getCacheConfig()
                     .getJpaCacheConfig();
 
             if (!jpaCacheConfig.isEnable()) {

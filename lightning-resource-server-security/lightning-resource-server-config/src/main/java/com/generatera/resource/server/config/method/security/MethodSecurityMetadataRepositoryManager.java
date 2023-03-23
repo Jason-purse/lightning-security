@@ -31,9 +31,9 @@ import org.springframework.util.Assert;
 
 import java.util.Map;
 
-import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfig.JpaCacheConfig.DataSourceConfigPrefix;
-import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfig.JpaCacheConfigPrefix;
-import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfig.MongoCacheConfig.mongoClientPropertiesPrefix;
+import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfiguration.CacheConfig.JpaCacheConfigPrefix;
+import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfiguration.JpaCacheConfig.DataSourceConfigPrefix;
+import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfiguration.MongoCacheConfig.mongoClientPropertiesPrefix;
 
 /**
  * 基于缓存实现的,  仓库管理器 ..
@@ -105,13 +105,13 @@ public class MethodSecurityMetadataRepositoryManager implements DisposableBean {
     }
     
     private static boolean useSelfConfigOrNewConfigJpa(ResourceServerProperties resourceServerProperties) {
-        ResourceServerProperties.AuthorityConfig.CacheConfig cacheConfig = resourceServerProperties.getAuthorityConfig().getCacheConfig();
-        ResourceServerProperties.AuthorityConfig.JpaCacheConfig jpaCacheConfig = cacheConfig.getJpaCacheConfig();
+        ResourceServerProperties.AuthorityConfiguration.CacheConfig cacheConfig = resourceServerProperties.getAuthorityConfig().getCacheConfig();
+        ResourceServerProperties.AuthorityConfiguration.JpaCacheConfig jpaCacheConfig = cacheConfig.getJpaCacheConfig();
         return jpaCacheConfig.isEnable();
     }
 
     private static boolean useSelfConfigOrNewConfigMongo(ResourceServerProperties resourceServerProperties) {
-        ResourceServerProperties.AuthorityConfig.MongoCacheConfig mongoCacheConfig = resourceServerProperties.getAuthorityConfig().getCacheConfig().getMongoCacheConfig();
+        ResourceServerProperties.AuthorityConfiguration.MongoCacheConfig mongoCacheConfig = resourceServerProperties.getAuthorityConfig().getCacheConfig().getMongoCacheConfig();
         return mongoCacheConfig.isEnable();
     }
 

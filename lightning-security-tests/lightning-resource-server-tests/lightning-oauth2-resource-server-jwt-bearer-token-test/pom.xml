@@ -23,6 +23,11 @@
             <groupId>com.jianyue</groupId>
             <artifactId>lightning-boot-starter-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.generatera</groupId>
+            <artifactId>lightning-usercenter-common-core</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>

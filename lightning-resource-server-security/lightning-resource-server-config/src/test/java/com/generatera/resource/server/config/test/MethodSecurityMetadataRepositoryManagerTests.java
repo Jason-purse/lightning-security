@@ -15,7 +15,7 @@ public class MethodSecurityMetadataRepositoryManagerTests {
         AnnotationConfigApplicationContext annotationConfigApplicationContext = new AnnotationConfigApplicationContext();
         annotationConfigApplicationContext.refresh();
         ResourceServerProperties resourceServerProperties = new ResourceServerProperties();
-        ResourceServerProperties.AuthorityConfig.JpaCacheConfig jpaCacheConfig = resourceServerProperties
+        ResourceServerProperties.AuthorityConfiguration.JpaCacheConfig jpaCacheConfig = resourceServerProperties
                 .getAuthorityConfig()
                 .getCacheConfig().getJpaCacheConfig();
         DataSourceProperties properties = jpaCacheConfig.getDataSourceProperties();

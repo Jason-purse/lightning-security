@@ -10,7 +10,8 @@ import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfig.CacheConfig.*;
+import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfiguration.CacheConfig.JpaCacheConfigPrefix;
+import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfiguration.CacheConfig.MongoCacheConfigPrefix;
 
 /**
  * 授权架构:
@@ -232,13 +233,13 @@ public class ResourceServerProperties {
 
     public static final String RESOURCE_SERVER_PREFIX = "lightning.security.resource.server";
 
-    public final static String AuthorityConfigPrefix = RESOURCE_SERVER_PREFIX + ".authorityConfig";
+    public final static String AUTHORITY_CONFIG_PREFIX = RESOURCE_SERVER_PREFIX + ".authorityConfig";
 
 
     private final TokenVerificationConfig tokenVerificationConfig = new TokenVerificationConfig();
 
 
-    private final AuthorityConfig authorityConfig = new AuthorityConfig();
+    private final AuthorityConfiguration authorityConfig = new AuthorityConfiguration();
 
 
     @Data
@@ -309,10 +310,11 @@ public class ResourceServerProperties {
         MEMORY
     }
 
-    @Data
-    public static class AuthorityConfig {
 
-        public static final String CacheConfigPrefix = AuthorityConfigPrefix + ".cacheConfig";
+    @Data
+    public static class AuthorityConfiguration {
+
+        public static final String CACHE_CONFIG_PREFIX = AUTHORITY_CONFIG_PREFIX + ".cacheConfig";
 
         /**
          * 默认使用{@link JwtExtClaimNames#SCOPE_CLAIM}
@@ -358,9 +360,9 @@ public class ResourceServerProperties {
         public static class CacheConfig {
 
 
-            public static final String MongoCacheConfigPrefix = CacheConfigPrefix + ".mongoCacheConfig";
+            public static final String MongoCacheConfigPrefix = CACHE_CONFIG_PREFIX + ".mongoCacheConfig";
 
-            public static final String JpaCacheConfigPrefix = CacheConfigPrefix + "jpaCacheConfig";
+            public static final String JpaCacheConfigPrefix = CACHE_CONFIG_PREFIX + ".jpaCacheConfig";
 
 
             public static final long DEFAULT_EXPIRED_DURATION = 5 * 60 * 1000;
@@ -427,5 +429,4 @@ public class ResourceServerProperties {
         }
 
     }
-
 }

@@ -42,6 +42,8 @@ public class OidcPasswordGrantAccessTokenDaoAuthenticationProvider extends Passw
         );
     }
 
+
+
     public OidcPasswordGrantAccessTokenDaoAuthenticationProvider(
             LightningOAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> auth2AccessTokenResponseClient,
             LightningOidcUserService oidcUserService,
@@ -63,6 +65,14 @@ public class OidcPasswordGrantAccessTokenDaoAuthenticationProvider extends Passw
                     }
                 }, auth2AuthorizedClientRepository);
     }
+
+    public OidcPasswordGrantAccessTokenDaoAuthenticationProvider(
+            LightningOAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> auth2AccessTokenResponseClient,
+            LightningOAuth2UserLoader userLoader,
+            LightningOAuth2AuthorizedClientRepository auth2AuthorizedClientRepository) {
+        super(auth2AccessTokenResponseClient, userLoader, auth2AuthorizedClientRepository);
+    }
+
 
     public OidcPasswordGrantAccessTokenDaoAuthenticationProvider(
             LightningOAuth2AccessTokenResponseClient<OAuth2PasswordGrantRequest> auth2AccessTokenResponseClient,

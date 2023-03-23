@@ -127,7 +127,7 @@ public class ForcedCacheMethodSecurityMetadataSource extends AbstractMethodSecur
     }
 
     public ForcedCacheMethodSecurityMetadataSource(LightningExtMethodSecurityMetadataSource delegate) {
-        this(delegate, false, ResourceServerProperties.AuthorityConfig.CacheConfig.DEFAULT_EXPIRED_DURATION);
+        this(delegate, false, ResourceServerProperties.AuthorityConfiguration.CacheConfig.DEFAULT_EXPIRED_DURATION);
     }
 
     private void doOnApplicationEvent(ApplicationEvent event) {

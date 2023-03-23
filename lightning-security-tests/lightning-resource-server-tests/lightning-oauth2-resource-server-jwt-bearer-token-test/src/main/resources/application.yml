@@ -3,6 +3,8 @@ spring:
     oauth2:
       resource-server:
         jwt:
-          issuer-uri: http://127.0.0.1:9000
+          issuer-uri: http://192.168.0.117:8080
+  application:
+    name: lightning-oauth2-resource-server-jwt-bearer-token-test
 server:
   port: 8090
