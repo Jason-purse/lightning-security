@@ -164,11 +164,11 @@ public class TokenAwareRestTemplate {
 
     public <T> Result<T> postForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Class<T> clazz) {
 
-        return postForResult(url, params, headers, MediaType.APPLICATION_FORM_URLENCODED, clazz);
+        return withTypePostForResult(url, params, headers, MediaType.APPLICATION_FORM_URLENCODED, clazz);
     }
 
     public <T> Result<T> postForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, TypeReference<T> clazz) {
-        return postForResult(url,params,headers,MediaType.APPLICATION_FORM_URLENCODED,clazz);
+        return withTypePostForResult(url,params,headers,MediaType.APPLICATION_FORM_URLENCODED,clazz.getType());
     }
 
 
@@ -189,12 +189,12 @@ public class TokenAwareRestTemplate {
     }
 
 
-    public <T> Result<T> postJsonForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, Class<T> clazz) {
-        return postForResult(url, body, headers, MediaType.APPLICATION_JSON, clazz);
+    public <T> Result<T> postJsonForResult(String url, @Nullable Object body, @Nullable Map<String, String> headers, Class<T> clazz) {
+        return withJsonTypePostForResult(url, body, headers,  clazz);
     }
 
-    public <T> Result<T> postJsonForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, TypeReference<T> clazz) {
-        return postForResult(url, body, headers, MediaType.APPLICATION_JSON, clazz);
+    public <T> Result<T> postJsonForResult(String url, @Nullable Object body, @Nullable Map<String, String> headers, TypeReference<T> clazz) {
+        return withJsonTypePostForResult(url, body, headers, clazz.getType());
     }
 
     public <T> Result<T> postJsonForResult(String url,Class<T> clazz) {
@@ -205,22 +205,13 @@ public class TokenAwareRestTemplate {
         return postJsonForResult(url,null,null,clazz);
     }
 
-    public <T> Result<T> postJsonForResult(String url, @NotNull Map<String, String> body, Class<T> clazz) {
-        return postForResult(url, body, null, MediaType.APPLICATION_JSON, clazz);
+    public <T> Result<T> postJsonForResult(String url, @NotNull Object body, Class<T> clazz) {
+        return postJsonForResult(url, body, null, clazz);
     }
-    public <T> Result<T> postJsonForResult(String url, @NotNull Map<String, String> body, TypeReference<T> clazz) {
-        return postForResult(url, body, null, MediaType.APPLICATION_JSON, clazz);
-    }
-
-
-    public <T> Result<T> postForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, @NotNull MediaType mediaType, Class<T> clazz) {
-
-        return withTypePostForResult(url,body,headers,mediaType,clazz);
+    public <T> Result<T> postJsonForResult(String url, @NotNull Object body, TypeReference<T> clazz) {
+        return postJsonForResult(url, body, null, clazz);
     }
 
-    public <T> Result<T> postForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, @NotNull MediaType mediaType, TypeReference<T> clazz) {
-        return withTypePostForResult(url,body,headers,mediaType,clazz.getType());
-    }
 
     private  <T> Result<T> withTypePostForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, @NotNull MediaType mediaType, Type type) {
         RequestEntity.BodyBuilder post = RequestEntity.post(URI.create(url))
@@ -230,6 +221,24 @@ public class TokenAwareRestTemplate {
             entity = post
                     .headers(new HttpHeaders(of(headers)))
                     .body(body, ResolvableType.forClassWithGenerics(Map.class, String.class, String.class).getType());
+        } else {
+            entity = post
+                    .headers(new HttpHeaders(of(headers)))
+                    .build();
+        }
+
+        ResponseEntity<Result<T>> exchange = restTemplate.exchange(url, HttpMethod.POST, entity, ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), ResolvableType.forType(type)).getType()));
+        return getResult(exchange);
+    }
+
+    private  <T> Result<T> withJsonTypePostForResult(String url, @Nullable Object body, @Nullable Map<String, String> headers, Type type) {
+        RequestEntity.BodyBuilder post = RequestEntity.post(URI.create(url))
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.toString());
+        RequestEntity<?> entity;
+        if (body != null) {
+            entity = post
+                    .headers(new HttpHeaders(of(headers)))
+                    .body(body);
         } else {
             entity = post
                     .headers(new HttpHeaders(of(headers)))
