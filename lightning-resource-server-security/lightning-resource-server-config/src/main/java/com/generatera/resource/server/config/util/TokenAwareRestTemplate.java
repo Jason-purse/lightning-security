@@ -1,5 +1,6 @@
 package com.generatera.resource.server.config.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import com.jianyue.lightning.boot.starter.util.StreamUtil;
 import com.jianyue.lightning.result.Result;
@@ -24,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -114,23 +116,39 @@ public class TokenAwareRestTemplate {
     }
 
     public <T> Result<T> getForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Class<T> clazz) {
-        RequestEntity<Void> entity
-                = RequestEntity.get(URI.create(url))
-                .headers(new HttpHeaders(of(params)))
-                .build();
-        ResponseEntity<Result<T>> exchange = restTemplate.exchange(create(url, params), HttpMethod.GET, entity,
-                ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), clazz).getType())
-        );
+        return withTypeGetForResult(url,params,headers,clazz);
+    }
 
-        return getResult(exchange);
+    public <T> Result<T> getForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, TypeReference<T> clazz) {
+        return withTypeGetForResult(url,params,headers,clazz.getType());
     }
 
     public <T> Result<T> getForResult(String url, Class<T> clazz) {
         return getForResult(url, null, null, clazz);
     }
 
+    public <T> Result<T> getForResult(String url, TypeReference<T> clazz) {
+        return getForResult(url, null, null, clazz);
+    }
+
     public <T> Result<T> getForResult(String url, @NotNull Map<String, String> params, Class<T> clazz) {
         return getForResult(url, params, null, clazz);
+    }
+
+    public <T> Result<T> getForResult(String url, @NotNull Map<String, String> params, TypeReference<T> clazz) {
+        return getForResult(url, params, null, clazz);
+    }
+
+    private  <T> Result<T> withTypeGetForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Type clazz) {
+        RequestEntity<Void> entity
+                = RequestEntity.get(URI.create(url))
+                .headers(new HttpHeaders(of(headers)))
+                .build();
+        ResponseEntity<Result<T>> exchange = restTemplate.exchange(create(url, params), HttpMethod.GET, entity,
+                ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), ResolvableType.forType(clazz)).getType())
+        );
+
+        return getResult(exchange);
     }
 
 
@@ -149,8 +167,16 @@ public class TokenAwareRestTemplate {
         return postForResult(url, params, headers, MediaType.APPLICATION_FORM_URLENCODED, clazz);
     }
 
+    public <T> Result<T> postForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, TypeReference<T> clazz) {
+        return postForResult(url,params,headers,MediaType.APPLICATION_FORM_URLENCODED,clazz);
+    }
+
 
     public <T> Result<T> postForResult(String url, @NotNull Map<String, String> params, Class<T> clazz) {
+        return postForResult(url, params, null, clazz);
+    }
+
+    public <T> Result<T> postForResult(String url, @NotNull Map<String, String> params, TypeReference<T> clazz) {
         return postForResult(url, params, null, clazz);
     }
 
@@ -158,47 +184,78 @@ public class TokenAwareRestTemplate {
         return postForResult(url,null,null,clazz);
     }
 
-    public <T> Result<T> postJsonForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Class<T> clazz) {
-        return postForResult(url, params, headers, MediaType.APPLICATION_JSON, clazz);
+    public <T> Result<T> postForResult(String url,TypeReference<T> clazz) {
+        return postForResult(url,null,null,clazz);
+    }
+
+
+    public <T> Result<T> postJsonForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, Class<T> clazz) {
+        return postForResult(url, body, headers, MediaType.APPLICATION_JSON, clazz);
+    }
+
+    public <T> Result<T> postJsonForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, TypeReference<T> clazz) {
+        return postForResult(url, body, headers, MediaType.APPLICATION_JSON, clazz);
     }
 
     public <T> Result<T> postJsonForResult(String url,Class<T> clazz) {
         return postJsonForResult(url,null,null,clazz);
     }
 
-    public <T> Result<T> postJsonForResult(String url, @NotNull Map<String, String> formData, Class<T> clazz) {
-        return postForResult(url, formData, null, MediaType.APPLICATION_JSON, clazz);
+    public <T> Result<T> postJsonForResult(String url,TypeReference<T> clazz) {
+        return postJsonForResult(url,null,null,clazz);
+    }
+
+    public <T> Result<T> postJsonForResult(String url, @NotNull Map<String, String> body, Class<T> clazz) {
+        return postForResult(url, body, null, MediaType.APPLICATION_JSON, clazz);
+    }
+    public <T> Result<T> postJsonForResult(String url, @NotNull Map<String, String> body, TypeReference<T> clazz) {
+        return postForResult(url, body, null, MediaType.APPLICATION_JSON, clazz);
     }
 
 
-    public <T> Result<T> postForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, @NotNull MediaType mediaType, Class<T> clazz) {
+    public <T> Result<T> postForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, @NotNull MediaType mediaType, Class<T> clazz) {
 
+        return withTypePostForResult(url,body,headers,mediaType,clazz);
+    }
+
+    public <T> Result<T> postForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, @NotNull MediaType mediaType, TypeReference<T> clazz) {
+        return withTypePostForResult(url,body,headers,mediaType,clazz.getType());
+    }
+
+    private  <T> Result<T> withTypePostForResult(String url, @Nullable Map<String, String> body, @Nullable Map<String, String> headers, @NotNull MediaType mediaType, Type type) {
         RequestEntity.BodyBuilder post = RequestEntity.post(URI.create(url))
                 .header(HttpHeaders.CONTENT_TYPE, mediaType.toString());
         RequestEntity<?> entity;
-        if (params != null) {
+        if (body != null) {
             entity = post
                     .headers(new HttpHeaders(of(headers)))
-                    .body(params, ResolvableType.forClassWithGenerics(Map.class, String.class, String.class).getType());
+                    .body(body, ResolvableType.forClassWithGenerics(Map.class, String.class, String.class).getType());
         } else {
             entity = post
                     .headers(new HttpHeaders(of(headers)))
                     .build();
         }
 
-        ResponseEntity<Result<T>> exchange = restTemplate.exchange(url, HttpMethod.POST, entity, ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), clazz).getType()));
+        ResponseEntity<Result<T>> exchange = restTemplate.exchange(url, HttpMethod.POST, entity, ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), ResolvableType.forType(type)).getType()));
         return getResult(exchange);
     }
 
 
 
-
     public <T> Result<T> putForResult(String url, Object json, @Nullable Map<String, String> headers, Class<T> clazz) {
+       return withTypePutForResult(url,json,headers,clazz);
+    }
+
+    public <T> Result<T> putForResult(String url, Object json, @Nullable Map<String, String> headers, TypeReference<T> clazz) {
+        return withTypePutForResult(url,json,headers,clazz.getType());
+    }
+
+    private <T> Result<T> withTypePutForResult(String url, Object json, @Nullable Map<String, String> headers, Type clazz) {
         RequestEntity<String> body = RequestEntity.put(URI.create(url))
                 .headers(new HttpHeaders(of(headers)))
                 .body(JsonUtil.getDefaultJsonUtil().asJSON(json));
 
-        ResponseEntity<Result<T>> exchange = restTemplate.exchange(url, HttpMethod.PUT, body, ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), clazz).getType()));
+        ResponseEntity<Result<T>> exchange = restTemplate.exchange(url, HttpMethod.PUT, body, ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), ResolvableType.forType(clazz)).getType()));
         return getResult(exchange);
     }
 
@@ -206,23 +263,41 @@ public class TokenAwareRestTemplate {
         return putForResult(url, json, null, clazz);
     }
 
+    public <T> Result<T> putForResult(String url, Object json, TypeReference<T> clazz) {
+        return putForResult(url, json, null, clazz);
+    }
 
 
-    public <T> Result<T> deleteForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Class<T> clazz) {
-        RequestEntity<Void> entity = RequestEntity.delete(URI.create(url))
-                .headers(new HttpHeaders(of(headers)))
-                .build();
+    public  <T> Result<T>  deleteForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Class<T> clazz) {
+        return withTypeDeleteForResult(url,params,headers,clazz);
+    }
 
-        ResponseEntity<Result<T>> exchange = restTemplate.exchange(create(url, params), HttpMethod.DELETE, entity, ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), clazz).getType()));
-        return getResult(exchange);
+    public  <T> Result<T>  deleteForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, TypeReference<T> clazz) {
+        return withTypeDeleteForResult(url,params,headers,clazz.getType());
     }
 
     public <T> Result<T> deleteForResult(String url, Class<T> clazz) {
         return deleteForResult(url, null, null, clazz);
     }
+    public <T> Result<T> deleteForResult(String url, TypeReference<T> clazz) {
+        return deleteForResult(url, null, null, clazz);
+    }
 
     public <T> Result<T> deleteForResult(String url, @NotNull Map<String, String> params, Class<T> clazz) {
         return deleteForResult(url, params, null, clazz);
+    }
+
+    public <T> Result<T> deleteForResult(String url, @NotNull Map<String, String> params, TypeReference<T> clazz) {
+        return deleteForResult(url, params, null, clazz);
+    }
+
+    private <T> Result<T>  withTypeDeleteForResult(String url, @Nullable Map<String, String> params, @Nullable Map<String, String> headers, Type clazz) {
+        RequestEntity<Void> entity = RequestEntity.delete(URI.create(url))
+                .headers(new HttpHeaders(of(headers)))
+                .build();
+
+        ResponseEntity<Result<T>> exchange = restTemplate.exchange(create(url, params), HttpMethod.DELETE, entity, ParameterizedTypeReference.forType(ResolvableType.forClassWithGenerics(Result.getDefaultImplementClass(), ResolvableType.forType(clazz)).getType()));
+        return getResult(exchange);
     }
 
 
