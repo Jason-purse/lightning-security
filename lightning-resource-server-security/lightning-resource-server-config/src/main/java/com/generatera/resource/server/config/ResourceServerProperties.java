@@ -233,7 +233,7 @@ public class ResourceServerProperties {
 
     public static final String RESOURCE_SERVER_PREFIX = "lightning.security.resource.server";
 
-    public final static String AUTHORITY_CONFIG_PREFIX = RESOURCE_SERVER_PREFIX + ".authorityConfig";
+    public final static String AUTHORITY_CONFIG_PREFIX = RESOURCE_SERVER_PREFIX + ".authority-config";
 
 
     private final TokenVerificationConfig tokenVerificationConfig = new TokenVerificationConfig();
@@ -314,7 +314,7 @@ public class ResourceServerProperties {
     @Data
     public static class AuthorityConfiguration {
 
-        public static final String CACHE_CONFIG_PREFIX = AUTHORITY_CONFIG_PREFIX + ".cacheConfig";
+        public static final String CACHE_CONFIG_PREFIX = AUTHORITY_CONFIG_PREFIX + ".cache-config";
 
         /**
          * 默认使用{@link JwtExtClaimNames#SCOPE_CLAIM}
@@ -360,9 +360,9 @@ public class ResourceServerProperties {
         public static class CacheConfig {
 
 
-            public static final String MongoCacheConfigPrefix = CACHE_CONFIG_PREFIX + ".mongoCacheConfig";
+            public static final String MongoCacheConfigPrefix = CACHE_CONFIG_PREFIX + ".mongo-cache-config";
 
-            public static final String JpaCacheConfigPrefix = CACHE_CONFIG_PREFIX + ".jpaCacheConfig";
+            public static final String JpaCacheConfigPrefix = CACHE_CONFIG_PREFIX + ".jpa-cache-config";
 
 
             public static final long DEFAULT_EXPIRED_DURATION = 5 * 60 * 1000;
@@ -393,7 +393,7 @@ public class ResourceServerProperties {
         @Data
         public static class JpaCacheConfig  {
 
-            public static final String DataSourceConfigPrefix = JpaCacheConfigPrefix + ".dataSourceProperties";
+            public static final String DataSourceConfigPrefix = JpaCacheConfigPrefix + ".data-source-properties";
 
 
             /**
@@ -417,7 +417,7 @@ public class ResourceServerProperties {
         @Data
         public static class MongoCacheConfig {
 
-            public static final String mongoClientPropertiesPrefix = MongoCacheConfigPrefix + ".mongoProperties";
+            public static final String mongoClientPropertiesPrefix = MongoCacheConfigPrefix + ".mongo-properties";
 
             private final MongoProperties mongoProperties = new MongoProperties();
 

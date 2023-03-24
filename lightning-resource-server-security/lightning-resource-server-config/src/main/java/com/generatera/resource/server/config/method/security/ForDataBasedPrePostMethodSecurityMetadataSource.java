@@ -445,7 +445,7 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
         return false;
     }
 
-    private static class AnnotationInfoWithPreConfigAttribute implements PreInvocationAttribute {
+    private static class AnnotationInfoWithPreConfigAttribute implements LightningInvocationAttribute,PreInvocationAttribute {
 
         private final ConfigAttribute delegate;
 
@@ -485,14 +485,17 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             this.description = description;
             this.authorizeMode = authorizeMode;
             this.behavior = behavior;
-            this.methodIdentifier = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), ResourceInvokeEvaluatePhase.POST_INVOKE.getPhase(), behavior);
+            this.methodIdentifier = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), MethodSecurityInvokePhase.BEFORE.name(), behavior);
         }
 
         @Override
         public String getAttribute() {
             return delegate.getAttribute();
         }
-
+        @Override
+        public Tuple4<String, String, String, String> getMethodIdentifierWithActionAndType() {
+            return methodIdentifier;
+        }
 
     }
 
@@ -537,7 +540,7 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             this.description = description;
             this.authorizeMode = authorizeMode;
             this.behavior = behavior;
-            this.methodIdentifier = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), ResourceInvokeEvaluatePhase.POST_INVOKE.getPhase(), behavior);
+            this.methodIdentifier = new Tuple4<>(methodIdentifier, ResourceType.BACKEND_TYPE.getType(), MethodSecurityInvokePhase.AFTER.name(), behavior);
         }
 
         @Override

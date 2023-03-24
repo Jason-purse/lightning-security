@@ -45,6 +45,8 @@ public class JpaPrePostMethodSecurityMetadataSource extends ForDataBasedPrePostM
                                 .moduleName(moduleName)
                                 .methodSecurityIdentifier(methodSecurityIdentifier)
                                 .invokePhase(invokePhase)
+                                // 后端资源
+                                .type(ResourceType.BACKEND_TYPE.getType())
                                 .build()
                 )
         ).orElse(null);
