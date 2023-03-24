@@ -42,7 +42,7 @@ import static com.generatera.resource.server.config.ResourceServerProperties.Aut
  * 最终它返回的是{@link  LightningExtMethodSecurityMetadataSource}
  */
 public class MethodSecurityMetadataRepositoryManager implements DisposableBean {
-    
+
     private final MethodSecurityRepositoryHandler handler;
 
     private final ApplicationContext applicationContext;
@@ -89,21 +89,21 @@ public class MethodSecurityMetadataRepositoryManager implements DisposableBean {
         default boolean support(Object predicate) {
             return support(((ResourceServerProperties) predicate));
         }
-        
+
         boolean support(ResourceServerProperties resourceServerProperties);
     }
-    
+
     interface MethodSecurityRepositoryHandler extends HandlerFactory.Handler {
-        
+
         public LightningExtMethodSecurityMetadataSource getRepository(ResourceServerProperties resourceServerProperties,
-                                   ApplicationContext applicationContext,
-                                   PrePostInvocationAttributeFactory attributeFactory);
+                                                                      ApplicationContext applicationContext,
+                                                                      PrePostInvocationAttributeFactory attributeFactory);
 
         default void destroy() {
 
         }
     }
-    
+
     private static boolean useSelfConfigOrNewConfigJpa(ResourceServerProperties resourceServerProperties) {
         ResourceServerProperties.AuthorityConfiguration.CacheConfig cacheConfig = resourceServerProperties.getAuthorityConfig().getCacheConfig();
         ResourceServerProperties.AuthorityConfiguration.JpaCacheConfig jpaCacheConfig = cacheConfig.getJpaCacheConfig();
@@ -136,12 +136,12 @@ public class MethodSecurityMetadataRepositoryManager implements DisposableBean {
             public Object getProperty(String name) {
                 if(name.startsWith(jpaPropertiesPrefix)) {
                     return contextEnvironment.getProperty(
-                            JpaCacheConfigPrefix.concat(".") + name.substring(jpaPropertiesPrefix.length() - 1)
+                            JpaCacheConfigPrefix.concat(".") + name.substring(jpaPropertiesPrefix.length() + 1)
                     );
                 }
                 if(name.startsWith(dataSourcePropertiesPrefix)) {
                     return contextEnvironment.getProperty(
-                            DataSourceConfigPrefix.concat(".") + name.substring(dataSourcePropertiesPrefix.length() - 1)
+                            DataSourceConfigPrefix.concat(".") + name.substring(dataSourcePropertiesPrefix.length() + 1)
                     );
                 }
 
@@ -218,7 +218,7 @@ public class MethodSecurityMetadataRepositoryManager implements DisposableBean {
             public Object getProperty(String name) {
                 if(name.startsWith(dataSourcePropertiesPrefix)) {
                     return contextEnvironment.getProperty(
-                            mongoClientPropertiesPrefix.concat(".") + name.substring(dataSourcePropertiesPrefix.length() - 1)
+                            mongoClientPropertiesPrefix.concat(".") + name.substring(dataSourcePropertiesPrefix.length() +1)
                     );
                 }
 
@@ -277,8 +277,8 @@ public class MethodSecurityMetadataRepositoryManager implements DisposableBean {
                 new MethodSecurityRepositoryHandlerProvider() {
                     @Override
                     public boolean support(ResourceServerProperties resourceServerProperties) {
-                       return resourceServerProperties.getAuthorityConfig().getResourceAuthoritySaveKind() == ResourceServerProperties.StoreKind.JPA &&
-                               useSelfConfigOrNewConfigJpa(resourceServerProperties) ;}
+                        return resourceServerProperties.getAuthorityConfig().getResourceAuthoritySaveKind() == ResourceServerProperties.StoreKind.JPA &&
+                                useSelfConfigOrNewConfigJpa(resourceServerProperties) ;}
 
                     @NotNull
                     @Override
@@ -303,7 +303,7 @@ public class MethodSecurityMetadataRepositoryManager implements DisposableBean {
                         return new MethodSecurityRepositoryHandler() {
                             @Override
                             public LightningExtMethodSecurityMetadataSource getRepository(ResourceServerProperties resourceServerProperties, ApplicationContext applicationContext,
-                                                       PrePostInvocationAttributeFactory attributeFactory) {
+                                                                                          PrePostInvocationAttributeFactory attributeFactory) {
                                 return new JpaPrePostMethodSecurityMetadataSource(attributeFactory,
                                         applicationContext.getBean(JpaResourceMethodSecurityRepository.class),
                                         getModuleName(resourceServerProperties,applicationContext));
@@ -319,7 +319,7 @@ public class MethodSecurityMetadataRepositoryManager implements DisposableBean {
             @Override
             public boolean support(ResourceServerProperties resourceServerProperties) {
                 return resourceServerProperties.getAuthorityConfig().getResourceAuthoritySaveKind() ==
-                                ResourceServerProperties.StoreKind.MONGO &&
+                        ResourceServerProperties.StoreKind.MONGO &&
                         useSelfConfigOrNewConfigMongo(resourceServerProperties);
             }
 
