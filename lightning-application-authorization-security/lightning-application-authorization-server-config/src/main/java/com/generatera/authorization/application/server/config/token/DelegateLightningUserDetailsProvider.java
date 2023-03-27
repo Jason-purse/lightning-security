@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
+import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 
 import java.util.Collection;
@@ -10,18 +11,23 @@ public class DelegateLightningUserDetailsProvider implements LightningUserDetail
 
     private final List<LightningUserDetailsProvider> providers = new LinkedList<>();
 
-    public DelegateLightningUserDetailsProvider(LightningUserDetailsProvider ... providers) {
+    public DelegateLightningUserDetailsProvider(LightningUserDetailsProvider... providers) {
         this(List.of(providers));
     }
+
     public DelegateLightningUserDetailsProvider(Collection<LightningUserDetailsProvider> providers) {
         this.providers.addAll(providers);
     }
 
     @Override
-    public LightningUserPrincipal getUserDetails(AuthRefreshTokenAuthenticationToken authRefreshTokenAuthenticationToken,String principalName) {
+    public LightningUserPrincipal getUserDetails(AuthRefreshTokenAuthenticationToken authRefreshTokenAuthenticationToken,
+                                                 DefaultLightningAuthorization authorization,
+                                                 String principalName) {
         for (LightningUserDetailsProvider provider : providers) {
-            LightningUserPrincipal userDetails = provider.getUserDetails(authRefreshTokenAuthenticationToken,principalName);
-            if(userDetails != null) {
+            LightningUserPrincipal userDetails = provider.getUserDetails(authRefreshTokenAuthenticationToken,
+                    authorization,
+                    principalName);
+            if (userDetails != null) {
                 return userDetails;
             }
         }

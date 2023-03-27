@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
+import com.generatera.authorization.server.common.configuration.LightningAuthorizationGrantType;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningRefreshToken;
 import org.springframework.lang.Nullable;
@@ -15,7 +16,7 @@ import java.util.Map;
  * @time 15:07
  * @Description 包含了访问 token / 刷新 token 信息 以及额外的参数信息 ..
  */
-public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationToken {
+public class AuthAccessTokenAuthenticationToken extends AuthAuthorizationGrantAuthenticationToken {
     private final Authentication userPrincipal;
 
     @Nullable
@@ -23,7 +24,7 @@ public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationTo
 
     @Nullable
     private final LightningRefreshToken refreshToken;
-    private final Map<String, Object> additionalParameters;
+
     public AuthAccessTokenAuthenticationToken(Authentication userPrincipal) {
         this(userPrincipal,null);
     }
@@ -37,19 +38,18 @@ public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationTo
     }
 
     public AuthAccessTokenAuthenticationToken(Authentication userPrincipal, @Nullable LightningAccessToken accessToken, @Nullable LightningRefreshToken refreshToken, Map<String, Object> additionalParameters) {
-        super(Collections.emptyList());
-        Assert.notNull(userPrincipal, "userPrincipal cannot be null");
-        Assert.notNull(additionalParameters, "additionalParameters cannot be null");
-        this.userPrincipal = userPrincipal;
+        super(LightningAuthorizationGrantType.ACCESS_TOKEN,userPrincipal,additionalParameters);
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
-        this.additionalParameters = additionalParameters;
+        this.userPrincipal = userPrincipal;
     }
 
+    @Override
     public Object getPrincipal() {
         return this.userPrincipal.getPrincipal();
     }
 
+    @Override
     public Object getCredentials() {
         return this.userPrincipal.getCredentials();
     }
@@ -64,9 +64,6 @@ public class AuthAccessTokenAuthenticationToken extends AbstractAuthenticationTo
         return this.refreshToken;
     }
 
-    public Map<String, Object> getAdditionalParameters() {
-        return this.additionalParameters;
-    }
 
     public Authentication getAuthentication() {
         return userPrincipal;

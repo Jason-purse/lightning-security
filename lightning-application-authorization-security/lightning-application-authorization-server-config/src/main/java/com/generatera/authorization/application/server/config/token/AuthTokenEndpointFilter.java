@@ -128,8 +128,16 @@ public final class AuthTokenEndpointFilter extends OncePerRequestFilter {
                  * {@link AuthAccessTokenAuthenticationProvider} 会提前感知AuthAccessTokenAuthenticationToken
                  * 它仅仅负责token生成,所以,应该设置为 UsernamePasswordAuthenticationToken 进行处理 ..
                  * {@link  com.generatera.authorization.application.server.config.authentication.LightningAppAuthServerDaoLoginAuthenticationProvider} 通过它处理 ..
+                 *
+                 *
+                 * 需要判断授权授予类型的认证
                  */
-                AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken) this.authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authorizationGrantAuthentication,null));
+
+                if(!(authorizationGrantAuthentication instanceof AuthAuthorizationGrantAuthenticationToken))
+                {
+                    authorizationGrantAuthentication = new UsernamePasswordAuthenticationToken(authorizationGrantAuthentication,null);
+                }
+                AuthAccessTokenAuthenticationToken accessTokenAuthentication = (AuthAccessTokenAuthenticationToken) this.authenticationManager.authenticate(authorizationGrantAuthentication);
                 this.authenticationSuccessHandler.onAuthenticationSuccess(request, response, accessTokenAuthentication);
 
             } catch (AuthenticationException  var7) { // 只要是认证异常 都接收 ...

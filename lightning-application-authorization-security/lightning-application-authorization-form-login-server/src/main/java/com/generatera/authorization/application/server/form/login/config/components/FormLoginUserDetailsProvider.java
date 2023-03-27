@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.form.login.config.components;
 
 import com.generatera.authorization.application.server.config.LoginGrantType;
+import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.application.server.config.token.AuthRefreshTokenAuthenticationToken;
 import com.generatera.authorization.application.server.config.token.LightningUserDetailsProvider;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
@@ -15,7 +16,9 @@ public class FormLoginUserDetailsProvider implements LightningUserDetailsProvide
         this.userDetailsService = userDetailsService;
     }
     @Override
-    public LightningUserPrincipal getUserDetails(AuthRefreshTokenAuthenticationToken authRefreshTokenAuthenticationToken, String principalName) {
+    public LightningUserPrincipal getUserDetails(AuthRefreshTokenAuthenticationToken authRefreshTokenAuthenticationToken,
+                                                 DefaultLightningAuthorization authorization,
+                                                 String principalName) {
         LoginGrantType loginGrantType = authRefreshTokenAuthenticationToken.getLoginGrantType();
         // 表单登录 ..
         if(loginGrantType.value().equalsIgnoreCase(LoginGrantType.FORM_LOGIN.value())) {

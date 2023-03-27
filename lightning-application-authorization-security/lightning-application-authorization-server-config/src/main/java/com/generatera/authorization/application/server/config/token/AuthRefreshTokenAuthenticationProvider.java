@@ -79,7 +79,7 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
                 }
 
                 // 直接获取用户信息,然后重新生成token
-                UserDetails userDetails = userDetailsService.getUserDetails(refreshTokenAuthentication,authorization.getPrincipalName());
+                UserDetails userDetails = userDetailsService.getUserDetails(refreshTokenAuthentication,authorization,authorization.getPrincipalName());
                 if(userDetails == null) {
                     throw new LightningAuthenticationException("invalid_login_grant_type");
                 }
@@ -165,6 +165,7 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
         }
     }
 
+    @Override
     public boolean supports(Class<?> authentication) {
         return AuthRefreshTokenAuthenticationToken.class.isAssignableFrom(authentication);
     }

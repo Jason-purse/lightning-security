@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
+import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 
 /**
@@ -13,7 +14,10 @@ public interface LightningUserDetailsProvider {
     /**
      *
      * @param authRefreshTokenAuthenticationToken 是一个未认证的 token
+     * @param authorization authorization
      * @param principalName 唯一约束 ..
      */
-    LightningUserPrincipal getUserDetails(AuthRefreshTokenAuthenticationToken authRefreshTokenAuthenticationToken, String principalName);
+    LightningUserPrincipal getUserDetails(AuthRefreshTokenAuthenticationToken authRefreshTokenAuthenticationToken,
+                                          DefaultLightningAuthorization authorization,
+                                          String principalName);
 }
