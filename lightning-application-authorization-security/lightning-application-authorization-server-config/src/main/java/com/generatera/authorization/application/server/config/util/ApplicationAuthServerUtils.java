@@ -53,7 +53,7 @@ public class ApplicationAuthServerUtils {
         ProviderSettingProperties fullConfigPropertiesProviderSettingProperties = this.fullConfigProperties.getProviderSettingProperties();
 
         if (org.springframework.util.StringUtils.hasText(providerSettingProperties.getIssuer())) {
-            providerSettingProperties.setIssuer(normalize(providerSettingProperties.getIssuer()));
+            providerSettingProperties.setIssuer(providerSettingProperties.getIssuer());
             fullConfigPropertiesProviderSettingProperties.setIssuer(providerSettingProperties.getIssuer());
         }
 

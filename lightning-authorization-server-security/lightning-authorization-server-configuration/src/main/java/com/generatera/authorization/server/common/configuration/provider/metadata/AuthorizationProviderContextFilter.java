@@ -3,6 +3,7 @@ package com.generatera.authorization.server.common.configuration.provider.metada
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContext;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderContextHolder;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.security.web.util.UrlUtils;
 import org.springframework.util.Assert;
@@ -21,6 +22,7 @@ import java.io.IOException;
  * @time 10:19
  * @Description oauth2 server copy
  */
+@Slf4j
 public final class AuthorizationProviderContextFilter extends OncePerRequestFilter {
     private final ProviderSettings providerSettings;
 
