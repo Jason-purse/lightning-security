@@ -167,7 +167,7 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
 
     @Override
     public boolean supportsParameter(@NotNull MethodParameter parameter) {
-        return (ClassUtils.isPrimitiveOrWrapper(parameter.getParameterType()) && parameter.getParameterAnnotation(UserPrincipalProperty.class) != null) ||
+        return (isCommonTypes(parameter.getParameterType()) && parameter.getParameterAnnotation(UserPrincipalProperty.class) != null) ||
                 ((parameter.getParameterAnnotation(UserPrincipalInject.class) != null ||
                         AnnotationUtils.getAnnotation(parameter.getParameterType(), UserPrincipalInject.class) != null));
     }
