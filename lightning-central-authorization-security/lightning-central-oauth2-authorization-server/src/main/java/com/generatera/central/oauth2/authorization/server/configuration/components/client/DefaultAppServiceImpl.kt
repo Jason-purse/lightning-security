@@ -3,6 +3,7 @@ package com.generatera.central.oauth2.authorization.server.configuration.compone
 import com.generatera.central.oauth2.authorization.server.configuration.model.entity.client.OAuth2ClientEntity
 import com.generatera.central.oauth2.authorization.server.configuration.model.param.client.AppParam
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.converters.EntityConverter
+import com.jianyue.lightning.boot.starter.generic.crud.service.support.converters.QueryConverter
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.converters.strategy.DefaultJpaValidationSupportForQueryAdapter
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.query.QuerySupport
 import com.jianyue.lightning.boot.starter.generic.crud.service.support.query.jpa.DefaultJpaQuery
@@ -12,7 +13,6 @@ import com.jianyue.lightning.boot.starter.util.BeanUtils
 import com.jianyue.lightning.boot.starter.util.isNotNull
 import com.jianyue.lightning.framework.generic.crud.abstracted.param.Param
 import com.jianyue.lightning.util.JsonUtil
-import com.safone.order.service.model.order.verification.support.converters.QueryConverter
 import org.springframework.beans.factory.annotation.Autowired
 import java.lang.reflect.Type
 
