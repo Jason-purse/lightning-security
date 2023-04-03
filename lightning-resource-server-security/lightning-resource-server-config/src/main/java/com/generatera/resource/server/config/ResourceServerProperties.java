@@ -10,6 +10,9 @@ import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Collections;
+import java.util.List;
+
 import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfiguration.CacheConfig.JpaCacheConfigPrefix;
 import static com.generatera.resource.server.config.ResourceServerProperties.AuthorityConfiguration.CacheConfig.MongoCacheConfigPrefix;
 
@@ -240,6 +243,19 @@ public class ResourceServerProperties {
 
 
     private final AuthorityConfiguration authorityConfig = new AuthorityConfiguration();
+    /**
+     * 权限过滤
+     */
+    private final Permission permission = new Permission();
+
+    @Data
+    public static class Permission {
+
+        /**
+         * url 白名单 - 放行,不需要token 校验
+         */
+        private List<String> urlWhiteList = Collections.emptyList();
+    }
 
 
     @Data
