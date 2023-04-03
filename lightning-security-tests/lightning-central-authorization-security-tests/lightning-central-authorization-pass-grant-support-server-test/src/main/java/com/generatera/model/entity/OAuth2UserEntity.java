@@ -2,7 +2,7 @@ package com.generatera.model.entity;
 
 import com.generatera.authorization.server.common.configuration.annotations.SafeSerialize;
 import com.google.common.collect.Lists;
-import com.jianyue.lightning.boot.starter.generic.crud.service.entity.JpaBaseEntity;
+import com.jianyue.lightning.boot.starter.generic.crud.service.entity.JpaEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -27,7 +27,7 @@ import java.util.Collection;
 @NoArgsConstructor
 @Data
 @SafeSerialize
-public class OAuth2UserEntity extends JpaBaseEntity<Long>  implements UserDetails, CredentialsContainer, Cloneable{
+public class OAuth2UserEntity extends JpaEntity<Long> implements UserDetails, CredentialsContainer, Cloneable{
 
 
     @Serial

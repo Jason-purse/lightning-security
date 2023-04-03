@@ -1,6 +1,6 @@
 package com.generatera.central.oauth2.authorization.server.configuration.model.entity.client;
 
-import com.jianyue.lightning.boot.starter.generic.crud.service.entity.JpaBaseEntity;
+import com.jianyue.lightning.boot.starter.generic.crud.service.entity.JpaEntity;
 import lombok.*;
 
 import javax.persistence.*;
@@ -20,7 +20,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Builder
-public class OAuth2ClientEntity extends JpaBaseEntity<Long> {
+public class OAuth2ClientEntity extends JpaEntity<Long> {
 
     @Serial
     private static final long serialVersionUID = 1L;
