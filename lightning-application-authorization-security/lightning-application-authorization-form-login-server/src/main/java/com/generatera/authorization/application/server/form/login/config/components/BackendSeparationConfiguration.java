@@ -11,7 +11,9 @@ import com.generatera.authorization.application.server.form.login.config.FormLog
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningSecurityContextRepository;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -37,12 +39,14 @@ public class BackendSeparationConfiguration {
      * 增加 FormLoginRequestConverter 表单登录请求 token 颁发支持 ..
      */
     @Bean
-    public LightningAppAuthServerConfigurer appAuthServerConfigurer() {
+    public LightningAppAuthServerConfigurer appAuthServerConfigurer(
+            @Autowired(required = false) FormLoginRequestConverter formLoginRequestConverter
+    ) {
         return new LightningAppAuthServerConfigurer() {
             @Override
             public void configure(ApplicationAuthServerConfigurer<HttpSecurity> applicationAuthServerConfigurer) throws Exception {
                 applicationAuthServerConfigurer.tokenEndpoint(endpoint -> {
-                    endpoint.addAccessTokenRequestConverter(new FormLoginRequestConverter());
+                    endpoint.addAccessTokenRequestConverter(ElvisUtil.getOrDefault(formLoginRequestConverter,new DefaultFormLoginRequestConverter()));
                 });
             }
         };

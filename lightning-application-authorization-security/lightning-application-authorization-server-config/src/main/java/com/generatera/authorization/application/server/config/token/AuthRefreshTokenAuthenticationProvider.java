@@ -1,5 +1,6 @@
 package com.generatera.authorization.application.server.config.token;
 
+import com.generatera.authorization.application.server.config.UsernamePasswordAuthenticationWithRequestToken;
 import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
 import com.generatera.authorization.application.server.config.authorization.store.LightningAuthenticationTokenService;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization;
@@ -87,7 +88,7 @@ public final class AuthRefreshTokenAuthenticationProvider implements Authenticat
                         null, userDetails.getAuthorities());
                 // 重新认证
                 DefaultLightningTokenContext.Builder builder = DefaultLightningTokenContext.builder()
-                        .authentication(authenticationToken)
+                        .authentication(new UsernamePasswordAuthenticationWithRequestToken(authenticationToken, authentication))
                         .providerContext(ProviderContextHolder.getProviderContext())
                         .tokenSettings(tokenSettingsProvider.getTokenSettings())
                         .tokenValueType(tokenSettingsProvider.getTokenSettings().getAccessTokenValueType())

@@ -61,8 +61,8 @@ public interface LightningTokenContext extends Context {
      * 抽象构建器
      */
     abstract class AbstractBuilder<T extends LightningTokenContext, B extends AbstractBuilder<T, B>> {
-        private static final String AUTHENTICATION_KEY = Authentication.class.getSimpleName();
-        private static final String AUTHENTICATION_PRINCIPAL_KEY = AUTHENTICATION_KEY.concat(Principal.class.getSimpleName());
+        public static final String AUTHENTICATION_KEY = Authentication.class.getSimpleName();
+        public static final String AUTHENTICATION_PRINCIPAL_KEY = AUTHENTICATION_KEY.concat(Principal.class.getSimpleName());
         /**
          * 各种上下文集合 ...
          */

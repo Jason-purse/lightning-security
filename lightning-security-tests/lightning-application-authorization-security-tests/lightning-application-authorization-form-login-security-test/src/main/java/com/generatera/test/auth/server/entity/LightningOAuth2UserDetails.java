@@ -2,6 +2,7 @@ package com.generatera.test.auth.server.entity;
 
 
 import com.generatera.authorization.server.common.configuration.annotations.SafeSerialize;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @SafeSerialize
-public class LightningOAuth2UserDetails implements UserDetails,CredentialsContainer, Cloneable {
+public class LightningOAuth2UserDetails implements LightningUserPrincipal, Cloneable {
 
     private Long id;
 

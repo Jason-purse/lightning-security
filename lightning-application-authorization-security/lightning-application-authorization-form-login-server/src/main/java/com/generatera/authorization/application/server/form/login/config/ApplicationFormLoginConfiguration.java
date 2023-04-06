@@ -18,11 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -67,22 +65,6 @@ public class ApplicationFormLoginConfiguration {
             @Autowired(required = false)
                     UserDetailsPasswordService passwordManager
     ) {
-        LightningUserDetailService finalUserDetailsService = userDetailsService;
-        userDetailsService = new LightningUserDetailService() {
-            @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                UserDetails userDetails = finalUserDetailsService.loadUserByUsername(username);
-                if (!LightningUserPrincipal.class.isAssignableFrom(userDetails.getClass())) {
-                    return new DefaultLightningUserDetails(userDetails);
-                }
-                return userDetails;
-            }
-
-            @Override
-            public LightningUserPrincipal mapAuthenticatedUser(LightningUserPrincipal userPrincipal) {
-                return finalUserDetailsService.mapAuthenticatedUser(userPrincipal);
-            }
-        };
 
         OptmizedDaoAuthenticationProvider provider = new OptmizedDaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
@@ -98,8 +80,9 @@ public class ApplicationFormLoginConfiguration {
 
 
     @Bean
-    public LightningUserDetailsProvider formUserDetailsProvider(UserDetailsService userDetailsService) {
-        return new FormLoginUserDetailsProvider(userDetailsService);
+    @ConditionalOnMissingBean(FormLoginUserDtailsProvider.class)
+    public FormLoginUserDtailsProvider formUserDetailsProvider(UserDetailsService userDetailsService) {
+        return new DefaultFormLoginUserDetailsProvider(userDetailsService);
     }
 
     @Bean

@@ -11,9 +11,5 @@ import org.springframework.security.core.Authentication;
  */
 public interface LightningAuthentication extends Authentication {
 
-    /**
-     * 获取解析器Class
-     */
-    @NotNull
-    Class<? extends LightningAuthenticationParser> getParserClass();
+
 }

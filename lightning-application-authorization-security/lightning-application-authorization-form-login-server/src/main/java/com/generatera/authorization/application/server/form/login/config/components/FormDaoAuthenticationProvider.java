@@ -2,6 +2,7 @@ package com.generatera.authorization.application.server.form.login.config.compon
 
 import com.generatera.authorization.application.server.config.token.AuthAccessTokenAuthenticationToken;
 import com.generatera.authorization.application.server.config.token.LightningDaoAuthenticationProvider;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;

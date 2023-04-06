@@ -8,10 +8,10 @@ import com.generatera.security.authorization.server.specification.LightningUserP
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.util.Assert;
 
-public class FormLoginUserDetailsProvider implements LightningUserDetailsProvider {
+public class DefaultFormLoginUserDetailsProvider implements FormLoginUserDtailsProvider {
     private final UserDetailsService userDetailsService;
 
-    public FormLoginUserDetailsProvider(UserDetailsService userDetailsService) {
+    public DefaultFormLoginUserDetailsProvider(UserDetailsService userDetailsService) {
         Assert.notNull(userDetailsService,"userDetailsService must not be null !!!");
         this.userDetailsService = userDetailsService;
     }

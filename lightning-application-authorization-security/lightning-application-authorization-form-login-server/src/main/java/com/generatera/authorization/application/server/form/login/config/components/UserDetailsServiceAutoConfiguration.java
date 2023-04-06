@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.form.login.config.components;
 
 import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -68,7 +69,7 @@ class DefaultInMemoryUserDetailsManager extends InMemoryUserDetailsManager imple
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public LightningUserPrincipal loadUserByUsername(String username) throws UsernameNotFoundException {
         return new DefaultLightningUserDetails(super.loadUserByUsername(username));
     }
 
