@@ -1,6 +1,5 @@
 package com.generatera.resource.server.config.method.security;
 
-import com.generatera.resource.server.config.util.LightningInvocationAttributeUtils;
 import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import com.jianyue.lightning.boot.starter.util.dataflow.Tuple4;
 import org.jetbrains.annotations.NotNull;
@@ -62,33 +61,16 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
         }
 
         // 底层做缓存了,无需担心 ..
-        List<ConfigAttribute> configAttributes = doGetConfigAttribute(method, targetClass,
+        return doGetConfigAttribute(method, targetClass,
                 getLightningPreAuthorizeFromClassOrMethod(method, targetClass),
                 getLightningPostAuthorizeFromClassOrMethod(method, targetClass));
-
-        LightningInvocationAttributeUtils.evaluateAndSetPostInvocationResourceMethodSecurity(configAttributes);
-        LightningInvocationAttributeUtils.evaluateAndSetPostInvocationResourceMethodSecurity(configAttributes);
-
-        if (configAttributes != null && !configAttributes.isEmpty()) {
-            return unWrapToNativeConfigAttribute(configAttributes);
-        }
-
-        return configAttributes;
     }
 
-    private List<ConfigAttribute> unWrapToNativeConfigAttribute(Collection<ConfigAttribute> configAttributes) {
-        return configAttributes.stream().map(ele -> {
-            if (ele instanceof LightningInvocationAttribute attribute) {
-                return attribute.getDelegate();
-            }
-            return ele;
-        }).toList();
-    }
 
     public String resolveMethodSecurityIdentifier(Method method, Class<?> targetClass) {
         Parameter[] parameters = method.getParameters();
         return this.resolveMethodSecurityIdentifier(method.getName(), targetClass.getName(),
-                OptionalFlux.of(nameDiscoverer.getParameterNames(method)).orElse(resolveParameterNames(method)).getResult(),
+                OptionalFlux.of(nameDiscoverer.getParameterNames(method)).orElse(() -> resolveParameterNames(method)).getResult(),
                 Arrays.stream(parameters).map(ele -> ele.getType().getSimpleName()).toArray(String[]::new));
     }
 
