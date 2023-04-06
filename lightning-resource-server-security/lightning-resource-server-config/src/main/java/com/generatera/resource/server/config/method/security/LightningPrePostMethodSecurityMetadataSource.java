@@ -8,7 +8,6 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.security.access.ConfigAttribute;
-import org.springframework.security.access.event.AuthorizedEvent;
 import org.springframework.security.access.method.AbstractMethodSecurityMetadataSource;
 import org.springframework.security.access.prepost.PostInvocationAttribute;
 import org.springframework.security.access.prepost.PreInvocationAttribute;
@@ -312,14 +311,6 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
     @Override
     public void onApplicationEvent(@NotNull ApplicationEvent event) {
         // 啥也不做 ...
-        if(event instanceof AuthorizedEvent authorizedEvent) {
-            // 尝试设置 ..
-            Collection<ConfigAttribute> configAttributes = authorizedEvent.getConfigAttributes();
-
-            for (ConfigAttribute configAttribute : configAttributes) {
-
-            }
-        }
     }
 
     private static class LightningPreInvocationAttribute implements LightningInvocationAttribute, PreInvocationAttribute {

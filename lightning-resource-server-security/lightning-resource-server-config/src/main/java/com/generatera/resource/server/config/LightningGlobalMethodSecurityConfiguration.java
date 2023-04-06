@@ -273,7 +273,7 @@ class LightningPreInvocationAuthorizationAdviceVoter implements AccessDecisionVo
 
     @Override
     public int vote(Authentication authentication, MethodInvocation object, Collection<ConfigAttribute> attributes) {
-        LightningInvocationAttributeUtils.evaluateAndSetPreInvocationResourceMethodSecurity(attributes);
+        LightningInvocationAttributeUtils.evaluateAndSetInvocationResourceMethodSecurity(attributes);
         return voter.vote(authentication, object, LightningInvocationAttributeUtils.unWrapToNativeConfigAttribute(attributes));
     }
 }
@@ -292,7 +292,7 @@ class LightningPostInvocationAuthorizationProvider implements AfterInvocationPro
     @Override
     public Object decide(Authentication authentication, Object object, Collection<ConfigAttribute> attributes, Object returnedObject) throws AccessDeniedException {
         // 本身就会 填充
-        LightningInvocationAttributeUtils.evaluateAndSetPostInvocationResourceMethodSecurity(attributes);
+        LightningInvocationAttributeUtils.evaluateAndSetInvocationResourceMethodSecurity(attributes);
         return provider.decide(authentication, object, LightningInvocationAttributeUtils.unWrapToNativeConfigAttribute(attributes), returnedObject);
     }
 

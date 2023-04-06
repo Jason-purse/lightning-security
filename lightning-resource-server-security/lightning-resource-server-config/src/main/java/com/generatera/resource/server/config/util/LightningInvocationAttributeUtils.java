@@ -17,20 +17,7 @@ import java.util.List;
  */
 public class LightningInvocationAttributeUtils {
 
-    public static void evaluateAndSetPreInvocationResourceMethodSecurity(Collection<ConfigAttribute> attributes) {
-        if(attributes != null) {
-            for (ConfigAttribute attribute : attributes) {
-                if (attribute instanceof LightningInvocationAttribute preInvocationAttribute) {
-                    if (preInvocationAttribute instanceof PreInvocationAttribute) {
-                        // 设置当前资源方法安全holder
-                        LightningResourceMethodSecurityHolder.setPreResourceMethodSecurity(preInvocationAttribute.getMethodIdentifierWithActionAndType());
-                    }
-                }
-            }
-        }
-    }
-
-    public static void evaluateAndSetPostInvocationResourceMethodSecurity(Collection<ConfigAttribute> attributes) {
+    public static void evaluateAndSetInvocationResourceMethodSecurity(Collection<ConfigAttribute> attributes) {
         if(attributes != null) {
             for (ConfigAttribute attribute : attributes) {
                 if (attribute instanceof LightningInvocationAttribute invocationAttribute) {
@@ -38,6 +25,10 @@ public class LightningInvocationAttributeUtils {
                         LightningResourceMethodSecurityHolder.setPostResourceMethodSecurity(
                                 invocationAttribute.getMethodIdentifierWithActionAndType()
                         );
+                    }
+                    else if (attribute instanceof PreInvocationAttribute) {
+                        // 设置当前资源方法安全holder
+                        LightningResourceMethodSecurityHolder.setPreResourceMethodSecurity(invocationAttribute.getMethodIdentifierWithActionAndType());
                     }
                 }
             }
