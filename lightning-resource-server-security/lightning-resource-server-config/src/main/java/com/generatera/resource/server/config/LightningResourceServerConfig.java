@@ -44,7 +44,6 @@ public class LightningResourceServerConfig {
                     }
 
                     urlWhilteListHandle(securityBuilder, properties);
-                    // 不需要fallback 兜底,服务器自动存在兜底
                 }
             };
         }
@@ -70,7 +69,7 @@ public class LightningResourceServerConfig {
     private static void urlWhilteListHandle(HttpSecurity security, ResourceServerProperties resourceServerProperties) throws Exception {
         security.apply(new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
             @Override
-            public void configure(HttpSecurity builder) throws Exception {
+            public void init(HttpSecurity builder) throws Exception {
 
                 List<String> urlWhiteList = resourceServerProperties.getPermission().getUrlWhiteList();
                 ElvisUtil.isNotEmptyConsumer(urlWhiteList, list -> {
@@ -91,7 +90,7 @@ public class LightningResourceServerConfig {
         security.apply(
                 new SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity>() {
                     @Override
-                    public void configure(HttpSecurity builder) throws Exception {
+                    public void init(HttpSecurity builder) throws Exception {
                         builder.authorizeHttpRequests()
                                 .anyRequest()
                                 .authenticated();
