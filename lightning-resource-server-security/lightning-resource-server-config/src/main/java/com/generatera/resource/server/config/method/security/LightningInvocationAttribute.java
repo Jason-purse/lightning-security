@@ -1,6 +1,7 @@
 package com.generatera.resource.server.config.method.security;
 
 import com.jianyue.lightning.boot.starter.util.dataflow.Tuple4;
+import org.springframework.security.access.ConfigAttribute;
 
 public interface LightningInvocationAttribute {
     /**
@@ -8,4 +9,6 @@ public interface LightningInvocationAttribute {
      * @return 方法标识符字符串表现形式
      */
     Tuple4<String,String,String,String> getMethodIdentifierWithActionAndType();
+
+    ConfigAttribute getDelegate();
 }

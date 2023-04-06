@@ -75,6 +75,10 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
 
     private final MethodSecurityMetadataRepositoryManager repositoryManager;
 
+    public ForcedCacheMethodSecurityMetadataSource getMethodSecurityMetadataSource() {
+        return methodSecurityMetadataSource;
+    }
+
     @Override
     public void afterSingletonsInstantiated() {
         super.afterSingletonsInstantiated();
@@ -131,60 +135,60 @@ class LightningGlobalMethodSecurityConfiguration extends GlobalMethodSecurityCon
         }
     }
 
-    /**
-     * 对 {@link LightningResourceMethodSecurityHolder} 的支持 ..
-     */
-    @Override
-    protected AccessDecisionManager accessDecisionManager() {
-
-        AccessDecisionManager accessDecisionManager = super.accessDecisionManager();
-        List<AccessDecisionVoter<?>> decisionVoters = ((AbstractAccessDecisionManager) accessDecisionManager).getDecisionVoters();
-        int index = -1;
-        for (int i = 0; i < decisionVoters.size(); i++) {
-            if (decisionVoters.get(i) instanceof PreInvocationAuthorizationAdviceVoter) {
-               index = i;
-            }
-        }
-        if(index >= 0) {
-            AccessDecisionVoter<?> accessDecisionVoter = decisionVoters.get(index);
-            LightningPreInvocationAuthorizationAdviceVoter preInvocationAuthorizationAdviceVoter = new LightningPreInvocationAuthorizationAdviceVoter(((PreInvocationAuthorizationAdviceVoter) accessDecisionVoter));
-            LinkedList<AccessDecisionVoter<?>> accessDecisionVoters = new LinkedList<>(decisionVoters);
-            accessDecisionVoters.add(index,preInvocationAuthorizationAdviceVoter);
-            // 删除之前的配置 ..
-            accessDecisionVoters.remove(index + 1);
-            return new AffirmativeBased(accessDecisionVoters);
-        }
-
-        return accessDecisionManager;
-    }
-
-    @Override
-    protected AfterInvocationManager afterInvocationManager() {
-
-        AfterInvocationManager afterInvocationManager = super.afterInvocationManager();
-        if(afterInvocationManager != null) {
-            List<AfterInvocationProvider> providers = ((AfterInvocationProviderManager) afterInvocationManager).getProviders();
-            int index = -1;
-            for (int i = 0; i < providers.size(); i++) {
-                if (providers.get(i) instanceof PostInvocationAdviceProvider) {
-                    index = i;
-                }
-            }
-
-            if(index > 0) {
-                AfterInvocationProvider afterInvocationProvider = providers.get(index);
-                LightningPostInvocationAuthorizationProvider preInvocationAuthorizationAdviceVoter = new LightningPostInvocationAuthorizationProvider(afterInvocationProvider);
-                LinkedList<AfterInvocationProvider> accessDecisionVoters = new LinkedList<>(providers);
-                accessDecisionVoters.add(index,preInvocationAuthorizationAdviceVoter);
-                accessDecisionVoters.remove(index + 1);
-                AfterInvocationProviderManager afterInvocationProviderManager = new AfterInvocationProviderManager();
-                afterInvocationProviderManager.setProviders(accessDecisionVoters);
-                return afterInvocationProviderManager;
-            }
-        }
-
-        return afterInvocationManager;
-    }
+    ///**
+    // * 对 {@link LightningResourceMethodSecurityHolder} 的支持 ..
+    // */
+    //@Override
+    //protected AccessDecisionManager accessDecisionManager() {
+    //
+    //    AccessDecisionManager accessDecisionManager = super.accessDecisionManager();
+    //    List<AccessDecisionVoter<?>> decisionVoters = ((AbstractAccessDecisionManager) accessDecisionManager).getDecisionVoters();
+    //    int index = -1;
+    //    for (int i = 0; i < decisionVoters.size(); i++) {
+    //        if (decisionVoters.get(i) instanceof PreInvocationAuthorizationAdviceVoter) {
+    //           index = i;
+    //        }
+    //    }
+    //    if(index >= 0) {
+    //        AccessDecisionVoter<?> accessDecisionVoter = decisionVoters.get(index);
+    //        LightningPreInvocationAuthorizationAdviceVoter preInvocationAuthorizationAdviceVoter = new LightningPreInvocationAuthorizationAdviceVoter(((PreInvocationAuthorizationAdviceVoter) accessDecisionVoter));
+    //        LinkedList<AccessDecisionVoter<?>> accessDecisionVoters = new LinkedList<>(decisionVoters);
+    //        accessDecisionVoters.add(index,preInvocationAuthorizationAdviceVoter);
+    //        // 删除之前的配置 ..
+    //        accessDecisionVoters.remove(index + 1);
+    //        return new AffirmativeBased(accessDecisionVoters);
+    //    }
+    //
+    //    return accessDecisionManager;
+    //}
+    //
+    //@Override
+    //protected AfterInvocationManager afterInvocationManager() {
+    //
+    //    AfterInvocationManager afterInvocationManager = super.afterInvocationManager();
+    //    if(afterInvocationManager != null) {
+    //        List<AfterInvocationProvider> providers = ((AfterInvocationProviderManager) afterInvocationManager).getProviders();
+    //        int index = -1;
+    //        for (int i = 0; i < providers.size(); i++) {
+    //            if (providers.get(i) instanceof PostInvocationAdviceProvider) {
+    //                index = i;
+    //            }
+    //        }
+    //
+    //        if(index > 0) {
+    //            AfterInvocationProvider afterInvocationProvider = providers.get(index);
+    //            LightningPostInvocationAuthorizationProvider preInvocationAuthorizationAdviceVoter = new LightningPostInvocationAuthorizationProvider(afterInvocationProvider);
+    //            LinkedList<AfterInvocationProvider> accessDecisionVoters = new LinkedList<>(providers);
+    //            accessDecisionVoters.add(index,preInvocationAuthorizationAdviceVoter);
+    //            accessDecisionVoters.remove(index + 1);
+    //            AfterInvocationProviderManager afterInvocationProviderManager = new AfterInvocationProviderManager();
+    //            afterInvocationProviderManager.setProviders(accessDecisionVoters);
+    //            return afterInvocationProviderManager;
+    //        }
+    //    }
+    //
+    //    return afterInvocationManager;
+    //}
 
     @Override
     public void destroy() throws Exception {

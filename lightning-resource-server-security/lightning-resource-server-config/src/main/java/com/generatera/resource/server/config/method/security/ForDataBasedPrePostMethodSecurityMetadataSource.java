@@ -129,23 +129,10 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
         // 先从缓存中获取 ...
         // 如果这样搞,则缓存了两份 ...这是不必要的 ...
         //return super.getAttributes(method, targetClass);
-        Collection<ConfigAttribute> configAttributes = attributeCache.computeIfAbsent(new OptimizedCacheKey(method, targetClass), valueSupplier(method, targetClass));
-        if (configAttributes != null && !configAttributes.isEmpty()) {
-            return unWrapToNativeConfigAttribute(configAttributes);
-        }
-        return configAttributes;
+        return attributeCache.computeIfAbsent(new OptimizedCacheKey(method, targetClass), valueSupplier(method, targetClass));
     }
 
-    private List<ConfigAttribute> unWrapToNativeConfigAttribute(Collection<ConfigAttribute> configAttributes) {
-        return configAttributes.stream().map(ele -> {
-            if (ele instanceof AnnotationInfoWithPostConfigAttribute attribute) {
-                return attribute.delegate;
-            } else if (ele instanceof AnnotationInfoWithPreConfigAttribute attribute) {
-                return attribute.delegate;
-            }
-            return ele;
-        }).toList();
-    }
+
 
     @NotNull
     private Function<OptimizedCacheKey, Collection<ConfigAttribute>> valueSupplier(Method method, Class<?> targetClass) {
@@ -497,6 +484,9 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
             return methodIdentifier;
         }
 
+        public ConfigAttribute getDelegate() {
+            return delegate;
+        }
     }
 
     private static class AnnotationInfoWithPostConfigAttribute implements LightningInvocationAttribute, PostInvocationAttribute {
@@ -552,6 +542,11 @@ public abstract class ForDataBasedPrePostMethodSecurityMetadataSource extends Li
         @Override
         public Tuple4<String, String, String, String> getMethodIdentifierWithActionAndType() {
             return methodIdentifier;
+        }
+
+        @Override
+        public ConfigAttribute getDelegate() {
+            return delegate;
         }
     }
 

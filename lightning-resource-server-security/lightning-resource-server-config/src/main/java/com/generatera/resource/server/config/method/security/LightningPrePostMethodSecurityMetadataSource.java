@@ -1,5 +1,6 @@
 package com.generatera.resource.server.config.method.security;
 
+import com.generatera.resource.server.config.util.LightningInvocationAttributeUtils;
 import com.jianyue.lightning.boot.starter.util.OptionalFlux;
 import com.jianyue.lightning.boot.starter.util.dataflow.Tuple4;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +53,7 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
         return getConfigAttributes(method, targetClass);
     }
 
-    @NotNull
+
     protected List<ConfigAttribute> getConfigAttributes(Method method, Class<?> targetClass) {
 
         // 支持类上面的针对全局所有方法进行处理 ...
@@ -61,9 +62,27 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
         }
 
         // 底层做缓存了,无需担心 ..
-        return doGetConfigAttribute(method, targetClass,
+        List<ConfigAttribute> configAttributes = doGetConfigAttribute(method, targetClass,
                 getLightningPreAuthorizeFromClassOrMethod(method, targetClass),
                 getLightningPostAuthorizeFromClassOrMethod(method, targetClass));
+
+        LightningInvocationAttributeUtils.evaluateAndSetPostInvocationResourceMethodSecurity(configAttributes);
+        LightningInvocationAttributeUtils.evaluateAndSetPostInvocationResourceMethodSecurity(configAttributes);
+
+        if (configAttributes != null && !configAttributes.isEmpty()) {
+            return unWrapToNativeConfigAttribute(configAttributes);
+        }
+
+        return configAttributes;
+    }
+
+    private List<ConfigAttribute> unWrapToNativeConfigAttribute(Collection<ConfigAttribute> configAttributes) {
+        return configAttributes.stream().map(ele -> {
+            if (ele instanceof LightningInvocationAttribute attribute) {
+                return attribute.getDelegate();
+            }
+            return ele;
+        }).toList();
     }
 
     public String resolveMethodSecurityIdentifier(Method method, Class<?> targetClass) {
@@ -339,6 +358,11 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
         public String getAttribute() {
             return preInvocationAttribute.getAttribute();
         }
+
+        @Override
+        public ConfigAttribute getDelegate() {
+            return preInvocationAttribute;
+        }
     }
 
     private static class LightningPostInvocationAttribute implements LightningInvocationAttribute, PostInvocationAttribute {
@@ -353,6 +377,11 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
         @Override
         public Tuple4<String, String, String, String> getMethodIdentifierWithActionAndType() {
             return methodIdentifierWithInfo;
+        }
+
+        @Override
+        public ConfigAttribute getDelegate() {
+            return preInvocationAttribute;
         }
 
         @Override
@@ -379,6 +408,7 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
             return targetClass;
         }
 
+        @Override
         public boolean equals(Object other) {
             if (other instanceof DefaultCacheKey otherKey) {
                 return other == this || this.method.equals(otherKey.method) && ObjectUtils.nullSafeEquals(this.targetClass, otherKey.targetClass);
@@ -386,10 +416,12 @@ public class LightningPrePostMethodSecurityMetadataSource extends AbstractMethod
             return false;
         }
 
+        @Override
         public int hashCode() {
             return this.method.hashCode() * 21 + (this.targetClass != null ? this.targetClass.hashCode() : 0);
         }
 
+        @Override
         public String toString() {
             String targetClassName = this.targetClass != null ? this.targetClass.getName() : "-";
             return "CacheKey[" + targetClassName + "; " + this.method + "]";
