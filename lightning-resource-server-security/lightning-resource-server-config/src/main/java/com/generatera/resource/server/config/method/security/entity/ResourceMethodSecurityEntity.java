@@ -118,48 +118,53 @@ public class ResourceMethodSecurityEntity implements Serializable {
 
         return OptionalFlux
                 .stringOrNull(two.identifier)
-                .ifTrueForSwitchMap(nullSafeEquals(one.identifier), identifier -> {
+                .switchMapIfFalseOrNull(nullSafeEquals(one.identifier), identifier -> {
                     one.identifier = identifier;
                     return Boolean.TRUE;
                 })
-                .orElse(
+                .combine(
                         OptionalFlux.stringOrNull(two.description)
-                                .ifTrueForSwitchMap(nullSafeEquals(one.description), description -> {
+                                .switchMapIfFalseOrNull(nullSafeEquals(one.description), description -> {
                                     one.description = description;
                                     return Boolean.TRUE;
-                                })
+                                }),
+                        Boolean::logicalOr
                 )
 
-                .orElse(
+                .combine(
                         OptionalFlux.stringOrNull(two.roles)
-                                .ifTrueForSwitchMap(nullSafeEquals(one.roles), roles -> {
+                                .switchMapIfFalseOrNull(nullSafeEquals(one.roles), roles -> {
                                     one.roles = roles;
                                     return Boolean.TRUE;
-                                })
+                                }),
+                        Boolean::logicalOr
                 )
 
-                .orElse(
+                .combine(
                         OptionalFlux.stringOrNull(two.authorities)
-                                .ifTrueForSwitchMap(nullSafeEquals(one.authorities), authorities -> {
+                                .switchMapIfFalseOrNull(nullSafeEquals(one.authorities), authorities -> {
                                     one.authorities = authorities;
                                     return Boolean.TRUE;
-                                })
+                                }),
+                        Boolean::logicalOr
                 )
 
-                .orElse(
+                .combine(
                         OptionalFlux.stringOrNull(two.behavior)
-                                .ifTrueForSwitchMap(nullSafeEquals(one.behavior), behavior -> {
+                                .switchMapIfFalseOrNull(nullSafeEquals(one.behavior), behavior -> {
                                     one.behavior = behavior;
                                     return Boolean.TRUE;
-                                })
+                                }),
+                        Boolean::logicalOr
                 )
 
-                .orElse(
+                .combine(
                         OptionalFlux.stringOrNull(two.type)
-                                .ifTrueForSwitchMap(nullSafeEquals(one.type), type -> {
+                                .switchMapIfFalseOrNull(nullSafeEquals(one.type), type -> {
                                     one.type = type;
                                     return Boolean.TRUE;
-                                })
+                                }),
+                        Boolean::logicalOr
                 )
                 .orElse(Boolean.FALSE)
                 .getResult();
