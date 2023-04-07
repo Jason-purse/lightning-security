@@ -1,5 +1,6 @@
 package com.generatera.authorization.server.common.configuration;
 
+import com.generatera.security.authorization.server.specification.TokenIssueFormat;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningTokenValueFormat;
 import com.generatera.security.authorization.server.specification.components.token.MacAlgorithm;
@@ -77,6 +78,11 @@ public class AuthorizationServerComponentProperties {
              */
             private JWKCategory category = JWKCategory.RANDOM;
 
+            /**
+             * 颁发类型 自包含
+             */
+            private TokenIssueFormat issueFormat = TokenIssueFormat.SELF_CONTAINED;
+
             private final RsaJWK rsajwk = new RsaJWK();
 
             private final SecretJWK secretJWK = new SecretJWK();
@@ -95,6 +101,7 @@ public class AuthorizationServerComponentProperties {
             private String rsaPublicKey;
 
             private String rsaPrivateKey;
+
         }
 
         @Data

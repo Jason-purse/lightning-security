@@ -1,12 +1,10 @@
 package com.generatera.authorization.server.common.configuration;
 
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
-import com.generatera.security.authorization.server.specification.BootstrapContext;
-import com.generatera.security.authorization.server.specification.HandlerFactory;
-import com.generatera.security.authorization.server.specification.TokenSettingsProperties;
-import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
+import com.generatera.security.authorization.server.specification.*;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
 import com.generatera.security.authorization.server.specification.util.LogUtil;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.jianyue.lightning.util.JsonUtil;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import lombok.RequiredArgsConstructor;
@@ -219,7 +217,8 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                                 AuthorizationServerComponentProperties.ProviderConfig.RsaJWK rsajwk = properties.getProviderConfig().getJwkSettings().getRsajwk();
                                 return JWKSourceProvider.customRsaJWKSourceProvider(
                                         rsajwk.getRsaPublicKey(),
-                                        rsajwk.getRsaPrivateKey()
+                                        rsajwk.getRsaPrivateKey(),
+                                        ElvisUtil.getOrDefault(properties.getProviderConfig().getJwkSettings().getIssueFormat(), TokenIssueFormat.SELF_CONTAINED)
                                 );
                             }
                         };

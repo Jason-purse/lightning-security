@@ -24,13 +24,13 @@ public class JWKSourceProvider {
         this.tokenIssueFormat = TokenIssueFormat.SELF_CONTAINED;
     }
 
-    protected JWKSourceProvider(JWKSource<SecurityContext> source,TokenIssueFormat tokenIssueFormat) {
+    protected JWKSourceProvider(JWKSource<SecurityContext> source, TokenIssueFormat tokenIssueFormat) {
         this.source = source;
         this.tokenIssueFormat = tokenIssueFormat;
     }
 
     @NotNull
-    public  JWKSource<SecurityContext> getJWKSource() {
+    public JWKSource<SecurityContext> getJWKSource() {
         return source;
     }
 
@@ -44,31 +44,31 @@ public class JWKSourceProvider {
         return new JWKSourceProvider();
     }
 
-    public static JWKSourceProvider customRsaJWKSourceProvider(String rsaPublicKey, String rsaPrivateKey) {
+    public static JWKSourceProvider customRsaJWKSourceProvider(String rsaPublicKey, String rsaPrivateKey, TokenIssueFormat issueFormat) {
         return new JWKSourceProvider(
-                Jwks.customRsaJwkSource(RsaKeyConversionUtils.convertRsaPublicKey(rsaPublicKey),RsaKeyConversionUtils.convertRsaPrivateKey(rsaPrivateKey)),
-                TokenIssueFormat.REFERENCE
+                Jwks.customRsaJwkSource(RsaKeyConversionUtils.convertRsaPublicKey(rsaPublicKey), RsaKeyConversionUtils.convertRsaPrivateKey(rsaPrivateKey)),
+                issueFormat
         );
     }
 
-    public static JWKSourceProvider customSecretJwkSourceProvider(String secret,String algorithm) {
+    public static JWKSourceProvider customSecretJwkSourceProvider(String secret, String algorithm) {
         return new JWKSourceProvider(
-                Jwks.customSecretJwkSource(secret,algorithm),
+                Jwks.customSecretJwkSource(secret, algorithm),
                 TokenIssueFormat.REFERENCE
         );
     }
 
     public static JWKSourceProvider secretJWKSourceProvider() {
-        return new JWKSourceProvider(Jwks.defaultSecretRandomJwkSource(),TokenIssueFormat.SELF_CONTAINED);
+        return new JWKSourceProvider(Jwks.defaultSecretRandomJwkSource(), TokenIssueFormat.SELF_CONTAINED);
     }
 
     public static JWKSourceProvider ecJWKSourceProvider() {
-        return new JWKSourceProvider(Jwks.defaultEcRandomJwkSource(),TokenIssueFormat.SELF_CONTAINED);
+        return new JWKSourceProvider(Jwks.defaultEcRandomJwkSource(), TokenIssueFormat.SELF_CONTAINED);
     }
 
 
-    public static JWKSourceProvider of(JWKSource<SecurityContext> jwkSource,TokenIssueFormat tokenIssueFormat) {
-        return new JWKSourceProvider(jwkSource,tokenIssueFormat);
+    public static JWKSourceProvider of(JWKSource<SecurityContext> jwkSource, TokenIssueFormat tokenIssueFormat) {
+        return new JWKSourceProvider(jwkSource, tokenIssueFormat);
     }
 
 }
