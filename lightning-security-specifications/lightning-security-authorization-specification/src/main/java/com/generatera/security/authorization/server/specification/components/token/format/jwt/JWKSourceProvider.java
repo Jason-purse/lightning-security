@@ -44,9 +44,9 @@ public class JWKSourceProvider {
         return new JWKSourceProvider();
     }
 
-    public static JWKSourceProvider customRsaJWKSourceProvider(String rsaPublicKey, String rsaPrivateKey, TokenIssueFormat issueFormat) {
+    public static JWKSourceProvider customRsaJWKSourceProvider(String keyId,String rsaPublicKey, String rsaPrivateKey, TokenIssueFormat issueFormat) {
         return new JWKSourceProvider(
-                Jwks.customRsaJwkSource(RsaKeyConversionUtils.convertRsaPublicKey(rsaPublicKey), RsaKeyConversionUtils.convertRsaPrivateKey(rsaPrivateKey)),
+                Jwks.customRsaJwkSource(keyId,RsaKeyConversionUtils.convertRsaPublicKey(rsaPublicKey), RsaKeyConversionUtils.convertRsaPrivateKey(rsaPrivateKey)),
                 issueFormat
         );
     }

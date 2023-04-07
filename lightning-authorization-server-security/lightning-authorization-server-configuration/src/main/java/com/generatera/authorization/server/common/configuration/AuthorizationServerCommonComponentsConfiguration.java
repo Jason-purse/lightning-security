@@ -3,6 +3,7 @@ package com.generatera.authorization.server.common.configuration;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.security.authorization.server.specification.*;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.JWKSourceProvider;
+import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import com.jianyue.lightning.util.JsonUtil;
@@ -216,6 +217,8 @@ public class AuthorizationServerCommonComponentsConfiguration implements Initial
                                 Assert.hasText(rsaJWK.getRsaPublicKey(), "rsa public key must not be null !!!");
                                 AuthorizationServerComponentProperties.ProviderConfig.RsaJWK rsajwk = properties.getProviderConfig().getJwkSettings().getRsajwk();
                                 return JWKSourceProvider.customRsaJWKSourceProvider(
+                                        // keyId
+                                        ElvisUtil.stringElvis(rsajwk.getKeyId(), UuidUtil.nextId()),
                                         rsajwk.getRsaPublicKey(),
                                         rsajwk.getRsaPrivateKey(),
                                         ElvisUtil.getOrDefault(properties.getProviderConfig().getJwkSettings().getIssueFormat(), TokenIssueFormat.SELF_CONTAINED)

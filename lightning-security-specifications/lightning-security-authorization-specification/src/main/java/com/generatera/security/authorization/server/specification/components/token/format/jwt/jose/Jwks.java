@@ -29,9 +29,10 @@ public final class Jwks {
 	}
 
 	public static JWKSource<SecurityContext> customRsaJwkSource(
+			String keyId,
 			RSAPublicKey publicKey,RSAPrivateKey rsaPrivateKey
 	) {
-		JWKSet jwkSet = new JWKSet(forRsa(publicKey, rsaPrivateKey));
+		JWKSet jwkSet = new JWKSet(forRsa(keyId,publicKey, rsaPrivateKey));
 		return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
 	}
 
@@ -64,10 +65,10 @@ public final class Jwks {
 			.build();
 	}
 
-	public static RSAKey forRsa(RSAPublicKey publicKey,RSAPrivateKey privateKey) {
+	public static RSAKey forRsa(String keyId,RSAPublicKey publicKey,RSAPrivateKey privateKey) {
 		return new RSAKey.Builder(publicKey)
 				.privateKey(privateKey)
-				.keyID(UUID.randomUUID().toString())
+				.keyID(keyId)
 				.algorithm(JWSAlgorithm.RS256)
 				.build();
 	}

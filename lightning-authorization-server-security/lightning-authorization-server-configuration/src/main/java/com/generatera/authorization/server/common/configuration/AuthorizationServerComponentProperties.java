@@ -102,6 +102,8 @@ public class AuthorizationServerComponentProperties {
 
             private String rsaPrivateKey;
 
+
+            private String keyId;
         }
 
         @Data
