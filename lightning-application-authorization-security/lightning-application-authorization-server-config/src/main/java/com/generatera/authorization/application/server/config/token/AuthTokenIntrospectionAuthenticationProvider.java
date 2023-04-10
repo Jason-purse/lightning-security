@@ -7,21 +7,23 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.converter.ClaimConversionService;
+import com.jianyue.lightning.boot.starter.util.ElvisUtil;
+import com.jianyue.lightning.boot.starter.util.OptionalFlux;
+import com.jianyue.lightning.boot.starter.util.StreamUtil;
 import com.nimbusds.jwt.JWTClaimNames;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.net.URL;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 /**
  * @author FLJ
  * @date 2023/1/31
@@ -59,10 +61,10 @@ public final class AuthTokenIntrospectionAuthenticationProvider implements Authe
                                 authorization.getPrincipal(), null
                         ), AuthTokenIntrospection.builder().build());
             } else {
-                AuthTokenIntrospection tokenClaims = withActiveTokenClaims(authorizedToken);
+                AuthTokenIntrospection tokenClaims = withActiveTokenClaims(authorizedToken, authorization);
                 // 这里加不加入 authorities 不重要 ..(因为最终通过token 解析授权信息)
                 return new AuthTokenIntrospectionAuthenticationToken(authorizedToken.getToken().getTokenValue(),
-                                // 这种属于不透明token, 不需要 authorities ..
+                        // 这种属于不透明token, 不需要 authorities ..
                         UsernamePasswordAuthenticationToken.authenticated(authorization.getPrincipal(), null, Collections.emptyList()),
                         tokenClaims);
             }
@@ -73,7 +75,7 @@ public final class AuthTokenIntrospectionAuthenticationProvider implements Authe
         return AuthTokenIntrospectionAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
-    private static AuthTokenIntrospection withActiveTokenClaims(DefaultLightningAuthorization.Token<LightningToken> authorizedToken) {
+    private static AuthTokenIntrospection withActiveTokenClaims(DefaultLightningAuthorization.Token<LightningToken> authorizedToken, DefaultLightningAuthorization authorization) {
         AuthTokenIntrospection.Builder tokenClaims;
         if (!CollectionUtils.isEmpty(authorizedToken.getClaims())) {
             Map<String, Object> claims = convertClaimsIfNecessary(authorizedToken.getClaims());
@@ -81,6 +83,22 @@ public final class AuthTokenIntrospectionAuthenticationProvider implements Authe
         } else {
             tokenClaims = AuthTokenIntrospection.builder(true);
         }
+
+        // 默认以scope 作为权限的输出 ...
+        ElvisUtil.isNotEmptyConsumer(authorizedToken.getClaims(), claims -> {
+            if (claims.get(JwtExtClaimNames.SCOPE_CLAIM) == null) {
+                // scope // authorities
+                ElvisUtil.isNotEmptyConsumer(authorization.getPrincipal().getAuthorities(), authorities -> {
+                    OptionalFlux.of(authorities)
+                            .map(StreamUtil.collectionMap(GrantedAuthority::getAuthority))
+                            .consume(values -> tokenClaims.claim(JwtExtClaimNames.SCOPE_CLAIM, new LinkedList<>(values)));
+                });
+            }
+            else {
+                tokenClaims.scopes(list -> list.addAll(Collections.emptyList()));
+            }
+        });
+
 
         LightningToken token = authorizedToken.getToken();
         if (token.getIssuedAt() != null) {
@@ -143,30 +161,30 @@ public final class AuthTokenIntrospectionAuthenticationProvider implements Authe
 
         // 将 nbf / iss at 反转为 instant
         value = claims.get(JWTClaimNames.NOT_BEFORE);
-        if(value != null) {
+        if (value != null) {
             convertedValue = ClaimConversionService.getSharedInstance().convert(value, Instant.class);
-            if(convertedValue != null) {
-                convertedClaims.put(JWTClaimNames.NOT_BEFORE,convertedValue);
+            if (convertedValue != null) {
+                convertedClaims.put(JWTClaimNames.NOT_BEFORE, convertedValue);
             }
         }
-
-        // 将 nbf / iss at 反转为 instant
-        value = claims.get(JWTClaimNames.EXPIRATION_TIME);
-        if(value != null) {
-            convertedValue = ClaimConversionService.getSharedInstance().convert(value, Instant.class);
-            if(convertedValue != null) {
-                convertedClaims.put(JWTClaimNames.EXPIRATION_TIME,convertedValue);
-            }
-        }
-
-        // 将 nbf / iss at 反转为 instant
-        value = claims.get(JWTClaimNames.ISSUED_AT);
-        if(value != null) {
-            convertedValue = ClaimConversionService.getSharedInstance().convert(value, Instant.class);
-            if(convertedValue != null) {
-                convertedClaims.put(JWTClaimNames.ISSUED_AT,convertedValue);
-            }
-        }
+//
+//        // 将 nbf / iss at 反转为 instant
+//        value = claims.get(JWTClaimNames.EXPIRATION_TIME);
+//        if(value != null) {
+//            convertedValue = ClaimConversionService.getSharedInstance().convert(value, Instant.class);
+//            if(convertedValue != null) {
+//                convertedClaims.put(JWTClaimNames.EXPIRATION_TIME,convertedValue);
+//            }
+//        }
+//
+//        // 将 nbf / iss at 反转为 instant
+//        value = claims.get(JWTClaimNames.ISSUED_AT);
+//        if(value != null) {
+//            convertedValue = ClaimConversionService.getSharedInstance().convert(value, Instant.class);
+//            if(convertedValue != null) {
+//                convertedClaims.put(JWTClaimNames.ISSUED_AT,convertedValue);
+//            }
+//        }
 
 
         return convertedClaims;

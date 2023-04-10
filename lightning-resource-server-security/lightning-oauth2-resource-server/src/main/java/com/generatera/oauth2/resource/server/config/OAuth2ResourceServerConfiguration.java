@@ -3,6 +3,7 @@ package com.generatera.oauth2.resource.server.config;
 
 import com.generatera.oauth2.resource.server.config.authentication.OAuth2ResourceServerAuthenticationEntryPoint;
 import com.generatera.oauth2.resource.server.config.token.LightningAuthenticationTokenResolver;
+import com.generatera.oauth2.resource.server.config.token.LightningDefaultHeaderBearerTokenResolver;
 import com.generatera.resource.server.config.LightningResourceServerConfig;
 import com.generatera.resource.server.config.LightningResourceServerConfigurer;
 import com.generatera.resource.server.config.ResourceServerProperties;
@@ -15,7 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
-import org.springframework.security.oauth2.server.resource.web.HeaderBearerTokenResolver;
 
 /**
  * token 解析注册 ...
@@ -56,7 +56,7 @@ public class OAuth2ResourceServerConfiguration {
                 if (properties.getTokenVerificationConfig().getBearerTokenConfig().isUseHeader()) {
                     // header 直接解析
                     configurer.bearerTokenResolver(
-                            new HeaderBearerTokenResolver(LightningAuthenticationTokenResolver.TOKEN_IDENTITY_NAME));
+                            new LightningDefaultHeaderBearerTokenResolver(LightningAuthenticationTokenResolver.TOKEN_IDENTITY_NAME));
                 }
 
                 LogUtil.prettyLog("oauth2 resource server enabled !!!!");
