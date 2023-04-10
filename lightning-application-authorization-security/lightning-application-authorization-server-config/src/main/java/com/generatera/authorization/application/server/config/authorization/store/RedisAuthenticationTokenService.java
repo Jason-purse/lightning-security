@@ -79,7 +79,7 @@ public class RedisAuthenticationTokenService extends ForDBAuthenticationTokenSer
     protected LightningAuthenticationTokenEntity doFindById0(ForDBAuthenticationTokenEntity entity) {
         String value = redisTemplate.opsForValue().get(constructKey(entity.getId()));
         if (StringUtils.hasText(value)) {
-            return JsonUtil.getDefaultJsonUtil().fromJson(value, LightningAuthenticationTokenEntity.class);
+            return JsonUtil.getDefaultJsonUtil().fromJson(value, ForDBAuthenticationTokenEntity.class);
         }
         return null;
     }
@@ -104,7 +104,7 @@ public class RedisAuthenticationTokenService extends ForDBAuthenticationTokenSer
             if (StringUtils.hasText(tokenId)) {
                 String entity = redisTemplate.opsForValue().get(tokenId);
                 if (StringUtils.hasText(entity)) {
-                    return JsonUtil.getDefaultJsonUtil().fromJson(entity, LightningAuthenticationTokenEntity.class);
+                    return JsonUtil.getDefaultJsonUtil().fromJson(entity, ForDBAuthenticationTokenEntity.class);
                 }
             }
 
@@ -113,9 +113,9 @@ public class RedisAuthenticationTokenService extends ForDBAuthenticationTokenSer
             if (StringUtils.hasText(tokenId)) {
                 String value = redisTemplate.opsForValue().get(tokenId);
                 if (StringUtils.hasText(value)) {
-                    return JsonUtil.getDefaultJsonUtil().fromJson(value, LightningAuthenticationTokenEntity.class);
+                    return JsonUtil.getDefaultJsonUtil().fromJson(value, ForDBAuthenticationTokenEntity.class);
                 } else {
-                    return LightningAuthenticationTokenEntity.builder().build();
+                    return ForDBAuthenticationTokenEntity.builder().build();
                 }
             }
         }
