@@ -7,6 +7,7 @@ import com.generatera.security.authorization.server.specification.components.tok
 import com.generatera.security.authorization.server.specification.components.token.LightningToken.LightningAccessToken;
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import com.generatera.security.authorization.server.specification.components.token.format.jwt.converter.ClaimConversionService;
+import com.nimbusds.jwt.JWTClaimNames;
 import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +17,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.net.URL;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -138,6 +140,34 @@ public final class AuthTokenIntrospectionAuthenticationProvider implements Authe
                 convertedClaims.put("aud", convertedValue);
             }
         }
+
+        // 将 nbf / iss at 反转为 instant
+        value = claims.get(JWTClaimNames.NOT_BEFORE);
+        if(value != null) {
+            convertedValue = ClaimConversionService.getSharedInstance().convert(value, Instant.class);
+            if(convertedValue != null) {
+                convertedClaims.put(JWTClaimNames.NOT_BEFORE,convertedValue);
+            }
+        }
+
+        // 将 nbf / iss at 反转为 instant
+        value = claims.get(JWTClaimNames.EXPIRATION_TIME);
+        if(value != null) {
+            convertedValue = ClaimConversionService.getSharedInstance().convert(value, Instant.class);
+            if(convertedValue != null) {
+                convertedClaims.put(JWTClaimNames.EXPIRATION_TIME,convertedValue);
+            }
+        }
+
+        // 将 nbf / iss at 反转为 instant
+        value = claims.get(JWTClaimNames.ISSUED_AT);
+        if(value != null) {
+            convertedValue = ClaimConversionService.getSharedInstance().convert(value, Instant.class);
+            if(convertedValue != null) {
+                convertedClaims.put(JWTClaimNames.ISSUED_AT,convertedValue);
+            }
+        }
+
 
         return convertedClaims;
     }

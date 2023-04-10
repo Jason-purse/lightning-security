@@ -1,8 +1,8 @@
 package com.generatera.oauth2.resource.server.config.token;
 
 import com.generatera.oauth2.resource.server.config.LightningOpaqueOAuth2UserPrincipal;
-import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
+import com.generatera.security.authorization.server.specification.components.token.JwtClaimsToUserPrincipalMapper;
 import com.generatera.security.authorization.server.specification.components.token.format.JwtExtClaimNames;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +50,7 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
     };
     private final Log logger = LogFactory.getLog(this.getClass());
     private final RestOperations restOperations;
+
     private Converter<String, RequestEntity<?>> requestEntityConverter;
 
     private List<String> authoritiesName = Arrays.asList(JwtExtClaimNames.SCOPE_CLAIM,JwtExtClaimNames.SCOPE_SHORT_CLAIM);
@@ -113,6 +114,7 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
         };
     }
 
+
     private HttpHeaders requestHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
@@ -127,6 +129,7 @@ public class DefaultOpaqueTokenIntrospector implements LightningOAuth2OpaqueToke
 
     @Override
     public LightningUserPrincipal introspect(String token) {
+        // TODO: 2023/4/10  支持本地解析
         RequestEntity<?> requestEntity = this.requestEntityConverter.convert(token);
         if (requestEntity == null) {
             throw new OAuth2IntrospectionException("requestEntityConverter returned a null entity");
