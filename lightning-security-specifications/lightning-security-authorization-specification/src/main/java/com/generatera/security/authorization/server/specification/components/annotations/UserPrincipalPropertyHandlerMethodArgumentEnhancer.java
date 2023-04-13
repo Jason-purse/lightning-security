@@ -56,20 +56,25 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
                                     String name = ElvisUtil.stringElvis(ElvisUtil.isNotEmptyFunction(prefix, ele -> ele.concat(PropertyAccessor.NESTED_PROPERTY_SEPARATOR)), "").concat(field.getName());
                                     UserPrincipalProperty annotation = AnnotationUtils.findAnnotation(field, UserPrincipalProperty.class);
                                     if (annotation != null) {
-                                        OptionalFlux
-                                                .of(conversionService)
-                                                .consume(val -> {
-                                                    Object property = ele.getProperty(ElvisUtil.stringElvis(annotation.value(), field.getName()), Object.class);
-                                                    addPropertyValue(field, property, propertyValues, conversionService, name);
-                                                })
-                                                // 否则无参消费
-                                                .orElse(
-                                                        () -> {
-                                                            Object property = ele.getProperty(ElvisUtil.stringElvis(annotation.value(), field.getName()), field.getType());
-                                                            addPropertyValue(field, property, propertyValues, conversionService, name);
-                                                        }
-                                                );
+                                        Object value = field.get(target);
+                                        // 仅当 非可选,或者值为空 才处理 ...
+                                        if(!(annotation.optional() && value != null)) {
+                                           OptionalFlux
+                                                   .of(conversionService)
+                                                   .consume(val -> {
+                                                       Object property = ele.getProperty(ElvisUtil.stringElvis(annotation.value(), field.getName()), Object.class);
+                                                       addPropertyValue(field, property, propertyValues, conversionService, name);
+                                                   })
+                                                   // 否则无参消费
+                                                   .orElse(
+                                                           () -> {
+                                                               Object property = ele.getProperty(ElvisUtil.stringElvis(annotation.value(), field.getName()), field.getType());
+                                                               addPropertyValue(field, property, propertyValues, conversionService, name);
+                                                           }
+                                                   );
+                                       }
                                     } else {
+                                        // 继续递归 ..
                                         String nestedPropertyName = ElvisUtil.stringElvis(ElvisUtil.isNotEmptyFunction(prefix, ele -> ele.concat(PropertyAccessor.NESTED_PROPERTY_SEPARATOR)), "").concat(name);
                                         Object nestedProperty = field.get(target);
                                         // 复杂对象, 递归操作 !!!
@@ -129,30 +134,33 @@ public class UserPrincipalPropertyHandlerMethodArgumentEnhancer implements Handl
             UserPrincipalProperty parameterAnnotation = methodArgumentContext.getMethodParameter().getParameterAnnotation(UserPrincipalProperty.class);
             assert parameterAnnotation != null;
             String name = parameterAnnotation.name();
-            String paramName = ElvisUtil.stringElvis(name, methodArgumentContext.getMethodParameter().getParameterName());
-            LightningUserContext.get()
-                    .getUserPrincipal().ifPresent(ele -> {
-                        // conversion Service 处理 ..
-                        if(conversionService != null) {
-                            Object property = ele.getProperty(paramName);
-                            if(property != null) {
-                                if(!methodArgumentContext.getMethodParameter().getParameterType().isAssignableFrom(property.getClass())) {
-                                    methodArgumentContext.setTarget(conversionService.convert(property,methodArgumentContext.getMethodParameter().getParameterType()));
-                                }
-                                else {
-                                    // 直接设置
-                                    methodArgumentContext.setTarget(property);
+            // 为optional 并且 target 不等于 null 则不增强
+            if(!(parameterAnnotation.optional() && methodArgumentContext.getTarget() != null)) {
+                String paramName = ElvisUtil.stringElvis(name, methodArgumentContext.getMethodParameter().getParameterName());
+                LightningUserContext.get()
+                        .getUserPrincipal().ifPresent(ele -> {
+                            // conversion Service 处理 ..
+                            if(conversionService != null) {
+                                Object property = ele.getProperty(paramName);
+                                if(property != null) {
+                                    if(!methodArgumentContext.getMethodParameter().getParameterType().isAssignableFrom(property.getClass())) {
+                                        methodArgumentContext.setTarget(conversionService.convert(property,methodArgumentContext.getMethodParameter().getParameterType()));
+                                    }
+                                    else {
+                                        // 直接设置
+                                        methodArgumentContext.setTarget(property);
+                                    }
                                 }
                             }
-                        }
-                        // 否则直接获取
-                        else {
-                            methodArgumentContext.setTarget(ele.getProperty(paramName, methodArgumentContext.getMethodParameter().getParameterType()));
-                        }
-                    });
+                            // 否则直接获取
+                            else {
+                                methodArgumentContext.setTarget(ele.getProperty(paramName, methodArgumentContext.getMethodParameter().getParameterType()));
+                            }
+                        });
+            }
         }
         else {
-            // 复杂类型
+            // 复杂类型(必然不为空,除非构造器无法构造此对象)
             if (methodArgumentContext.getTarget() != null) {
                 // 才需要解析 !!!
                 MutablePropertyValues propertyValues = new MutablePropertyValues();

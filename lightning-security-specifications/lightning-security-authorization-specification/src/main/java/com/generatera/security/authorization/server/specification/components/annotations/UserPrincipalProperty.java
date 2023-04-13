@@ -30,4 +30,10 @@ public @interface UserPrincipalProperty {
      */
     @AliasFor("value")
     String name() default "";
+
+
+    /**
+     * 可选覆盖 ..
+     */
+    boolean optional() default false;
 }
