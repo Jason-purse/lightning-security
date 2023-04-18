@@ -1,6 +1,8 @@
 package com.generatera.central.oauth2.authorization.server.configuration.components.authentication;
 
 import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
+import com.generatera.security.authorization.server.specification.LightningUserDetailService;
+import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -65,13 +67,13 @@ public class UserDetailsServiceAutoConfiguration {
 
 }
 
-class DefaultInMemoryUserDetailsManager extends InMemoryUserDetailsManager {
+class DefaultInMemoryUserDetailsManager extends InMemoryUserDetailsManager implements LightningUserDetailService {
     public DefaultInMemoryUserDetailsManager(UserDetails... userDetails) {
         super(userDetails);
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public LightningUserPrincipal loadUserByUsername(String username) throws UsernameNotFoundException {
         return new DefaultLightningUserDetails(super.loadUserByUsername(username));
     }
 }

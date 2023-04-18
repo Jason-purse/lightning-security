@@ -112,7 +112,7 @@ public class ApplicationAuthServerConfig {
                         String logoutProcessUrl = noSeparation.getLogoutProcessUrl();
                         logout
                                 .logoutRequestMatcher(
-                                        new AntPathRequestMatcher(logoutProcessUrl));
+                                        new AntPathRequestMatcher(logoutProcessUrl,"POST"));
                     }
                     // 登出成功的url
                     logout.logoutSuccessUrl(noSeparation.getLogoutSuccessUrl());
@@ -132,6 +132,10 @@ public class ApplicationAuthServerConfig {
                                     (request, response, authException) -> response.sendRedirect(loginPageUrl)
                             );
                 }
+
+                // 增加退出处理器
+                securityBuilder.logout()
+                        .addLogoutHandler(AppAuthConfigurerUtils.logoutHandler(securityBuilder));
 
             }
         };

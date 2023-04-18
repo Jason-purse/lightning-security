@@ -308,6 +308,8 @@ public class ResourceServerProperties {
              * 需不需要 bearer token 前缀 ..
              */
             private boolean useHeader = Boolean.FALSE;
+
+            private String tokenIdentifier = "Authorization";
         }
 
         public static enum JwkSourceCategory {

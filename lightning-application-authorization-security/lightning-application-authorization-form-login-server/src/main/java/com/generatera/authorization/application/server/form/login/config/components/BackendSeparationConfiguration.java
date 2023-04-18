@@ -65,6 +65,7 @@ public class BackendSeparationConfiguration {
                 // entry point
                 LightningAuthenticationEntryPoint authenticationEntryPoint
                         = AppAuthConfigurerUtils.getAuthenticationEntryPoint(securityBuilder);
+                
 
                 httpSecurityFormLoginConfigurer
                         .successHandler(authenticationEntryPoint)

@@ -10,18 +10,35 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * 1. 授权信息存储配置
  * 2. 授权协商记录存储配置
  * 3. 客户端信息存储配置(todo)
+ *
+ *
+ * 中央授权服务器, 此框架基于 OAUTH2 作为中央授权服务器规范 ..
+ *
+ * 其他的授权方案,不属于中央授权服务器规范的一部分,仅仅是一种授权方案 ..
  */
 @Data
 @ConfigurationProperties(prefix = "lightning.security.central.oauth2.auth.server")
 public class OAuth2CentralAuthorizationServerProperties {
 
+    /**
+     * 授权存储组件信息配置
+     */
     private final AuthorizationStoreComponentConfig authorizationStore = new AuthorizationStoreComponentConfig();
 
+    /**
+     * 授权协商组件信息配置
+     */
     private final AuthorizationConsentComponentConfig authorizationConsentStore = new AuthorizationConsentComponentConfig();
 
+    /**
+     * oauth2 提供器配置属性
+     */
     private final OAuth2ProviderSettingProperties provider = new OAuth2ProviderSettingProperties();
 
 
+    /**
+     * 表单登录配置支持(oauth2 流程中需要用户抉择是否授权给第三方)
+     */
     private final FormLoginSupportConfig formLoginConfig = new FormLoginSupportConfig();
 
     @Data

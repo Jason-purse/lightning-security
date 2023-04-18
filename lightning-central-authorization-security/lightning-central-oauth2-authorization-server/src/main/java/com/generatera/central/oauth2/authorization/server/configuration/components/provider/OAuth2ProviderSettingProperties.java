@@ -6,6 +6,10 @@ import lombok.EqualsAndHashCode;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
 import org.springframework.util.StringUtils;
 
+/**
+ * oauth2 提供器配置 ...
+ * 用来调节各个端点的uri
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class OAuth2ProviderSettingProperties  extends ProviderSettingProperties {
@@ -18,6 +22,7 @@ public class OAuth2ProviderSettingProperties  extends ProviderSettingProperties 
     public static final String OAUTH2_TOKEN_ENDPOINT = "/oauth2/token";
     public static final String OAUTH2_TOKEN_REVOCATION_ENDPOINT = "/oauth2/revoke";
     public static final String OAUTH2_TOKEN_INTROSPECTION_ENDPOINT = "/oauth2/introspect";
+
 
     private String authorizationEndpoint = OAUTH2_AUTHORIZATION_ENDPOINT;
 
@@ -32,6 +37,9 @@ public class OAuth2ProviderSettingProperties  extends ProviderSettingProperties 
         setTokenIntrospectionEndpoint(OAUTH2_TOKEN_INTROSPECTION_ENDPOINT);
     }
 
+    /**
+     * 转换为提供器配置 ..
+     */
     public ProviderSettings getOAuth2ProviderSettingsProvider() {
 
         ProviderSettings.Builder builder = ProviderSettings.builder()

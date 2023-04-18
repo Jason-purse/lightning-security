@@ -5,13 +5,10 @@ import com.generatera.authorization.application.server.config.ApplicationAuthSer
 import com.generatera.authorization.application.server.config.LightningAppAuthServerBootstrapConfigurer;
 import com.generatera.authorization.application.server.config.authentication.RedirectAuthenticationSuccessOrFailureHandler;
 import com.generatera.authorization.application.server.config.token.LightningDaoAuthenticationProvider;
-import com.generatera.authorization.application.server.config.token.LightningUserDetailsProvider;
 import com.generatera.authorization.application.server.config.util.ApplicationAuthServerUtils;
 import com.generatera.authorization.application.server.form.login.config.components.*;
 import com.generatera.authorization.application.server.form.login.config.util.FormLoginUtils;
 import com.generatera.security.authorization.server.specification.util.LogUtil;
-import com.generatera.security.authorization.server.specification.DefaultLightningUserDetails;
-import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,16 +17,17 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.util.StringUtils;
@@ -145,6 +143,8 @@ public class ApplicationFormLoginConfiguration {
         // 表示登出页面处理  ...
         ApplicationAuthServerProperties.NoSeparation mainNoSeparation = applicationAuthServerUtils.getProperties().getNoSeparation();
         String loginPageUrl = normalize(ElvisUtil.stringElvis(noSeparation.getLoginPageUrl(), mainNoSeparation.getLoginPageUrl()));
+
+
         // 自定义的登录页面
         if (StringUtils.hasText(noSeparation.getLoginPageUrl())) {
             formLoginConfigurer.loginPage(loginPageUrl);

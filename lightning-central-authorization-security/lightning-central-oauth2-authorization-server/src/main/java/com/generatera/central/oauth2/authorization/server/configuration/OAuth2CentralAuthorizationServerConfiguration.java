@@ -5,6 +5,8 @@ import com.generatera.authorization.server.common.configuration.AuthConfigConsta
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
+import com.generatera.central.oauth2.authorization.server.configuration.components.authentication.UserDetailsServiceAutoConfiguration;
+import com.generatera.security.authorization.server.specification.components.token.LightningTokenContext;
 import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authentication.DefaultOAuth2CentralServerAuthenticationSuccessHandler;
 import com.generatera.central.oauth2.authorization.server.configuration.components.authentication.LightningOAuth2CentralServerAuthenticationSuccessHandler;
@@ -33,6 +35,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -72,14 +75,14 @@ import java.util.List;
 @AutoConfiguration
 @AutoConfigureBefore({AuthorizationServerCommonComponentsConfiguration.class})
 @EnableConfigurationProperties({OAuth2CentralAuthorizationServerProperties.class})
-@Import(OAuth2CentralAuthorizationServerCCImportSelector.class)
+@Import({OAuth2CentralAuthorizationServerCCImportSelector.class, UserDetailsServiceAutoConfiguration.class})
 @RequiredArgsConstructor
 public class OAuth2CentralAuthorizationServerConfiguration {
 
     private final OAuth2CentralAuthorizationServerProperties properties;
 
     /**
-     * 需要进行补充 ...
+     * spring oauth2 authorization server 需要 提供者配置 ...
      */
     @Bean
     public ProviderSettings providerSettings() {
@@ -87,26 +90,18 @@ public class OAuth2CentralAuthorizationServerConfiguration {
     }
 
 
-    // // TODO: 2023/2/2  中央授权服务器不需要这些东西
-
-    ///**
-    // * 表示,使用 oauth2 token settings provider ..
-    // * 增加了额外的provider 信息
-    // */
-    //@Bean
-    //@Qualifier("oauth2_token_setting_provider")
-    //public TokenSettingsProvider oauth2TokenSettingProvider(TokenSettingsProvider tokenSettingsProvider) {
-    //    TokenSettingsProperties tokenSettings = tokenSettingsProvider.getTokenSettings();
-    //    return new TokenSettingsProvider(
-    //            OAuth2ServerTokenSettings.withSettings(tokenSettings.getSettings())
-    //                    .build()
-    //    );
-    //}
-
-
     // -------------------------- token customizer -----------------------------------------------------------------
     // ------------------------ access token 定制器 --------------------------
-    // 重写,不需要 authorization-server提供的 token 定制器的默认配置 ...
+    // 重写  这一部分 决定了各种token的生成过程中的定制过程 ....
+
+    /**
+     * 包括在使用不同的{@link  com.generatera.security.authorization.server.specification.TokenIssueFormat} token 颁发形式下
+     * 不同{@link  LightningTokenContext}种的包含的属性 ..  是否可以写出到 jwt token中 ..
+     *
+     * 并且此框架是非常开放的,支持 用户自定义覆盖系统的已有token 自定义器的行为 .
+     *
+     * 但是这可能会影响有些内置组件的工作方式,需要将对应部分进行修改 ..
+     */
 
     @Bean
     @Primary
@@ -212,8 +207,11 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                     securityBuilder.apply(configurer);
                 }
 
+                // 表单登录支持
                 formLoginSupport(securityBuilder);
 
+
+                // jwt / access token customizer ..
                 securityBuilder.setSharedObject(LightningCentralOAuth2JwtTokenCustomizer.class,jwtTokenCustomizer::customize);
                 securityBuilder.setSharedObject(LightningCentralOAuth2AccessTokenCustomizer.class,accessTokenCustomizer::customize);
                 // 强制自定义
@@ -221,6 +219,13 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                         OAuth2AuthorizationServerConfigurerExtUtils.getTokenGenerator(
                         securityBuilder
                 ));
+
+                // 最后增加解码器解码访问token
+                // 默认使用jwt, 因为只需要将用户信息传出即可 ..
+                securityBuilder
+                        .oauth2ResourceServer()
+                        .jwt();
+
                 // 增加扩展
                 if (!CollectionUtils.isEmpty(extConfigurers)) {
                     for (LightningOAuth2CentralAuthorizationServerBootstrapConfigurer extConfigurer : extConfigurers) {
@@ -228,15 +233,12 @@ public class OAuth2CentralAuthorizationServerConfiguration {
                     }
                 }
 
-                // 忽略对这些端点的csrf 处理
-                securityBuilder.csrf()
-                        .ignoringRequestMatchers(configurer.getEndpointsMatcher());
-
-                // 最后增加解码器解码访问token
-                // 默认使用jwt, 因为只需要将用户信息传出即可 ..
-                securityBuilder
-                        .oauth2ResourceServer()
-                        .jwt();
+                // 存在csrf
+                if(securityBuilder.getConfigurer(CsrfConfigurer.class) != null) {
+                    // 忽略对这些端点的csrf 处理
+                    securityBuilder.csrf()
+                            .ignoringRequestMatchers(configurer.getEndpointsMatcher());
+                }
             }
 
             private void formLoginSupport(HttpSecurity securityBuilder) throws Exception {

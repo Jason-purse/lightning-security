@@ -18,6 +18,7 @@ public class ProviderSettingProperties {
     public static final String TOKEN_INTROSPECTION_ENDPOINT = "/introspect";
     public static final String TOKEN_ENDPOINT = "/token";
 
+
     // 可以为空(自己自动生成)
     private String issuer;
 
@@ -30,4 +31,5 @@ public class ProviderSettingProperties {
     private String tokenIntrospectionEndpoint = TOKEN_INTROSPECTION_ENDPOINT;
 
     private String tokenEndpoint = TOKEN_ENDPOINT;
+
 }

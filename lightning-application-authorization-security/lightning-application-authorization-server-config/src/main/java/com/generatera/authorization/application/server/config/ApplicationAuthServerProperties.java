@@ -38,8 +38,7 @@ public class ApplicationAuthServerProperties {
 
 
     /**
-     * 可以自定义的前缀 ...(如果为空,则默认值)
-     * 当存在多个不同类型的授权服务器时,用于区分 token 端点的 app auth 前缀 ..
+     * app 应用授权服务器 认证前缀
      */
     public String appAuthPrefix = AppAuthConfigConstant.APP_AUTH_SERVER_PREFIX;
 

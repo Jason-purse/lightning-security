@@ -10,6 +10,7 @@ import com.generatera.security.authorization.server.specification.AuthServerProv
 import com.generatera.security.authorization.server.specification.ProviderExtUtils;
 import com.generatera.security.authorization.server.specification.TokenSettingsProvider;
 import com.generatera.security.authorization.server.specification.components.authentication.LightningAuthenticationEntryPoint;
+import com.generatera.security.authorization.server.specification.components.authentication.LightningLogoutHandler;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettingProperties;
 import com.generatera.security.authorization.server.specification.components.provider.ProviderSettings;
 import com.generatera.security.authorization.server.specification.components.token.*;
@@ -156,6 +157,9 @@ public final class AppAuthConfigurerUtils {
         });
     }
 
+    /**
+     * 做一些提示消息设置
+     */
     private static void entryPointConfig(DefaultLightningAbstractAuthenticationEntryPoint point, ApplicationAuthServerProperties properties) {
         ApplicationAuthServerProperties.BackendSeparation backendSeparation = properties.getBackendSeparation();
 
@@ -187,6 +191,15 @@ public final class AppAuthConfigurerUtils {
         if (StringUtils.hasText(backendSeparation.getUnAuthenticatedMessage())) {
             point.setUnAuthenticatedMessage(backendSeparation.getUnAuthenticatedMessage());
         }
+    }
+
+
+    public static <B extends HttpSecurityBuilder<B>> LightningLogoutHandler logoutHandler(B builder) {
+        return getBean(builder,LightningLogoutHandler.class,() -> {
+            // 从容器中拿
+            Collection<LightningLogoutHandler> handlers = getBeansForType(builder, LightningLogoutHandler.class);
+            return LightningLogoutHandler.delegate(handlers);
+        });
     }
 
     public static <B extends HttpSecurityBuilder<B>> DefaultLogoutPageGeneratingFilter configDefaultLogoutPageGeneratingFilter(B builder) {

@@ -63,7 +63,7 @@ public class ApplicationAuthServerUtils {
         providerSettingProperties.setTokenEndpoint(normalize(ElvisUtil.stringElvis(providerSettingProperties.getTokenEndpoint(), ProviderSettingProperties.TOKEN_ENDPOINT)));
         providerSettingProperties.setTokenRevocationEndpoint(normalize(ElvisUtil.stringElvis(providerSettingProperties.getTokenRevocationEndpoint(), ProviderSettingProperties.TOKEN_REVOCATION_ENDPOINT)));
         providerSettingProperties.setTokenIntrospectionEndpoint(normalize(ElvisUtil.stringElvis(providerSettingProperties.getTokenIntrospectionEndpoint(), ProviderSettingProperties.TOKEN_INTROSPECTION_ENDPOINT)));
-
+        providerSettingProperties.setLogoutEndpoint(normalize(ElvisUtil.stringElvis(providerSettingProperties.getLogoutEndpoint(),ProviderSettingProperties.LOGOUT_ENDPOINT)));
 
         ApplicationAuthServerProperties.ServerMetaDataEndpointConfig endpointConfig = properties.getServerMetaDataEndpointConfig();
         endpointConfig.setOpenConnectIdMetadataEndpointUri(
@@ -104,6 +104,7 @@ public class ApplicationAuthServerUtils {
         fullConfigPropertiesProviderSettingProperties.setTokenRevocationEndpoint(normalApplicationAuthServerOfUrl(providerSettingProperties::getTokenRevocationEndpoint));
         fullConfigPropertiesProviderSettingProperties.setTokenIntrospectionEndpoint(normalApplicationAuthServerOfUrl(providerSettingProperties::getTokenIntrospectionEndpoint));
         fullConfigPropertiesServerMetaDataEndpointConfig.setOpenConnectIdMetadataEndpointUri(normalApplicationAuthServerOfUrl(endpointConfig::getOpenConnectIdMetadataEndpointUri));
+        fullConfigPropertiesProviderSettingProperties.setLogoutEndpoint(normalApplicationAuthServerOfUrl(providerSettingProperties::getLogoutEndpoint));
 
 
 
