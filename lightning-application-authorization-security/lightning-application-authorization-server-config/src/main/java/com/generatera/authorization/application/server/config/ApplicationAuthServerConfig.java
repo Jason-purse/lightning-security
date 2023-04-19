@@ -196,7 +196,6 @@ public class ApplicationAuthServerConfig {
         };
     }
 
-
     /**
      * 引导token 相关端点的配置处理  ...
      */
@@ -236,5 +235,7 @@ public class ApplicationAuthServerConfig {
             }
         };
     }
+
+
 
 }

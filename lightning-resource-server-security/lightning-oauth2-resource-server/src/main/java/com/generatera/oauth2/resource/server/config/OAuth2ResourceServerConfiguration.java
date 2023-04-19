@@ -17,6 +17,7 @@ import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -93,9 +94,11 @@ public class OAuth2ResourceServerConfiguration {
      * 这里假设,中央授权服务器和 应用授权服务器将不在 同一个服务器中,否则会存在多个 LightningAuthorizationService ..
      * // 然而我们不知道如何处理哪一个 LightningAuthorizationService的退出 ...
      * @param bootstrapContext 引导 上下文
-     * @return
+     *
+     * 仅当 存在授权服务器的情况下,才需要加入此配置 ...
      */
     @Bean
+    @ConditionalOnBean(LightningAuthorizationService.class)
     public LightningLogoutHandler defaultLogoutHandler(BootstrapContext bootstrapContext,BearerTokenResolver tokenResolver) {
         // 如果有多个自然会报错
         try {
