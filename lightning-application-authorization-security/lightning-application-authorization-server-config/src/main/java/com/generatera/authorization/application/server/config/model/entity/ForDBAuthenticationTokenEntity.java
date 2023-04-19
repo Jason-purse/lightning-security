@@ -1,7 +1,6 @@
 package com.generatera.authorization.application.server.config.model.entity;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.persistence.Column;
@@ -22,4 +21,5 @@ public class ForDBAuthenticationTokenEntity extends LightningAuthenticationToken
     @Column(name = "user_principal",columnDefinition = "text")
     @Field(name = "user_principal")
     private String userPrincipal;
+
 }

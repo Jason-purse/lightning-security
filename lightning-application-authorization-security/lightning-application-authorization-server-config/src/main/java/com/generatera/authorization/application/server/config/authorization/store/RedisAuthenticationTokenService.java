@@ -1,7 +1,6 @@
 package com.generatera.authorization.application.server.config.authorization.store;
 
 import com.generatera.authorization.application.server.config.model.entity.ForDBAuthenticationTokenEntity;
-import com.generatera.authorization.application.server.config.model.entity.LightningAuthenticationTokenEntity;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
@@ -37,7 +36,7 @@ public class RedisAuthenticationTokenService extends ForDBAuthenticationTokenSer
     }
 
     @Override
-    protected void doSave(LightningAuthenticationTokenEntity entity) {
+    protected void doSave0(ForDBAuthenticationTokenEntity entity) {
         entity.setId(UuidUtil.nextId());
         String id = constructKey(entity.getId());
         redisTemplate.opsForValue()
@@ -76,7 +75,7 @@ public class RedisAuthenticationTokenService extends ForDBAuthenticationTokenSer
 
 
     @Override
-    protected LightningAuthenticationTokenEntity doFindById0(ForDBAuthenticationTokenEntity entity) {
+    protected ForDBAuthenticationTokenEntity doFindById0(ForDBAuthenticationTokenEntity entity) {
         String value = redisTemplate.opsForValue().get(constructKey(entity.getId()));
         if (StringUtils.hasText(value)) {
             return JsonUtil.getDefaultJsonUtil().fromJson(value, ForDBAuthenticationTokenEntity.class);
@@ -85,12 +84,12 @@ public class RedisAuthenticationTokenService extends ForDBAuthenticationTokenSer
     }
 
     @Override
-    protected LightningAuthenticationTokenEntity doFindAccessOrRefreshTokenByToken(String token) {
+    protected ForDBAuthenticationTokenEntity doFindAccessOrRefreshTokenByToken0(String token) {
         return getTokenForAccessOrRefresh(token, null);
     }
 
     @Nullable
-    private LightningAuthenticationTokenEntity getTokenForAccessOrRefresh(String token, LightningAuthenticationTokenType tokenType) {
+    private ForDBAuthenticationTokenEntity getTokenForAccessOrRefresh(String token, LightningAuthenticationTokenType tokenType) {
 
         if (tokenType == null) {
 
@@ -115,7 +114,7 @@ public class RedisAuthenticationTokenService extends ForDBAuthenticationTokenSer
                 if (StringUtils.hasText(value)) {
                     return JsonUtil.getDefaultJsonUtil().fromJson(value, ForDBAuthenticationTokenEntity.class);
                 } else {
-                    return ForDBAuthenticationTokenEntity.builder().build();
+                    return null;
                 }
             }
         }
@@ -124,7 +123,7 @@ public class RedisAuthenticationTokenService extends ForDBAuthenticationTokenSer
     }
 
     @Override
-    protected LightningAuthenticationTokenEntity doFindByToken0(ForDBAuthenticationTokenEntity entity) {
+    protected ForDBAuthenticationTokenEntity doFindByToken0(ForDBAuthenticationTokenEntity entity) {
 
         if (entity.getAccessTokenType() != null) {
             return getTokenForAccessOrRefresh(entity.getAccessTokenValue(), LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE);

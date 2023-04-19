@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class ForDBAuthenticationTokenService extends AbstractAuthenticationTokenService {
 
+
     public ForDBAuthenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter) {
         super(userPrincipalConverter);
     }
@@ -28,18 +29,33 @@ public abstract class ForDBAuthenticationTokenService extends AbstractAuthentica
     protected abstract void doRemove0(ForDBAuthenticationTokenEntity tokenEntity);
 
     @Override
-    public LightningAuthenticationTokenEntity doFindById(LightningAuthenticationTokenEntity entity) {
+    public ForDBAuthenticationTokenEntity doFindById(LightningAuthenticationTokenEntity entity) {
         return doFindById0(convertEntity(entity));
     }
 
-    protected abstract LightningAuthenticationTokenEntity doFindById0(ForDBAuthenticationTokenEntity tokenEntity);
+    protected abstract ForDBAuthenticationTokenEntity doFindById0(ForDBAuthenticationTokenEntity tokenEntity);
 
 
 
     @Override
-    public LightningAuthenticationTokenEntity doFindByToken(LightningAuthenticationTokenEntity entity) {
+    public ForDBAuthenticationTokenEntity doFindByToken(LightningAuthenticationTokenEntity entity) {
+
         return doFindByToken0(convertEntity(entity));
     }
 
-    protected abstract LightningAuthenticationTokenEntity doFindByToken0(ForDBAuthenticationTokenEntity entity);
+    protected abstract ForDBAuthenticationTokenEntity doFindByToken0(ForDBAuthenticationTokenEntity entity);
+
+    @Override
+    protected void doSave(LightningAuthenticationTokenEntity entity) {
+        doSave0(convertEntity(entity));
+    }
+
+    protected abstract void doSave0(ForDBAuthenticationTokenEntity entity);
+
+    @Override
+    protected LightningAuthenticationTokenEntity doFindAccessOrRefreshTokenByToken(String token) {
+        return doFindAccessOrRefreshTokenByToken0(token);
+    }
+
+    protected abstract ForDBAuthenticationTokenEntity doFindAccessOrRefreshTokenByToken0(String token);
 }

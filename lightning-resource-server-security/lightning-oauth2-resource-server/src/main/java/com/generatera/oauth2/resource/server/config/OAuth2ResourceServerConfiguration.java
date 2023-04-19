@@ -4,7 +4,6 @@ package com.generatera.oauth2.resource.server.config;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization;
 import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorizationService;
 import com.generatera.oauth2.resource.server.config.authentication.OAuth2ResourceServerAuthenticationEntryPoint;
-import com.generatera.oauth2.resource.server.config.token.LightningAuthenticationTokenResolver;
 import com.generatera.oauth2.resource.server.config.token.LightningDefaultBearerTokenResolver;
 import com.generatera.oauth2.resource.server.config.token.LightningDefaultHeaderBearerTokenResolver;
 import com.generatera.resource.server.config.LightningResourceServerConfig;
@@ -18,12 +17,15 @@ import com.generatera.security.authorization.server.specification.util.LogUtil;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,7 +52,8 @@ public class OAuth2ResourceServerConfiguration {
      */
     @Bean
     public LightningResourceServerConfigurer oauth2ResourceServerConfigurer(
-            ResourceServerProperties properties
+            ResourceServerProperties properties,
+            BearerTokenResolver tokenResolver
     ) {
         return new LightningResourceServerConfigurer() {
             @Override
@@ -65,18 +68,25 @@ public class OAuth2ResourceServerConfiguration {
                 // authentication entry point 配置
                 configurer.authenticationEntryPoint(oAuth2ResourceServerAuthenticationEntryPoint);
 
-                if (properties.getTokenVerificationConfig().getBearerTokenConfig().isUseHeader()) {
-                    // header 直接解析
-                    configurer.bearerTokenResolver(
-                            new LightningDefaultHeaderBearerTokenResolver(ElvisUtil.stringElvis(properties.getTokenVerificationConfig().getBearerTokenConfig().getTokenIdentifier(),"Authorization")));
-                }
-                else {
-                    configurer.bearerTokenResolver(new LightningDefaultBearerTokenResolver());
-                }
+               configurer.bearerTokenResolver(tokenResolver);
 
                 LogUtil.prettyLog("oauth2 resource server enabled !!!!");
             }
         };
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public BearerTokenResolver bearerTokenResolver(ResourceServerProperties properties) {
+        String authorizationHeader = ElvisUtil.stringElvis(properties.getTokenVerificationConfig().getBearerTokenConfig().getTokenIdentifier(), "Authorization");
+        if (properties.getTokenVerificationConfig().getBearerTokenConfig().isUseHeader()) {
+            // header 直接解析
+           return  new LightningDefaultHeaderBearerTokenResolver(authorizationHeader);
+        }
+        else {
+
+            return new LightningDefaultBearerTokenResolver(authorizationHeader);
+        }
     }
 
     /**
@@ -86,7 +96,7 @@ public class OAuth2ResourceServerConfiguration {
      * @return
      */
     @Bean
-    public LightningLogoutHandler defaultLogoutHandler(BootstrapContext bootstrapContext) {
+    public LightningLogoutHandler defaultLogoutHandler(BootstrapContext bootstrapContext,BearerTokenResolver tokenResolver) {
         // 如果有多个自然会报错
         try {
             LightningAuthorizationService bean = HttpSecurityBuilderUtils.getBean(Objects.requireNonNull(bootstrapContext.get(HttpSecurity.class)), LightningAuthorizationService.class);
@@ -95,11 +105,13 @@ public class OAuth2ResourceServerConfiguration {
                 @Override
                 @SuppressWarnings("unchecked")
                 public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-                    String currentAccessToken = LightningAuthenticationTokenResolver.getCurrentAccessToken();
-                    // 不需要 authorization 实际类型
-                    LightningAuthorization byToken = bean.findByToken(currentAccessToken, LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE);
-                    if(byToken != null) {
-                        bean.remove(byToken);
+                    String  currentAccessToken = tokenResolver.resolve(request);
+                    if(StringUtils.hasText(currentAccessToken)) {
+                        // 不需要 authorization 实际类型
+                        LightningAuthorization byToken = bean.findByToken(currentAccessToken, LightningTokenType.LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE);
+                        if(byToken != null) {
+                            bean.remove(byToken);
+                        }
                     }
                 }
             };

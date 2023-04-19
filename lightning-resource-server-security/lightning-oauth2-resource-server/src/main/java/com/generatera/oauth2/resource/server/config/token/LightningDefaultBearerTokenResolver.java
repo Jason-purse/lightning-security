@@ -5,12 +5,12 @@ import org.springframework.security.oauth2.server.resource.web.DefaultBearerToke
 
 import javax.servlet.http.HttpServletRequest;
 
-public class LightningDefaultBearerTokenResolver implements BearerTokenResolver, LightningAuthenticationTokenResolver{
+public class LightningDefaultBearerTokenResolver implements BearerTokenResolver {
 
-    private final BearerTokenResolver resolver = new DefaultBearerTokenResolver();
-    @Override
-    public String doResolve(HttpServletRequest request) {
-        return resolve(request);
+    private final DefaultBearerTokenResolver resolver = new DefaultBearerTokenResolver();
+
+    public LightningDefaultBearerTokenResolver(String tokenHeaderName) {
+        this.resolver.setBearerTokenHeaderName(tokenHeaderName);
     }
 
     @Override

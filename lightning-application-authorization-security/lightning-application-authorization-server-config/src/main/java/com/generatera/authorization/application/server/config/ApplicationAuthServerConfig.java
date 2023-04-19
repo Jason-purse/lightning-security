@@ -4,6 +4,9 @@ import com.generatera.authorization.application.server.config.util.AppAuthConfig
 import com.generatera.authorization.application.server.config.util.ApplicationAuthServerUtils;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerCommonComponentsConfiguration;
 import com.generatera.authorization.server.common.configuration.LightningAuthServerConfigurer;
+import com.generatera.security.authorization.server.specification.util.AuthHttpResponseUtil;
+import com.jianyue.lightning.result.Result;
+import com.jianyue.lightning.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +25,17 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.CollectionUtils;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -112,7 +120,7 @@ public class ApplicationAuthServerConfig {
                         String logoutProcessUrl = noSeparation.getLogoutProcessUrl();
                         logout
                                 .logoutRequestMatcher(
-                                        new AntPathRequestMatcher(logoutProcessUrl,"POST"));
+                                        new AntPathRequestMatcher(logoutProcessUrl, "POST"));
                     }
                     // 登出成功的url
                     logout.logoutSuccessUrl(noSeparation.getLogoutSuccessUrl());
@@ -131,6 +139,22 @@ public class ApplicationAuthServerConfig {
                             .authenticationEntryPoint(
                                     (request, response, authException) -> response.sendRedirect(loginPageUrl)
                             );
+                } else {
+                    // 登出的成功消息处理
+                    securityBuilder.logout()
+                            .logoutSuccessHandler(new LogoutSuccessHandler() {
+                                @Override
+                                public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                                    AuthHttpResponseUtil.commence(response,
+                                            JsonUtil.getDefaultJsonUtil()
+                                                    .asJSON(
+                                                            Result.success(
+                                                                    properties.getBackendSeparation()
+                                                                            .getLogoutSuccessMessage()
+                                                            ))
+                                    );
+                                }
+                            });
                 }
 
                 // 增加退出处理器
@@ -179,7 +203,7 @@ public class ApplicationAuthServerConfig {
     @Bean
     public LightningAppAuthServerBootstrapConfigurer tokenEndpointsConfig(
             @Autowired(required = false)
-                    List<LightningAppAuthServerConfigurer> configurers
+            List<LightningAppAuthServerConfigurer> configurers
     ) throws Exception {
         return new LightningAppAuthServerBootstrapConfigurer() {
             @Override

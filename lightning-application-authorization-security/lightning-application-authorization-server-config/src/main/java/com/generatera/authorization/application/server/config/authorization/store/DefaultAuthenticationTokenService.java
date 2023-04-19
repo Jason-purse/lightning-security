@@ -1,18 +1,22 @@
 package com.generatera.authorization.application.server.config.authorization.store;
 
 import com.generatera.authorization.application.server.config.authorization.DefaultLightningAuthorization;
-import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization;
 import com.generatera.authorization.application.server.config.model.entity.DefaultAuthenticationTokenEntity;
 import com.generatera.authorization.application.server.config.model.entity.LightningAuthenticationTokenEntity;
+import com.generatera.authorization.server.common.configuration.authorization.LightningAuthorization;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipal;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import com.generatera.security.authorization.server.specification.components.token.LightningTokenType.LightningAuthenticationTokenType;
 import com.generatera.security.authorization.server.specification.components.token.format.plain.UuidUtil;
 import com.jianyue.lightning.boot.starter.util.BeanUtils;
 import com.jianyue.lightning.boot.starter.util.ElvisUtil;
+import com.jianyue.lightning.boot.starter.util.OptionalFlux;
+import com.jianyue.lightning.boot.starter.util.dataflow.impl.Tuple;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.util.Assert;
 
-import java.util.Map;
+import java.time.Instant;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -25,9 +29,11 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultAuthenticationTokenService extends AbstractAuthenticationTokenService {
 
-    public DefaultAuthenticationTokenService() {
-        super(defaultConverter());
+    private final Long expireTimeDuration;
 
+    public DefaultAuthenticationTokenService(Long expireTimeDuration) {
+        super(defaultConverter());
+        Assert.isTrue(expireTimeDuration != null && expireTimeDuration > 0, "expireTimeDuration must not be null and gte zero !!!");
         setEntityConverter(new OptimizedAuthenticationTokenEntityConverter(defaultConverter()) {
             @Override
             public LightningAuthenticationTokenEntity convert(DefaultLightningAuthorization source) {
@@ -42,9 +48,27 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
                 return entity;
             }
         });
+
+        this.expireTimeDuration = expireTimeDuration;
     }
 
-    private final Map<String, LightningAuthenticationTokenEntity> cache = new ConcurrentHashMap<>();
+    private void clearTokens() {
+        long currentTime = Instant.now().getEpochSecond();
+        List<String> keys = new LinkedList<>();
+        for (Map.Entry<String, Tuple<LightningAuthenticationTokenEntity, Long>> entry : cache.entrySet()) {
+            Long second = entry.getValue().getSecond();
+            if (currentTime <= second) {
+                keys.add(entry.getKey());
+            }
+        }
+
+        // 删除
+        for (String key : keys) {
+            cache.remove(key);
+        }
+    }
+
+    private final Map<String, Tuple<LightningAuthenticationTokenEntity, Long>> cache = new ConcurrentHashMap<>();
 
     private final Map<String, Map<String, LightningAuthenticationTokenEntity>> fastTokenCache = new ConcurrentHashMap<>();
 
@@ -68,7 +92,11 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
 
     @Override
     protected void doSave(LightningAuthenticationTokenEntity entity) {
-        cache.put(UuidUtil.nextId(), entity);
+
+        // 做清理
+        clearTokens();
+
+        cache.put(UuidUtil.nextId(), new Tuple<>(entity, Instant.now().plusMillis(expireTimeDuration).getEpochSecond()));
 
         ElvisUtil.isNotEmptyConsumer(entity.getAccessTokenValue(), token -> {
             fastTokenCache.computeIfAbsent(LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE.value(),
@@ -87,16 +115,21 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
 
     @Override
     protected void doRemove(LightningAuthenticationTokenEntity entity) {
+        // 做清理
+        clearTokens();
         cache.remove(entity.getId());
     }
 
     @Override
     public LightningAuthenticationTokenEntity doFindById(LightningAuthenticationTokenEntity entity) {
-        return cache.get(entity.getId());
+        // 做清理
+        clearTokens();
+        return OptionalFlux.of(cache.get(entity.getId())).map(Tuple::getFirst).getResult();
     }
 
     @Override
     protected LightningAuthenticationTokenEntity doFindAccessOrRefreshTokenByToken(String token) {
+        clearTokens();
         return getTokenByAccessOrRefresh(token, null);
     }
 
@@ -125,7 +158,7 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
 
     @Override
     public LightningAuthenticationTokenEntity doFindByToken(LightningAuthenticationTokenEntity entity) {
-
+        clearTokens();
         if (entity.getAccessTokenValue() != null) {
             return getTokenByAccessOrRefresh(entity.getAccessTokenValue(), LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE);
         }

@@ -2,12 +2,16 @@ package com.generatera.authorization.application.server.config.authorization.sto
 
 import com.generatera.authorization.application.server.config.authorization.store.dao.JpaAuthenticationTokenRepository;
 import com.generatera.authorization.application.server.config.model.entity.ForDBAuthenticationTokenEntity;
-import com.generatera.authorization.application.server.config.model.entity.LightningAuthenticationTokenEntity;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
+import com.jianyue.lightning.boot.starter.util.OptionalFlux;
+import com.jianyue.lightning.boot.starter.util.StreamUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 
-public class JpaAuthenticationTokenService extends ForDBAuthenticationTokenService {
+import java.time.Instant;
+import java.util.List;
+
+public class JpaAuthenticationTokenService extends ForDBAuthenticationTokenService implements LazyAuthenticationTokenService.TokenClearer {
 
     @Autowired
     private JpaAuthenticationTokenRepository repository;
@@ -19,15 +23,8 @@ public class JpaAuthenticationTokenService extends ForDBAuthenticationTokenServi
 
 
     @Override
-    protected void doSave(LightningAuthenticationTokenEntity entity) {
-        repository.save(((ForDBAuthenticationTokenEntity) entity));
-    }
-
-
-
-    @Override
-    protected void doRemove(LightningAuthenticationTokenEntity entity) {
-
+    protected void doSave0(ForDBAuthenticationTokenEntity entity) {
+        repository.save(entity);
     }
 
     @Override
@@ -37,17 +34,26 @@ public class JpaAuthenticationTokenService extends ForDBAuthenticationTokenServi
 
 
     @Override
-    protected LightningAuthenticationTokenEntity doFindById0(ForDBAuthenticationTokenEntity tokenEntity) {
+    protected ForDBAuthenticationTokenEntity doFindById0(ForDBAuthenticationTokenEntity tokenEntity) {
         return repository.findOne(Example.of(tokenEntity)).orElse(null);
     }
 
     @Override
-    protected LightningAuthenticationTokenEntity doFindAccessOrRefreshTokenByToken(String token) {
+    protected ForDBAuthenticationTokenEntity doFindAccessOrRefreshTokenByToken0(String token) {
         return repository.findFirstByAccessTokenValueIsOrRefreshTokenValueIs(token,token);
     }
 
     @Override
-    protected LightningAuthenticationTokenEntity doFindByToken0(ForDBAuthenticationTokenEntity entity) {
+    protected ForDBAuthenticationTokenEntity doFindByToken0(ForDBAuthenticationTokenEntity entity) {
         return repository.findOne(Example.of(entity)).orElse(null);
+    }
+
+    @Override
+    public void clearInvalidToken() {
+        // 删除 ...
+        List<ForDBAuthenticationTokenEntity> values = repository.findAllByAccessExpiredAtGreaterThanEqual(Instant.now().toEpochMilli());
+        OptionalFlux.list(values)
+                .map(StreamUtil.listMap(ForDBAuthenticationTokenEntity::getId))
+                .consume(repository::deleteAllById);
     }
 }

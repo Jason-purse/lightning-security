@@ -1,6 +1,7 @@
 package com.generatera.authorization.application.server.config.authorization.store;
 
 import com.generatera.authorization.application.server.config.ApplicationAuthServerProperties;
+import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties;
 import com.generatera.authorization.server.common.configuration.AuthorizationServerComponentProperties.Redis;
 import com.generatera.security.authorization.server.specification.LightningUserPrincipalConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,10 @@ public class AuthorizationStoreConfiguration {
     public static class JpaStoreConfiguration {
         @Bean
         public LightningAuthenticationTokenService authenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter) {
-            return new JpaAuthenticationTokenService(userPrincipalConverter);
+            JpaAuthenticationTokenService tokenService = new JpaAuthenticationTokenService(userPrincipalConverter);
+            return new DelegateLightningAuthenticationTokenService(
+                    new LazyAuthenticationTokenService<>(tokenService,tokenService)
+            );
         }
     }
 
@@ -27,14 +31,18 @@ public class AuthorizationStoreConfiguration {
     public static class MongoStoreConfiguration {
         @Bean
         public LightningAuthenticationTokenService authenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter) {
-            return new MongoAuthenticationTokenService(userPrincipalConverter);
+            MongoAuthenticationTokenService tokenService = new MongoAuthenticationTokenService(userPrincipalConverter);
+            return new DelegateLightningAuthenticationTokenService(
+                    new LazyAuthenticationTokenService<>(tokenService,tokenService)
+            );
         }
     }
 
     public static class MemoryStoreConfiguration {
         @Bean
-        public LightningAuthenticationTokenService authorizationService(@Autowired(required = false) LightningUserPrincipalConverter userPrincipalConverter) {
-            DefaultAuthenticationTokenService authenticationTokenService = new DefaultAuthenticationTokenService();
+        public LightningAuthenticationTokenService authorizationService(@Autowired(required = false) LightningUserPrincipalConverter userPrincipalConverter,
+                                                                        AuthorizationServerComponentProperties authProperties) {
+            DefaultAuthenticationTokenService authenticationTokenService = new DefaultAuthenticationTokenService(authProperties.getTokenSettings().getAccessToken().getTokenTimeToLive());
             if (userPrincipalConverter != null) {
                 authenticationTokenService.setTokenConverter(new OptimizedAuthenticationTokenConverter(userPrincipalConverter));
             }
@@ -44,9 +52,11 @@ public class AuthorizationStoreConfiguration {
 
     public static class RedisStoreConfiguration {
         @Bean
-        public LightningAuthenticationTokenService authenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter, ApplicationAuthServerProperties properties) {
+        public LightningAuthenticationTokenService authenticationTokenService(
+                AuthorizationServerComponentProperties authProperties,
+                LightningUserPrincipalConverter userPrincipalConverter, ApplicationAuthServerProperties properties) {
             Redis redis = properties.getAuthorizationStoreConfig().getRedis();
-            return new RedisAuthenticationTokenService(redis.getKeyPrefix(), redis.getExpiredTimeDuration(), userPrincipalConverter);
+            return new RedisAuthenticationTokenService(redis.getKeyPrefix(), authProperties.getTokenSettings().getAccessToken().getTokenTimeToLive(), userPrincipalConverter);
         }
     }
 

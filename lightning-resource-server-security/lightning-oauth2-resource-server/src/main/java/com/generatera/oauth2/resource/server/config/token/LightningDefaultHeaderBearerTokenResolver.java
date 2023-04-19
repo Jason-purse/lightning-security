@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * 仅仅解析 不包含空格的有效token
  */
-public class LightningDefaultHeaderBearerTokenResolver extends HeaderBearerTokenResolver implements LightningAuthenticationTokenResolver {
+public class LightningDefaultHeaderBearerTokenResolver extends HeaderBearerTokenResolver {
     public LightningDefaultHeaderBearerTokenResolver(String header) {
         super(header);
     }
@@ -26,9 +26,6 @@ public class LightningDefaultHeaderBearerTokenResolver extends HeaderBearerToken
         return resolve;
     }
 
-    @Override
-    public String doResolve(HttpServletRequest request) {
-        return resolve(request);
-    }
+
 }
 

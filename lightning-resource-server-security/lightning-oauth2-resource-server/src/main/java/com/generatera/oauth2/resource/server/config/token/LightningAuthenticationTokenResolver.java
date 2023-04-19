@@ -16,13 +16,13 @@ public interface LightningAuthenticationTokenResolver {
     public static final String TOKEN_IDENTITY_NAME = "Authorization";
 
 
-    default String resolve(HttpServletRequest request) {
-        String s = doResolve(request);
+    default String doResolve(HttpServletRequest request) {
+        String s = doResolve0(request);
         DefaultLightningAuthenticationTokenResolverHelper.setCurrentAccessToken(s);
         return s;
     }
 
-    String doResolve(HttpServletRequest request);
+    String doResolve0(HttpServletRequest request);
 
 
     static String getCurrentAccessToken() {
