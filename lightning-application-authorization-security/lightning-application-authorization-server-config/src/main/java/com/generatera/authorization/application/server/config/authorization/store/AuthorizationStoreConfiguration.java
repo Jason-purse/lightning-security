@@ -18,11 +18,15 @@ public class AuthorizationStoreConfiguration {
     @EntityScan(basePackages = "com.generatera.authorization.application.server.config.model.entity")
     public static class JpaStoreConfiguration {
         @Bean
-        public LightningAuthenticationTokenService authenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter) {
+        public LightningAuthenticationTokenService authenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter,
+                                                                              ApplicationAuthServerProperties properties) {
             JpaAuthenticationTokenService tokenService = new JpaAuthenticationTokenService(userPrincipalConverter);
-            return new DelegateLightningAuthenticationTokenService(
-                    new LazyAuthenticationTokenService<>(tokenService,tokenService)
-            );
+            if(properties.getAuthorizationStoreConfig().isEnableLazyClear()) {
+                return new DelegateLightningAuthenticationTokenService(
+                        new LazyAuthenticationTokenService<>(tokenService,tokenService)
+                );
+            }
+            return tokenService;
         }
     }
 
@@ -30,11 +34,14 @@ public class AuthorizationStoreConfiguration {
     @EntityScan(basePackages = "com.generatera.authorization.application.server.config.model.entity")
     public static class MongoStoreConfiguration {
         @Bean
-        public LightningAuthenticationTokenService authenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter) {
+        public LightningAuthenticationTokenService authenticationTokenService(LightningUserPrincipalConverter userPrincipalConverter,ApplicationAuthServerProperties properties) {
             MongoAuthenticationTokenService tokenService = new MongoAuthenticationTokenService(userPrincipalConverter);
-            return new DelegateLightningAuthenticationTokenService(
-                    new LazyAuthenticationTokenService<>(tokenService,tokenService)
-            );
+            if(properties.getAuthorizationStoreConfig().isEnableLazyClear()) {
+                return new DelegateLightningAuthenticationTokenService(
+                        new LazyAuthenticationTokenService<>(tokenService,tokenService)
+                );
+            }
+            return tokenService;
         }
     }
 

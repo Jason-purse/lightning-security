@@ -52,7 +52,10 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
         this.expireTimeDuration = expireTimeDuration;
     }
 
-    private void clearTokens() {
+    /**
+     * 同步 ..
+     */
+    private synchronized void clearTokens() {
         long currentTime = Instant.now().getEpochSecond();
         List<String> keys = new LinkedList<>();
         for (Map.Entry<String, Tuple<LightningAuthenticationTokenEntity, Long>> entry : cache.entrySet()) {
@@ -64,7 +67,15 @@ public class DefaultAuthenticationTokenService extends AbstractAuthenticationTok
 
         // 删除
         for (String key : keys) {
-            cache.remove(key);
+            Tuple<LightningAuthenticationTokenEntity, Long> value = cache.remove(key);
+
+            // 快速cache 中删除 ..
+            if(value != null) {
+                fastTokenCache.get(LightningAuthenticationTokenType.ACCESS_TOKEN_TYPE.value())
+                        .remove(value.getFirst().getAccessTokenValue());
+
+                fastTokenCache.get(LightningAuthenticationTokenType.REFRESH_TOKEN_TYPE.value());
+            }
         }
     }
 

@@ -219,6 +219,17 @@ public class AuthorizationServerComponentProperties {
          * 授权存储方式
          */
         private StoreKind storeKind = StoreKind.MEMORY;
+
+        /**
+         * 默认开启lazy clear
+         *
+         * 如果设置 redis 则没有任何效果 ..
+         *
+         * 它对jpa / mongo 生效 ..
+         *
+         * memory 自动开启 lazy Clear ..
+         */
+        private boolean enableLazyClear = true;
         /**
          * lightning.auth.server.authorization.store.redis
          */
