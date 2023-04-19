@@ -66,7 +66,10 @@ public class ApplicationAuthServerProperties {
     @Data
     public static class BackendSeparation {
 
-        public static final String DEFAULT_LOGOUT_PROCESS_URL = "/logout/process";
+        /**
+         * post 请求
+         */
+        public static final String DEFAULT_LOGOUT_PROCESS_URL = "/logout";
 
         private String logoutProcessUrl = DEFAULT_LOGOUT_PROCESS_URL;
         private String logoutSuccessMessage = "LOGOUT SUCCESS";

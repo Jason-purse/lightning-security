@@ -142,6 +142,7 @@ public class ApplicationAuthServerConfig {
                 } else {
                     // 登出的成功消息处理
                     securityBuilder.logout()
+                            .logoutRequestMatcher(new AntPathRequestMatcher(applicationAuthServerPropertiesUtils.getProperties().getBackendSeparation().getLogoutProcessUrl(),"POST"))
                             .logoutSuccessHandler(new LogoutSuccessHandler() {
                                 @Override
                                 public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
