@@ -71,6 +71,7 @@ public class OAuth2ResourceServerConfiguration {
 
                configurer.bearerTokenResolver(tokenResolver);
 
+
                 LogUtil.prettyLog("oauth2 resource server enabled !!!!");
             }
         };
