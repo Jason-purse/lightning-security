@@ -123,6 +123,8 @@ public class OAuth2LoginUtils {
         return sharedObject;
     }
 
+
+
     public static <B extends HttpSecurityBuilder<B>> LightningOAuth2ClientRegistrationRepository getClientRegistrationRepository(B securityBuilder) {
         return getSharedOrCtxBean(securityBuilder, LightningOAuth2ClientRegistrationRepository.class);
     }

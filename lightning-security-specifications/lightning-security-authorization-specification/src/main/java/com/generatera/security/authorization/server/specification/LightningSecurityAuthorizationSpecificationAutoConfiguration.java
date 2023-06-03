@@ -56,7 +56,6 @@ public class LightningSecurityAuthorizationSpecificationAutoConfiguration implem
     }
 
 
-
     @Bean
     public static LightningBootstrapContextInitializer bootstrapContextInitializer(HttpSecurity httpSecurity) {
         return new LightningBootstrapContextInitializer() {
